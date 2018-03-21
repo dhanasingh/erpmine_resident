@@ -1,0 +1,39 @@
+<fieldset>
+	<legend><%= l(:label_resident) %></legend>
+	
+	<%
+			trackerArr = Array.new
+			projArr = Array.new
+			projObj = Project.order('name')
+			trackerObj = Tracker.order('name')
+			unless trackerObj.blank?
+				trackerArr = trackerObj.collect {|t| [t.name, t.id] }
+			end
+			unless projObj.blank?
+				projArr = projObj.collect {|t| [t.name, t.id] }
+			end
+			#trackerArr.unshift(["",""])
+	%>
+	<p style="padding-left: 190px;">
+		<label><%=l(:field_project)%></label>
+		<%=  select_tag('settings[rm_project]',
+				options_for_select(projArr, :selected => @settings['rm_project'].blank? ? "" : @settings['rm_project']))%>
+	</p>
+	<p style="padding-left: 190px;">
+		<label><%=l(:label_rental)%></label>
+		<%=  select_tag('settings[rm_rental_tracker]',
+				options_for_select(trackerArr, :selected => @settings['rm_rental_tracker'].blank? ? "" : @settings['rm_rental_tracker']))%>
+	</p>
+	<p style="padding-left: 190px;">
+		<label><%=l(:label_services)%></label>
+		<%=  select_tag('settings[rm_service_tracker]',
+				options_for_select(trackerArr, :selected => @settings['rm_service_tracker'].blank? ? "" : @settings['rm_service_tracker']))%>
+	</p>
+	
+	<p style="padding-left: 190px;">
+		<label><%=l(:label_amenities)%></label>
+		<%=  select_tag('settings[rm_amenity_tracker]',
+				options_for_select(trackerArr, :selected => @settings['rm_amenity_tracker'].blank? ? "" : @settings['rm_amenity_tracker']))%>
+	</p>
+	
+</fieldset>

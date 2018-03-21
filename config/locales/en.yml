@@ -1,0 +1,37 @@
+# English strings go here for Rails i18n
+en:
+   label_apartment: "Apartment"
+   label_resident: Resident
+   label_perform_service: Perform Service
+   label_new_apartment: New Apartment
+   label_edit_apartment: Edit Apartment
+   label_new_res_service: New Resident Service
+   label_new_res_amentity: New Resident Amenity
+   label_resident_service: Resident Service
+   label_resdient_amentity: Resident Amenity
+   label_service_name: Service Name
+   label_amentity: Amenity
+   field_end_date: End Date
+   field_resident: Resident Name
+   field_frequency: Frequency
+   field_no_of_occurrence: No of Occurrence
+   label_beds: Beds
+   label_new_bed: New Bed
+   button_move_in: Move In 
+   label_apartment_details: Apartment Details
+   label_bed: Bed
+   label_move_out_date: Move Out Date
+   label_move_out: Move Out
+   label_move_out_reason: Move Out Reason
+   label_services: Services
+   label_amenities: Amenities
+   label_rental: Rental
+   label_is_transfer: Is Transfer
+   label_exclude_resident: Exclude Farmer Resident
+   label_move_in_date: Move In Date
+   field_move_in_date: Move In Date
+   field_move_out_date: Move Out Date
+   field_resident_id: Name
+   field_resident_type: Location
+   field_apartment_id: Apartment
+   field_bed_id: Bed

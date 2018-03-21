@@ -1,0 +1,23 @@
+<%	locationId = session[controller_name][:location_id]
+	moveInOutId = session[controller_name][:moveinout_id]
+	isFarmerResident = session[controller_name][:farmer_resident]
+%>
+<%= form_tag({:controller => controller_name, :action => 'index'}, :method => :get, :id => 'query_form') do %>
+
+<fieldset id="filters" class="collapsible <%= @query.new_record? ? "" : "collapsed" %>">
+  <legend onclick="toggleFieldset(this);"><%= l(:label_filter_plural) %></legend>
+  <div style="<%= @query.new_record? ? "" : "display: none;" %>">
+    <%= render :partial => 'queries/filters', :locals => {:query => @query} %>
+  </div>
+</fieldset>
+
+
+<%= hidden_field_tag "searchlist", controller_name %>
+<%= hidden_field_tag "tab", controller_name %>
+<p class="buttons">
+	<%= link_to_function l(:button_apply), '$("#query_form").submit(); return false;', :class => 'icon icon-checked' %>
+	<%#= link_to l(:button_apply), {:controller => controller_name, :action => action_name}, :class => 'icon icon-checked' %>
+  <%= link_to l(:button_clear), {:controller => controller_name, :action => action_name, :tab => 'clock'}, :class => 'icon icon-reload' %>
+ 
+</p>
+<% end %>

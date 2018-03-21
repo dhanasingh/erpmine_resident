@@ -1,0 +1,38 @@
+<%
+	WkCrmContact.class_eval do
+		has_many :resident_services, as: :resident, :dependent => :restrict_with_error, :class_name => 'RmResidentService'
+		has_many :residents, as: :resident, :dependent => :restrict_with_error, :class_name => 'RmResident'
+		scope :current_resident, -> {joins(:residents).merge(RmResident.current_resident)}
+		
+		has_many :spent_fors, as: :spent_for, :dependent => :restrict_with_error, :class_name => 'WkSpentFor'
+		has_many :beds, through: :residents
+		has_many :apartments, through: :residents
+		#scope :current_resident, -> {joins(:residents).merge(RmResident.current_resident)}
+	end
+%>
+<% if !contactObj.blank? %>
+<% if !contactObj.residents.current_resident[0].blank? %>
+<% if contactObj.contact_type == "RA" %>
+<div style="clear:both;"></div>
+<div class="splitcontentleft" style="margin-top:-60px;">
+<fieldset class="box tabular" >
+	<legend><%= l(:label_apartment_details) %></legend>
+	<table>
+		<tr>
+			<th align="left"><%= l(:field_name) %></th>
+			<td align="left" style="padding-left:40px;"><%= contactObj.residents.current_resident[0].apartment.asset_property.name unless contactObj.residents.current_resident[0].blank? %></td>
+		</tr>
+		<tr>
+			<th align="left"><%= l(:label_bed) %></th>
+			<td align="left" style="padding-left:40px;"><%= contactObj.residents.current_resident[0].bed.asset_property.name unless contactObj.residents.current_resident[0].bed.blank? %></td>
+		</tr>
+	</table>
+	
+</fieldset>
+</div>
+<div style="clear:both;"></div>
+<%= link_to l(:label_transfer), url_for(:controller => "rmapartment", :action => "movein", :tab => "rmapartment", :lead_id => nil, :contact_id => contactObj.id, :resident_id => contactObj.residents.current_resident[0].id, :res_action => "T"),  :class=> "buttons", :style=> "padding-left:60px;  margin-top:220px;" %>
+<%= link_to l(:label_move_out), url_for(:controller => "rmapartment", :action => "movein", :tab => "rmapartment", :lead_id => nil, :contact_id => contactObj.id, :res_action => "MO"),  :class=> "buttons", :style=> "padding-left:60px;  margin-top:220px;" %>
+<% end %>
+<% end %>
+<% end %>

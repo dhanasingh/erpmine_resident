@@ -1,0 +1,3 @@
+<% unless leadObj.blank? %>
+	<%= link_to l(:button_move_in), url_for(:controller => "rmapartment", :action => "movein", :tab => "rmapartment", :lead_id => leadObj.blank? ? nil : leadObj.id, :res_action => "MI"),  :class=> "buttons" %>
+<% end %>

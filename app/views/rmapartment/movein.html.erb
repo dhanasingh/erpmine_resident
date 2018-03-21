@@ -1,0 +1,35 @@
+<% if @resAction == "MI" %>
+	<% pageLbl =  l(:button_move_in)  %>
+	<% controllerName = "wklead" %>
+	<% actionName = "convert" %>
+	<% lblDate = l(:field_spent_on) %>
+<% elsif @resAction == "T" %>
+	<% pageLbl =  l(:label_transfer) %>
+	<% controllerName = "rmapartment" %>
+	<% actionName = "residentTransfer" %>
+	<% lblDate = l(:field_spent_on) %>
+<% else %>
+	<% pageLbl =  l(:label_move_out) %>
+	<% controllerName = "rmapartment" %>
+	<% actionName = "moveOut" %>
+	<% lblDate = l(:label_move_out_date) %>
+<% end %>
+<h2><%= pageLbl %></h2>
+<%= javascript_include_tag 'index', :plugin => "redmine_wktime" %>
+<%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
+ <%= javascript_include_tag 'accountproject', :plugin => "redmine_wktime" %>
+<script type="text/javascript"> 
+	locationUrl="<%= "#{url_for(:controller => 'rmapartment', :action => 'locationApartments')}" %>";
+	bedUrl = "<%= "#{url_for(:controller => 'rmapartment', :action => 'apartmentBeds')}" %>";
+	bedRateUrl = "<%= "#{url_for(:controller => 'rmapartment', :action => 'bedRate')}" %>";
+</script>
+<% if @resAction == "T" %>
+	<%= render partial: "rmapartment/move_in_details", locals: { disable: true, dateLbl: lblDate, loadDD: false, id: 'T'} %>
+<% end %>
+<%= form_tag({:controller => controllerName, :action => actionName}, :method => :get, :id => 'query_form') do %>
+<fieldset class="box tabular">
+	<%= hidden_field_tag 'resident_id', (@contactObj.blank? ? "" : (@contactObj.residents.current_resident.blank? ? "" : @contactObj.residents.current_resident[0].id)) %>
+	<%= render partial: "rmapartment/move_in_details", locals: { disable: false, dateLbl: lblDate, loadDD: true, id: 'M'} %>	
+</fieldset>
+<%= submit_tag pageLbl ,:id => 'move_in_save'%>
+<% end %>

@@ -1,0 +1,9 @@
+<label><%= l(:label_resdient_amentity) %></label>
+<div>
+	<div class="wk-contextual">
+			<%= link_to l(:label_new_res_amentity), url_for(:controller => 'rmresident', :action => 'newresidentservice', :parentType => currentObj.class.name, :parentId => currentObj.id, :resdient_type => 'RA'), :class => 'icon icon-time-add' %>
+	</div>
+	
+	<%= render partial: "rmresident/resident_service_list", locals: { resservices: currentObj.blank? ? nil : currentObj.resident_services.includes(:issue).where(issues: { :tracker_id => [1] }), residentType: "RA"  } %>
+	
+</div>

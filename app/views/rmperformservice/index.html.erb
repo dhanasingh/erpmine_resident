@@ -1,0 +1,9 @@
+<%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
+<h2><%= l(:label_perform_service) %></h2>
+<script type="text/javascript"> 
+    apartmentUrl = '<%=url_for(:controller => "rmapartment", :action => "index", :tab => "rmapartment")%>';     
+    residentUrl = '<%=url_for(:controller => "rmresident", :action => "index", :tab => "rmresident")%>';
+	performserviceUrl = '<%=url_for(:controller => "rmperformservice", :action => "index", :tab => "rmperformservice")%>';	
+</script>
+<%= render_tabs resident_tabs %>
+<%= hidden_field_tag 'back_url', url_for(params) %>

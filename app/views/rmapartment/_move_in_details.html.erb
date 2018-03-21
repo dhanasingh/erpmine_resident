@@ -1,0 +1,41 @@
+<% 	parentArr = Array.new
+	bedArr = Array.new
+	parentArr = parentArray(controller.getItemType, false, loadDD)
+	bedArr = bedsArray(parentArr[0][1], false, loadDD) unless parentArr.blank?
+%>
+<table>
+	<tr>
+		<th align="left"><%= l(:field_name) %></th>
+		<td align="left" style="padding-left:40px;"><%= @leadObj.blank? ? (@contactObj.blank? ? "" : @contactObj.last_name) : @leadObj.contact.last_name %></td>
+		<%= hidden_field_tag 'lead_id', @leadObj.blank? ? (@contactObj.blank? ? "" : @contactObj.id) : @leadObj.id %>
+	</tr>
+	<tr>
+		<th align="left"><%= l(:label_location) %></th>
+		<td align="left" style="padding-left:40px;"><%=h select_tag("location_id", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', (@residentObj.blank? ? nil : @residentObj.apartment.location_id), false), :onchange => "locationbasedApartment(this.id, 'apartment_id#{id}', #{User.current.id}, 'bed_id#{id}', 'lblBed#{id}', 'rate#{id}' )", :disabled => disable) %></td>	
+		<%# if @resAction == "T" %>
+			<!-- <th align="left"><label><%#= l(:label_is_transfer) %></label></th>
+			<td style="padding-left:40px;"><%#= check_box_tag("is_transfer#{id}", 1, false) %></td> -->
+		<%# end %>
+		<% if @resAction == "MO" %>
+			<th align="left"><label><%= l(:label_move_out_reason) %></label></th>
+			<td style="padding-left:40px;"><%=h select_tag('move_out_reason', options_for_select(options_for_enum_select('MOR', nil, true)), :style => "float:left; width:120px;") %></td>
+		<% end %>
+	</tr>
+	
+	<tr>
+		<th align="left"><%= l(:label_apartment) %></th>
+		<td align="left" style="padding-left:40px;"><%=h select_tag("apartment_id#{id}", options_for_select(parentArr, :selected=> @residentObj.blank? ? parentArr : @residentObj.apartment_id), :onchange => "apartmentBasedBeds(this.id, 'bed_id#{id}', #{User.current.id}, 'rate#{id}', 'lblBed#{id}' )", :disabled => disable) %></td>
+		<th align="left"><label id="lblBed<%= id %>"  display:<%= bedArr.blank? ? 'none' : 'block' %>;"><%= l(:label_beds) %></label></th>
+		<td align="left" style="padding-left:40px;"><%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? parentArr : @residentObj.bed_id), :style=>"display:#{ bedArr.blank? ? 'none' : 'block' };", :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per'  )", :disabled => disable ) %></td>
+		<th align="left"><%= l(:label_log) + " " + l(:label_rate) %></th>
+		<td align="left" style="padding-left:40px;">
+				<%= text_field_tag "rate#{id}",  "", :disabled => disable %>
+		</td>
+		<td align="left" style="padding-left:60px;"><label id="move_in_rate_per"><%= "" %></label></td>
+	</tr>
+	<tr>
+		<th align="left"><%= dateLbl  %></th>
+		<td align="left" style="padding-left:40px;" ><%= date_field_tag('move_in_date',  Date.today, {:id => 'move_in_date', :size => 12, :style => "width:160px;"}) + calendar_for('move_in_date') %><%=h select_tag("move_in_hr", options_for_number_select(0, 23, 1, Time.now.strftime("%H") ), :disabled => disable) %>
+		<%=h select_tag("move_in_min", options_for_number_select(0, 59, 1, Time.now.strftime("%M") ), :disabled => disable) %></td>
+	</tr>
+</table>
