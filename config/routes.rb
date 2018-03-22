@@ -7,6 +7,31 @@ get 'rmresident/index', :to => 'rmresident#index'
 
 get 'rmperformservice/index', :to => 'rmperformservice#index'
 
+get 'rmperformservice/new', :to => 'rmperformservice#new'
+
+get 'rmperformservice/getissues', :to => 'rmperformservice#getissues'
+
+get 'rmperformservice/getactivities', :to => 'rmperformservice#getactivities'
+
+get 'rmperformservice/getclients', :to => 'rmperformservice#getclients'
+
+get 'rmperformservice/getusers', :to => 'rmperformservice#getusers'
+
+get 'rmperformservice/deleterow', :to => 'rmperformservice#deleterow'
+
+match 'rmperformservice/edit', :to => 'rmperformservice#edit', :via => [:get, :post]
+		  
+post 'rmperformservice/update', :to => 'rmperformservice#update'
+		  
+delete 'rmperformservice/destroy', :to => 'rmperformservice#destroy'
+
+get 'rmperformservice/getTracker', :to => 'rmperformservice#getTracker'
+
+delete 'rmperformservice/deleteEntries', :to => 'rmperformservice#deleteEntries'
+
+get 'rmperformservice/export', :to => 'rmperformservice#export'
+
+
 get 'rmapartment/edit', :to => 'rmapartment#edit'
 
 get 'rmapartment/transfer', :to => 'rmapartment#transfer'

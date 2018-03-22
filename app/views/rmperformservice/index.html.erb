@@ -5,5 +5,17 @@
     residentUrl = '<%=url_for(:controller => "rmresident", :action => "index", :tab => "rmresident")%>';
 	performserviceUrl = '<%=url_for(:controller => "rmperformservice", :action => "index", :tab => "rmperformservice")%>';	
 </script>
+<div class="contextual">
+<%#= link_to "Perform Service", url_for(:controller => controller_name, :action => 'new'), :class => 'icon icon-time-add' %>
+</div>
 <%= render_tabs resident_tabs %>
 <%= hidden_field_tag 'back_url', url_for(params) %>
+<%= javascript_include_tag 'index', :plugin => "redmine_wktime" %>
+<div>
+<%= form_tag({:controller => controller_name, :action => 'edit'}, :method => :post, :id => 'wktime_new') do %>
+
+<h2><%= l(:label_perform_service) %></h2>
+<%= render :partial => 'te_new' %>
+
+<% end %>
+</div>

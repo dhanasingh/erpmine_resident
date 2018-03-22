@@ -35,3 +35,5 @@ en:
    field_resident_type: Location
    field_apartment_id: Apartment
    field_bed_id: Bed
+   label_service: Service
+   label_service_for: Service For
