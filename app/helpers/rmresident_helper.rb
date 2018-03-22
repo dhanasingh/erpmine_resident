@@ -14,7 +14,7 @@ include WkassetHelper
 		resdientArr = Array.new
 		residentObj = RmResident.order(:id) 
 		residentObj.each do | resident |
-			resdientArr << [resident.resident.name, resident.id]
+			resdientArr << [resident.resident.name, resident.resident.id]
 		end
 		resdientArr.unshift(["",""]) if needBlank
 		resdientArr

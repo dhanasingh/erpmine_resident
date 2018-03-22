@@ -23,7 +23,7 @@ class RmperformserviceController < WktimeController
 	end
 	
 	def getCondition(date_field, user_id, start_date, end_date=nil)
-		trackerId = 5
+		trackerId = Setting.plugin_erpmine_resident['rm_service_tracker']
 		@renderer.issue_join_cond = " and i.tracker_id = #{trackerId}"
 		super
 	end
@@ -33,7 +33,7 @@ class RmperformserviceController < WktimeController
 	end
 	
 	def getDefultProject
-		1 #get from settings
+		Setting.plugin_erpmine_resident['rm_project'] #get from settings
 	end
 	
 	def showActivityDD
@@ -41,7 +41,9 @@ class RmperformserviceController < WktimeController
 	end
 	
 	def getDefultActivity
-		9 #get from settings
+		activityObj = Enumeration.where(:type => 'TimeEntryActivity')
+		activityId = activityObj.blank? ? 0 : activityObj[0].id
+		activityId #get from settings
 	end
 	
 	def set_loggable_projects
