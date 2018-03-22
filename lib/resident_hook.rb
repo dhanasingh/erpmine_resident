@@ -26,29 +26,31 @@ class ResidentHook < Redmine::Hook::ViewListener
 	
 	def controller_convert_contact(context={})
 		type = Array.new		
+		type << 'C'
+		type << 'wkcrmcontact'
 		unless context[:params].blank?
 			unless context[:params][:apartment_idM].blank?
+				type.clear
 				type << 'RA'
 				type << 'wkcrmcontact'
-			end
-		else
-			type << 'C'
-			type << 'wkcrmcontact'
+			end			
 		end
 		type
 	end
 	
 	#After the lead conversion update the resident, billable projects, asset properties and log asset (material entry, spent for)
 	def controller_updated_contact(context={})
-		rmapartment_helper = Object.new.extend(RmapartmentHelper)
-		contactId = context[:contactObj].id
-		contactType = 'WkCrmContact'
-		moveInDate = context[:params][:move_in_date]
-		moveInHr = context[:params][:move_in_hr]
-		moveInMm = context[:params][:move_in_min]
-		invItemId = context[:params][:bed_idM].blank? ? context[:params][:apartment_idM] : context[:params][:bed_idM]
-		
-		rmapartment_helper.residentMoveIn(contactId, contactType, moveInDate, nil, invItemId, context[:params][:apartment_idM], context[:params][:bed_idM], context[:params][:rate], moveInHr, moveInMm)		
+		if context[:contactObj].contact_type == "RA"
+			rmapartment_helper = Object.new.extend(RmapartmentHelper)
+			contactId = context[:contactObj].id
+			contactType = 'WkCrmContact'
+			moveInDate = context[:params][:move_in_date]
+			moveInHr = context[:params][:move_in_hr]
+			moveInMm = context[:params][:move_in_min]
+			invItemId = context[:params][:bed_idM].blank? ? context[:params][:apartment_idM] : context[:params][:bed_idM]
+			
+			rmapartment_helper.residentMoveIn(contactId, contactType, moveInDate, nil, invItemId, context[:params][:apartment_idM], context[:params][:bed_idM], context[:params][:rate], moveInHr, moveInMm)
+		end		
 	end
 	
 	def additional_product_type(context={})
