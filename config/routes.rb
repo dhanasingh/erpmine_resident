@@ -13,6 +13,10 @@ get 'rmperformservice/getissues', :to => 'rmperformservice#getissues'
 
 get 'rmperformservice/getactivities', :to => 'rmperformservice#getactivities'
 
+get 'rmperformservice/getuserclients', :to => 'rmperformservice#getuserclients'
+
+get 'rmperformservice/getuserissues', :to => 'rmperformservice#getuserissues'
+
 get 'rmperformservice/getclients', :to => 'rmperformservice#getclients'
 
 get 'rmperformservice/getusers', :to => 'rmperformservice#getusers'

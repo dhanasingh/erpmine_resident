@@ -19,7 +19,7 @@ class RmperformserviceController < WktimeController
 	end
 	
 	def hideprevTemplate
-		false
+		true
 	end
 	
 	def getCondition(date_field, user_id, start_date, end_date=nil)
