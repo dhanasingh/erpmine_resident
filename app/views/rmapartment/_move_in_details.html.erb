@@ -27,7 +27,7 @@
 		<td align="left" style="padding-left:40px;"><%=h select_tag("apartment_id#{id}", options_for_select(parentArr, :selected=> @residentObj.blank? ? parentArr : @residentObj.apartment_id), :onchange => "apartmentBasedBeds(this.id, 'bed_id#{id}', #{User.current.id}, 'rate#{id}', 'lblBed#{id}' )", :disabled => disable) %></td>
 		<th align="left"><label id="lblBed<%= id %>"  display:<%= bedArr.blank? ? 'none' : 'block' %>;"><%= l(:label_beds) %></label></th>
 		<td align="left" style="padding-left:40px;"><%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? parentArr : @residentObj.bed_id), :style=>"display:#{ bedArr.blank? ? 'none' : 'block' };", :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per'  )", :disabled => disable ) %></td>
-		<th align="left"><%= l(:label_log) + " " + l(:label_rate) %></th>
+		<th align="left"><%= l(:label_rental_rate)  %></th>
 		<td align="left" style="padding-left:40px;">
 				<%= text_field_tag "rate#{id}",  "", :disabled => disable %>
 		</td>

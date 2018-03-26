@@ -43,6 +43,18 @@ class RmapartmentController < WkproductitemController
 		l(:label_beds)
 	end
 	
+	def showProductItem
+		false
+	end
+	
+	def loggableAssetLbl
+		l(:label_rental_asset)
+	end
+	
+	def loggableRateLbl
+		l(:label_rental_rate) 
+	end
+	
 	def movein
 		@leadObj = nil
 		@contactObj = nil

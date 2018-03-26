@@ -37,3 +37,5 @@ en:
    field_bed_id: Bed
    label_service: Service
    label_service_for: Service For
+   label_rental_rate: Rental Rate
+   label_rental_asset: Rental Asset
