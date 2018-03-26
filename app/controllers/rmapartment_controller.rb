@@ -127,7 +127,7 @@ class RmapartmentController < WkproductitemController
 	end
 	
 	def residentTransfer
-		residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min])
+		residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], nil)
 		invItemId = params[:bed_idM].blank? ? params[:apartment_idM] : params[:bed_idM]
 		residentMoveIn(params[:lead_id], 'WkCrmContact', params[:move_in_date], nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
 		
@@ -136,7 +136,7 @@ class RmapartmentController < WkproductitemController
 	end
 	
 	def moveOut
-		residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min])
+		residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], params[:move_out_reason])
 		
 		flash[:notice] = l(:notice_successful)
 		redirect_to :controller => 'rmresident', :action => 'index'

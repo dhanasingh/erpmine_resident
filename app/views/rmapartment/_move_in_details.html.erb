@@ -2,7 +2,10 @@
 	bedArr = Array.new
 	parentArr = parentArray(controller.getItemType, false, loadDD)
 	bedArr = bedsArray(parentArr[0][1], false, loadDD) unless parentArr.blank?
+	taxentry = WkTax.all
+	@taxentry = taxentry.collect{|m| [ m.name, m.id ] }
 %>
+
 <table>
 	<tr>
 		<th align="left"><%= l(:field_name) %></th>
@@ -35,7 +38,9 @@
 	</tr>
 	<tr>
 		<th align="left"><%= dateLbl  %></th>
-		<td align="left" style="padding-left:40px;" ><%= date_field_tag('move_in_date',  Date.today, {:id => 'move_in_date', :size => 12, :style => "width:160px;"}) + calendar_for('move_in_date') %><%=h select_tag("move_in_hr", options_for_number_select(0, 23, 1, Time.now.strftime("%H") ), :disabled => disable) %>
-		<%=h select_tag("move_in_min", options_for_number_select(0, 59, 1, Time.now.strftime("%M") ), :disabled => disable) %></td>
+		<td align="left" style="padding-left:40px;" ><%= date_field_tag('move_in_date',  Date.today, {:id => 'move_in_date', :size => 12, :style => "width:160px;"}) + calendar_for('move_in_date') %><%#=h select_tag("move_in_hr", options_for_number_select(0, 23, 1, Time.now.strftime("%H") ), :disabled => disable) %>
+		<%#=h select_tag("move_in_min", options_for_number_select(0, 59, 1, Time.now.strftime("%M") ), :disabled => disable) %></td>
 	</tr>
+	
 </table>
+

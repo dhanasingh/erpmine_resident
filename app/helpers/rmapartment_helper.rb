@@ -96,18 +96,24 @@ include WkcrmenumerationHelper
 		matterialObj
 	end
 	
-	def residentMoveOut(id, spentDate, spentHr,  spentMm)
+	def residentMoveOut(id, spentDate, spentHr,  spentMm, moveOutReason)
 		unless id.blank?
 			resObj = RmResident.find(id.to_i)
 		end
 		dateVal = getDateTime(spentDate, spentHr, spentMm, '00')
 		resObj.move_out_date = spentDate #dateVal
+		resObj.move_out_reason_id = moveOutReason
 		resObj.save
 		unblockApartBeds(resObj)
 	end
 	
 	def unblockApartBeds(resObj)
-		assetObj = resObj.apartment.asset_property
+		assetObj = nil
+		unless resObj.bed.blank?
+			assetObj = resObj.bed.asset_property
+		else
+			assetObj = resObj.apartment.asset_property
+		end		
 		assetObj.matterial_entry_id = nil
 		assetObj.save
 	end
