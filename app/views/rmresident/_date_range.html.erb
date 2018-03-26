@@ -2,8 +2,13 @@
 <fieldset id="date-range" class="collapsible">
 <legend onclick="toggleFieldset(this);"><%= l(:label_date_range) %></legend>
 <div>
-<% period = session['rmresident'][:period] %>
+<% period = session['rmresident'][:period]
+   moveInOutId = session[controller_name][:moveinout_id] %>
 <div class="div-left">
+<th align="left"><%= l(:field_status) %></th>
+			<td align="left" style="padding-left:40px;">
+				<%=h select_tag("moveinout_id",options_for_select(moveInOutHash.invert, :selected => moveInOutId)) %>
+			</td>
 <%= radio_button_tag 'period_type', '1', !@free_period, :onclick => '$("#from,#to").attr("disabled", true);$("#period").removeAttr("disabled");' %>
 <%= select_tag 'period', options_for_period_select(period),
                          :onchange => 'this.form.submit();',

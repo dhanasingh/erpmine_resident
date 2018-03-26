@@ -22,6 +22,7 @@ include WkassetHelper
 	
 	def moveInOutHash
 		moveHash = {
+			'' => "",
 			'MI' => l(:button_move_in),
 			'MO' => l(:label_move_out)		
 		}

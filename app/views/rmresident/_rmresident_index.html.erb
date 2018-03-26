@@ -1,23 +1,30 @@
-<%	locationId = session[controller_name][:location_id]
-	moveInOutId = session[controller_name][:moveinout_id]
-	isFarmerResident = session[controller_name][:farmer_resident]
+<%	locationId = session[controller_name][:location_id]	
+    residentName = session[controller_name][:resident_name]	
+	#isFarmerResident = session[controller_name][:farmer_resident]
 %>
 <%= form_tag({:controller => controller_name, :action => 'index'}, :method => :get, :id => 'query_form') do %>
-
-<fieldset id="filters" class="collapsible <%= @query.new_record? ? "" : "collapsed" %>">
-  <legend onclick="toggleFieldset(this);"><%= l(:label_filter_plural) %></legend>
-  <div style="<%= @query.new_record? ? "" : "display: none;" %>">
-    <%= render :partial => 'queries/filters', :locals => {:query => @query} %>
-  </div>
-</fieldset>
-
-
 <%= hidden_field_tag "searchlist", controller_name %>
 <%= hidden_field_tag "tab", controller_name %>
-<p class="buttons">
-	<%= link_to_function l(:button_apply), '$("#query_form").submit(); return false;', :class => 'icon icon-checked' %>
-	<%#= link_to l(:button_apply), {:controller => controller_name, :action => action_name}, :class => 'icon icon-checked' %>
-  <%= link_to l(:button_clear), {:controller => controller_name, :action => action_name, :tab => 'clock'}, :class => 'icon icon-reload' %>
- 
-</p>
+<fieldset>
+	<table>
+		<tr>
+			<th align="left"><%= l(:label_location) %></th>
+			<td align="left" style="padding-left:40px;">
+				<%=h select_tag("location_id", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', locationId, true)) %>
+			</td>
+			<th align="left"><%= l(:field_name)  %></th>
+			<td align="left" style="padding-left:40px;"><%= text_field_tag 'resident_name', residentName.blank? ? "" : residentName, :size => 30, :style=> "float: left;" %>
+			</td>
+			<th align="left"><%#= l(:label_exclude_resident) %></th>
+			<td align="left" style="padding-left:40px;" >
+				<%#= check_box_tag('farmer_resident', 1, isFarmerResident ? true : false) %>
+			</td>
+			
+			
+		</tr>
+		
+	</table>
+	 <%= link_to controller.lblNewContact, url_for(:controller => controller_name, :action => 'edit'), :style=> "float:right;", :class => 'icon icon-time-add' %>
+	<%= render :partial => 'rmresident/date_range' %>
+
 <% end %>
