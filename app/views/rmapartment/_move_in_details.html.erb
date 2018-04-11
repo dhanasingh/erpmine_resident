@@ -1,7 +1,7 @@
 <% 	parentArr = Array.new
 	bedArr = Array.new
 	parentArr = parentArray(controller.getItemType, false, loadDD)
-	bedArr = bedsArray(parentArr[0][1], false, loadDD) unless parentArr.blank?
+	bedArr = bedsArray((@residentObj.blank? ? parentArr[0][1] : @residentObj.apartment_id), false, loadDD) unless parentArr.blank?
 	taxentry = WkTax.all
 	@taxentry = taxentry.collect{|m| [ m.name, m.id ] }
 %>
@@ -29,10 +29,19 @@
 		<th align="left"><%= l(:label_apartment) %></th>
 		<td align="left" style="padding-left:40px;"><%=h select_tag("apartment_id#{id}", options_for_select(parentArr, :selected=> @residentObj.blank? ? parentArr : @residentObj.apartment_id), :onchange => "apartmentBasedBeds(this.id, 'bed_id#{id}', #{User.current.id}, 'rate#{id}', 'lblBed#{id}' )", :disabled => disable) %></td>
 		<th align="left"><label id="lblBed<%= id %>"  display:<%= bedArr.blank? ? 'none' : 'block' %>;"><%= l(:label_beds) %></label></th>
-		<td align="left" style="padding-left:40px;"><%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? parentArr : @residentObj.bed_id), :style=>"display:#{ bedArr.blank? ? 'none' : 'block' };", :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per'  )", :disabled => disable ) %></td>
+		<td align="left" style="padding-left:40px;"><%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? bedArr : @residentObj.bed_id), :style=>"display:#{ bedArr.blank? ? 'none' : 'block' };", :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per'  )", :disabled => disable ) %></td>
+		<%  rentalRate =  0
+			unless @residentObj.blank? 
+				if @residentObj.bed_id.blank?
+					rentalRate = @residentObj.bed.asset_property.rate
+				else
+					rentalRate = @residentObj.apartment.asset_property.rate
+				end
+			end
+		%>
 		<th align="left"><%= l(:label_rental_rate)  %></th>
 		<td align="left" style="padding-left:40px;">
-				<%= text_field_tag "rate#{id}",  "", :disabled => disable %>
+				<%= text_field_tag "rate#{id}",  rentalRate, :disabled => disable %>
 		</td>
 		<td align="left" style="padding-left:60px;"><label id="move_in_rate_per"><%= "" %></label></td>
 	</tr>

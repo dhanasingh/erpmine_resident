@@ -32,7 +32,7 @@
 </div>
 <div style="clear:both;"></div>
 <%= link_to l(:label_transfer), url_for(:controller => "rmapartment", :action => "movein", :tab => "rmapartment", :lead_id => nil, :contact_id => contactObj.id, :resident_id => contactObj.residents.current_resident[0].id, :res_action => "T"),  :class=> "buttons", :style=> "padding-left:60px;  margin-top:220px;" %>
-<%= link_to l(:label_move_out), url_for(:controller => "rmapartment", :action => "movein", :tab => "rmapartment", :lead_id => nil, :contact_id => contactObj.id, :res_action => "MO"),  :class=> "buttons", :style=> "padding-left:60px;  margin-top:220px;" %>
+<%= link_to l(:label_move_out), url_for(:controller => "rmapartment", :action => "movein", :tab => "rmapartment", :lead_id => nil, :contact_id => contactObj.id, :resident_id => contactObj.residents.current_resident[0].id, :res_action => "MO"),  :class=> "buttons", :style=> "padding-left:60px;  margin-top:220px;" %>
 <% end %>
 <% end %>
 <% end %>

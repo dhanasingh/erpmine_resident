@@ -12,8 +12,11 @@ class RmresidentController < WkcontactController
 
 	helper :queries
 	include QueriesHelper
+	include RmapartmentHelper
+	
 	
 	def index
+		
 		entries = nil
 		set_filter_session
 		retrieve_date_range
@@ -38,33 +41,6 @@ class RmresidentController < WkcontactController
 			end
 		end
 		formPagination(entries)
-		# retrieve_query(RmResidentQuery, false)
-		# scope = resident_entry_scope
-		
-		
-		# respond_to do |format|
-		  # format.html {
-			# @entry_count = scope.count
-			# @entry_pages = Paginator.new @entry_count, per_page_option, params['page']
-			# @entries = scope.offset(@entry_pages.offset).limit(@entry_pages.per_page).to_a
-
-			# render :layout => !request.xhr?
-		  # }
-		  # format.api  {
-			# @entry_count = scope.count
-			# @offset, @limit = api_offset_and_limit
-			# @entries = scope.offset(@offset).limit(@limit)
-		  # }
-		  # format.atom {
-			# entries = scope.limit(Setting.feeds_limit.to_i).reorder("#{RmResident.table_name}.created_on DESC").to_a
-			# render_feed(entries, :title => l(:label_spent_time))
-		  # }
-		  # format.csv {
-			# # Export all entries
-			# @entries = scope.to_a
-			# send_data(query_to_csv(@entries, @query, params), :type => 'text/csv; header=present', :filename => 'timelog.csv')
-		  # }
-		# end			
 	end
 	
 	def formPagination(entries)
