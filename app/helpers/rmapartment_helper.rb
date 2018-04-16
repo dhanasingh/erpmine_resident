@@ -36,10 +36,11 @@ include WklogmaterialHelper
 		# save Resident
 		rmResidentObj = saveResident(nil, contactId, contactType, moveInDate,nil, apartmentId, bedId)
 		#save Billable Projects for resident
-		projectId = getResidentPluginSetting('rm_project')
-		rentalTrackerId = getResidentPluginSetting('rm_rental_tracker')
-		issueObj = Issue.where(:tracker_id => rentalTrackerId)
-		issueId = issueObj.blank? ? 0 : issueObj[0].id
+		# projectId = getResidentPluginSetting('rm_project')
+		# rentalTrackerId = getResidentPluginSetting('rm_rental_tracker')
+		# issueObj = Issue.where(:tracker_id => rentalTrackerId)
+		# issueId = issueObj.blank? ? 0 : issueObj[0].id
+		rentalIssue = getRentalIssue
 		activityObj = Enumeration.where(:type => 'TimeEntryActivity')
 		activityId = activityObj.blank? ? 0 : activityObj[0].id
 		uomObj = WkMesureUnit.all
@@ -47,7 +48,7 @@ include WklogmaterialHelper
 		saveBillableProjects(nil, projectId, contactId, contactType, false, true, 'TM')
 		#log asset entries for resident
 		
-		materialObj = saveMatterialEntries(nil, projectId, User.current.id, issueId, 1, rate, '$', activityId, moveInDate, invItemId, uomId)
+		materialObj = saveMatterialEntries(nil, projectId, User.current.id, rentalIssue.id, 1, rate, '$', activityId, moveInDate, invItemId, uomId)
 		# update material id for used asset
 		invItemObj = WkInventoryItem.find(invItemId)
 		assetProperty = invItemObj.asset_property
@@ -59,6 +60,15 @@ include WklogmaterialHelper
 		
 		#update the rental proration
 		rentalProration(rmResidentObj)
+	end
+	
+	# Return the issue for rental material entries
+	def getRentalIssue
+		projectId = getResidentPluginSetting('rm_project')
+		rentalTrackerId = getResidentPluginSetting('rm_rental_tracker')
+		trackerIssues = Issue.where(:tracker_id => rentalTrackerId)
+		issue = trackerIssues.blank? ? nil : trackerIssues[0]
+		issue
 	end
 	
 	def saveResident(id, residentId, residentType, moveInDate, moveOutDate, invItemId, bedId)

@@ -5,9 +5,9 @@ class RmResident < ActiveRecord::Base
   belongs_to :bed, foreign_key: "bed_id", class_name: "WkInventoryItem"
   belongs_to :apartment, foreign_key: "apartment_id", class_name: "WkInventoryItem"
   belongs_to :wk_crm_contact, -> { where(rm_residents: {resident_type: 'WkCrmContact'}) }, foreign_key: 'resident_id'
-   # Ensure review.shop returns nil unless review.reviewable_type == "Shop"
+   # Ensure resident.contact returns nil unless resident.resident_type == "WkCrmContact"
    def contact
-     return unless reviewable_type == "WkCrmContact"
+     return unless resident_type == "WkCrmContact"
      super
    end
   

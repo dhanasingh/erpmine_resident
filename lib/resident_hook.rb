@@ -53,6 +53,14 @@ class ResidentHook < Redmine::Hook::ViewListener
 		end		
 	end
 	
+	def controller_after_save_invoice(context={})
+		resident_helper = Object.new.extend(RmresidentHelper)
+		invEndDt = context[:attributes]["end_date"]
+		parentId = context[:attributes]["parent_id"]
+		nextBillStart = invEndDt.to_date + 1.day
+		resident_helper.addUnbilledEntries(parentId.to_i, nextBillStart, 1)
+	end
+	
 	def additional_product_type(context={})
 		productHash = Hash.new()
 		productHash["RA"] = l(:label_resident)
