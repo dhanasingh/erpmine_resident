@@ -3,6 +3,7 @@ include RmapartmentHelper
 include WktimeHelper
 include WkassetHelper
 include WkpayrollHelper
+include WkinvoiceHelper
 
 	WkCrmContact.class_eval do
 		has_many :resident_services, as: :resident, :dependent => :restrict_with_error, :class_name => 'RmResidentService'
@@ -33,8 +34,8 @@ include WkpayrollHelper
 	
 	# Add Rent, Amenities Entries for next invoice cycle
 	def addUnbilledEntries(contactId, entryDate, quantity)
-		invPeriod = Setting.plugin_redmine_wktime['wktime_generate_invoice_period']
-		invDay = Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
+		invPeriod = getInvoiceFrequency #Setting.plugin_redmine_wktime['wktime_generate_invoice_period']
+		invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
 		invMonthDay = getMonthStartDay #should get from settings
 		periodStart = invPeriod == 'W' ? invDay : invMonthDay
 		contact = WkCrmContact.find(contactId)
@@ -56,7 +57,7 @@ include WkpayrollHelper
 		rateHash = getIssueRateHash(issue)
 		invInterval[0] = service.start_date if  service.start_date > invInterval[0]
 		invInterval[1] = service.end_date if !service.end_date.blank? && service.end_date < invInterval[1]
-		invDay = Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
+		invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
 		invMonthDay = getMonthStartDay #should get from settings
 		periodStart = rateHash['rate_per'] == 'W' ? invDay.to_i : invMonthDay
 		serviceInterval = getIntervals(invInterval[0], invInterval[1], rateHash['rate_per'], periodStart, true, true)
@@ -84,7 +85,7 @@ include WkpayrollHelper
 		sellPrice = currentMEntry.blank? ? assetProperty.rate: currentMEntry.selling_price
 		rentCurrency = currentMEntry.blank? ? assetProperty.currency : currentMEntry.currency
 		uomId = currentMEntry.blank? ? residingOn.uom_id : currentMEntry.uom_id
-		invDay = Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
+		invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
 		invMonthDay = getMonthStartDay #should get from settings
 		periodStart = assetProperty.rate_per == 'W' ? invDay : invMonthDay
 		invInterval[0] = currentResident.move_in_date.to_date if  currentResident.move_in_date.to_date > invInterval[0]
