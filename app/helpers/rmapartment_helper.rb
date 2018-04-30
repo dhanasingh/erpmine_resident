@@ -202,5 +202,14 @@ include WklogmaterialHelper
 	def getYearlyDiff(from, to)
 		((to - from) / 365.0).floor
 	end
+	
+	def getRentalRate(id)
+		rate = 0 
+		unless id.blank?
+			invItemObj = WkInventoryItem.find(id.to_i)
+			rate = invItemObj.asset_property.blank? ? 0 : invItemObj.asset_property.rate unless invItemObj.blank?
+		end
+		rate
+	end
 
 end
