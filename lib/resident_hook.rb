@@ -73,6 +73,16 @@ class ResidentHook < Redmine::Hook::ViewListener
 		enumHash
 	end
 	
+	def get_invoice_issue_period(context={})
+		resident_helper = Object.new.extend(RmresidentHelper)
+		invStartDt = context[:attributes]["start_date"]
+		invEndDt = context[:attributes]["end_date"]
+		parentId = context[:attributes]["parent_id"]
+		parentType = context[:attributes]["parent_type"]
+		period = resident_helper.getResidentServicePeriod(invStartDt, invEndDt, parentId, parentType, context[:issue])
+		period
+	end
+	
 	render_on :view_additional_lead_info, :partial => 'rmapartment/move_in'	
 	render_on :additional_contact_info, :partial => 'rmresident/additional_resident_info'
 end

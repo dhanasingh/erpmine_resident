@@ -152,7 +152,7 @@ include WklogmaterialHelper
 			#ratioVal = hoursRatio(moveInDate, endDate)
 			ratioVal = getDuration(moveInDate, endDate, 'h', 1, false)
 		when 'm'
-			monthStartDay = getInvMonthlyStartDay
+			monthStartDay = getMonthStartDay
 			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', monthStartDay)[0][1] : moveOutDate
 			#ratioVal = monthsBetween(moveInDate, endDate)
 			ratioVal = getDuration(moveInDate, endDate, 'm', 1, false)
@@ -161,16 +161,16 @@ include WklogmaterialHelper
 			ratioVal = getDuration(moveInDate, endDate, 'd', 1, false)
 			#ratioVal = hoursRatio(moveInDate, endDate)		
 		when 'q'
-			monthStartDay = getInvMonthlyStartDay
+			monthStartDay = getMonthStartDay
 			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', monthStartDay)[0][1] : moveOutDate
 			#ratioVal = quarterRatio(moveInDate, endDate)
 			ratioVal = getDuration(moveInDate, endDate, 'q', 1, false)
 		when 'sa'
-			monthStartDay = getInvMonthlyStartDay
+			monthStartDay = getMonthStartDay
 			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', monthStartDay)[0][1] : moveOutDate
 			ratioVal = getDuration(moveInDate, endDate, 'sa', 1, false)
 		when 'a'
-			monthStartDay = getInvMonthlyStartDay
+			monthStartDay = getMonthStartDay
 			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', monthStartDay)[0][1] : moveOutDate
 			#ratioVal = getYearlyDiff(moveInDate, endDate)
 			ratioVal = getDuration(moveInDate, endDate, 'a', 1, false)

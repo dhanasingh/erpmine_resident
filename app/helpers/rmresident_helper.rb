@@ -119,4 +119,18 @@ include WkinvoiceHelper
 		activityId = activityObj.blank? ? 0 : activityObj[0].id
 		activityId #get from settings
 	end
+	
+	def getResidentServicePeriod(invStartDt, invEndDt, residentId, residentType, issue)
+		projectId = getResidentPluginSetting('rm_project').to_i
+		periodHash = {"start" => invStartDt, "end" => invEndDt}
+		if issue.project_id == projectId
+			residentService = RmResidentService.where(:resident_id => residentId, :resident_type => residentType, :issue_id => issue.id).where("(end_date is null OR end_date >= ?) AND start_date <= ? ", invStartDt, invEndDt).first
+			unless residentService.blank?
+				startDt = residentService.start_date > invStartDt ? residentService.start_date : invStartDt
+				endDt = residentService.end_date.blank? || residentService.end_date > invEndDt ? invEndDt : residentService.end_date
+				periodHash = {"start" => startDt, "end" => endDt}
+			end
+		end
+		periodHash
+	end
 end
