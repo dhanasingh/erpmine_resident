@@ -36,7 +36,7 @@ include WklogmaterialHelper
 		# save Resident
 		rmResidentObj = saveResident(nil, contactId, contactType, moveInDate,nil, apartmentId, bedId)
 		#save Billable Projects for resident
-		# projectId = getResidentPluginSetting('rm_project')
+		projectId = getResidentPluginSetting('rm_project')
 		# rentalTrackerId = getResidentPluginSetting('rm_rental_tracker')
 		# issueObj = Issue.where(:tracker_id => rentalTrackerId)
 		# issueId = issueObj.blank? ? 0 : issueObj[0].id
@@ -148,30 +148,35 @@ include WklogmaterialHelper
 		ratioVal = 0
 		case frequency
 		when 'h'
-			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm')[0][1] : moveOutDate
+			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', 1)[0][1] : moveOutDate
 			#ratioVal = hoursRatio(moveInDate, endDate)
 			ratioVal = getDuration(moveInDate, endDate, 'h', 1, false)
 		when 'm'
-			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm')[0][1] : moveOutDate
+			monthStartDay = getInvMonthlyStartDay
+			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', monthStartDay)[0][1] : moveOutDate
 			#ratioVal = monthsBetween(moveInDate, endDate)
 			ratioVal = getDuration(moveInDate, endDate, 'm', 1, false)
 		when 'd'
-			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm')[0][1] : moveOutDate
+			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', 1)[0][1] : moveOutDate
 			ratioVal = getDuration(moveInDate, endDate, 'd', 1, false)
 			#ratioVal = hoursRatio(moveInDate, endDate)		
 		when 'q'
-			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm')[0][1] : moveOutDate
+			monthStartDay = getInvMonthlyStartDay
+			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', monthStartDay)[0][1] : moveOutDate
 			#ratioVal = quarterRatio(moveInDate, endDate)
 			ratioVal = getDuration(moveInDate, endDate, 'q', 1, false)
 		when 'sa'
-			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm')[0][1] : moveOutDate
+			monthStartDay = getInvMonthlyStartDay
+			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', monthStartDay)[0][1] : moveOutDate
 			ratioVal = getDuration(moveInDate, endDate, 'sa', 1, false)
 		when 'a'
-			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm')[0][1] : moveOutDate
+			monthStartDay = getInvMonthlyStartDay
+			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', monthStartDay)[0][1] : moveOutDate
 			#ratioVal = getYearlyDiff(moveInDate, endDate)
 			ratioVal = getDuration(moveInDate, endDate, 'a', 1, false)
 		when 'w'
-			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm')[0][1] : moveOutDate
+			weekStartDay = getInvWeekStartDay
+			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', weekStartDay)[0][1] : moveOutDate
 			ratioVal = getDuration(moveInDate, endDate, 'w', 1, false)
 		else
 			raise "Given frequency is mismatched"
