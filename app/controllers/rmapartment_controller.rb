@@ -2,6 +2,7 @@ class RmapartmentController < WkproductitemController
   unloadable
   menu_item	:apartment
   include RmapartmentHelper
+  include RmresidentHelper
 
     def newAsset
 		true

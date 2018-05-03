@@ -41,7 +41,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	#After the lead conversion update the resident, billable projects, asset properties and log asset (material entry, spent for)
 	def controller_updated_contact(context={})
 		if context[:contactObj].contact_type == "RA"
-			rmapartment_helper = Object.new.extend(RmapartmentHelper)
+			rmresident_helper = Object.new.extend(RmresidentHelper)
 			contactId = context[:contactObj].id
 			contactType = 'WkCrmContact'
 			moveInDate = context[:params][:move_in_date]
@@ -49,7 +49,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 			moveInMm = context[:params][:move_in_min]
 			invItemId = context[:params][:bed_idM].blank? ? context[:params][:apartment_idM] : context[:params][:bed_idM]
 			
-			rmapartment_helper.residentMoveIn(contactId, contactType, moveInDate, nil, invItemId, context[:params][:apartment_idM], context[:params][:bed_idM], context[:params][:rateM], moveInHr, moveInMm)
+			rmresident_helper.residentMoveIn(contactId, contactType, moveInDate, nil, invItemId, context[:params][:apartment_idM], context[:params][:bed_idM], context[:params][:rateM], moveInHr, moveInMm)
 		end		
 	end
 	
