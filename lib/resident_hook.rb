@@ -32,7 +32,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 			unless context[:params][:apartment_idM].blank?
 				type.clear
 				type << 'RA'
-				type << 'wkcrmcontact'
+				type << 'rmresident'
 			end			
 		end
 		type
