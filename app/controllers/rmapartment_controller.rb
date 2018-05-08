@@ -143,6 +143,16 @@ class RmapartmentController < WkproductitemController
 		redirect_to :controller => 'rmresident', :action => 'index'
 	end
 	
+	def lblInventory
+		l(:label_attributes)
+	end
 	
+	def lblAsset
+		l(:field_rate)
+	end
+	
+	def editcomponentLbl
+		l(:label_edit_bed)
+	end
 
 end
