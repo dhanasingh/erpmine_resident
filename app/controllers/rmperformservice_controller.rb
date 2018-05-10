@@ -11,7 +11,7 @@ class RmperformserviceController < WktimeController
 		set_user_projects
 		@selected_project = getSelectedProject(@manage_projects, true)
 		# get the startday for current week
-		@startday = getStartDay(Date.today)
+		@startday = Date.today
 	end
 
 	def getSheetView
@@ -25,6 +25,9 @@ class RmperformserviceController < WktimeController
 	def getCondition(date_field, user_id, start_date, end_date=nil)
 		trackerId = Setting.plugin_erpmine_resident['rm_service_tracker']
 		@renderer.issue_join_cond = " and i.tracker_id = #{trackerId}"
+		@renderer.spent_for_join = " left join rm_resident_services rs on (i.id = rs.issue_id and ap.parent_type = rs.resident_type and ap.parent_id = rs.resident_id )"
+		@renderer.spent_for_cond = " and rs.id IS NOT NULL and (rs.end_date is null or rs.end_date >= '#{start_date}')"
+		# cond = " and i.tracker_id = #{trackerId}"
 		super
 	end
 	
@@ -133,5 +136,9 @@ class RmperformserviceController < WktimeController
   
 	def getTFSettingName
 		"wkexpense_issues_filter_tracker"
+	end
+	
+	def getLblSpentOn
+		l(:field_spent_on)
 	end
 end
