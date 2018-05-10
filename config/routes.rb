@@ -54,14 +54,14 @@ get 'rmresident/updateresidentservice', :to => 'rmresident#updateresidentservice
 
 delete 'rmresident/destroy', :to => 'rmresident#destroy'
 
-get 'rmapartment/movein', :to => 'rmapartment#movein'
+get 'rmresident/movein', :to => 'rmresident#movein'
 
-get 'rmapartment/locationApartments', :to => 'rmapartment#locationApartments'
+get 'rmresident/locationApartments', :to => 'rmresident#locationApartments'
 
-get 'rmapartment/apartmentBeds', :to => 'rmapartment#apartmentBeds'
+get 'rmresident/apartmentBeds', :to => 'rmresident#apartmentBeds'
 
-get 'rmapartment/bedRate', :to => 'rmapartment#bedRate'
+get 'rmresident/bedRate', :to => 'rmresident#bedRate'
 
-get 'rmapartment/residentTransfer', :to => 'rmapartment#residentTransfer'
+get 'rmresident/residentTransfer', :to => 'rmresident#residentTransfer'
 
-get 'rmapartment/moveOut', :to => 'rmapartment#moveOut'
+get 'rmresident/moveOut', :to => 'rmresident#moveOut'

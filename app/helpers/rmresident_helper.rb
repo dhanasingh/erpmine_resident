@@ -4,6 +4,10 @@ include WktimeHelper
 include WkassetHelper
 include WkpayrollHelper
 include WkinvoiceHelper
+include WkproductitemHelper
+include WkaccountprojectHelper
+include WklogmaterialHelper	
+
 
 	WkCrmContact.class_eval do
 		has_many :resident_services, as: :resident, :dependent => :restrict_with_error, :class_name => 'RmResidentService'
@@ -146,33 +150,41 @@ include WkinvoiceHelper
 	end
 	
 	def residentMoveIn(contactId, contactType, moveInDate, moveOutDate, invItemId, apartmentId, bedId, rate, moveInHr, moveInMm)
-		# save Resident
-		rmResidentObj = saveResident(nil, contactId, contactType, moveInDate,nil, apartmentId, bedId)
-		#save Billable Projects for resident
+		errorMsg = ""
 		projectId = getResidentPluginSetting('rm_project')
-		# rentalTrackerId = getResidentPluginSetting('rm_rental_tracker')
-		# issueObj = Issue.where(:tracker_id => rentalTrackerId)
-		# issueId = issueObj.blank? ? 0 : issueObj[0].id
 		rentalIssue = getRentalIssue
-		activityObj = Enumeration.where(:type => 'TimeEntryActivity')
-		activityId = activityObj.blank? ? 0 : activityObj[0].id
-		uomObj = WkMesureUnit.all
-		uomId = uomObj.blank? ? 0 : uomObj[0].id
-		saveBillableProjects(nil, projectId, contactId, contactType, false, true, 'TM')
-		#log asset entries for resident
-		
-		materialObj = saveMatterialEntries(nil, projectId, User.current.id, rentalIssue.id, 1, rate, '$', activityId, moveInDate, invItemId, uomId)
-		# update material id for used asset
-		invItemObj = WkInventoryItem.find(invItemId)
-		assetProperty = invItemObj.asset_property
-		assetProperty.matterial_entry_id = materialObj.id
-		assetProperty.save
-		
-		# save spent for resident
-		saveSpentFor(nil, contactId, contactType, materialObj.id, materialObj.class.name, moveInDate, moveInHr, moveInMm, nil)
-		
-		#update the rental proration
-		rentalProration(rmResidentObj)
+		unless projectId.blank? || rentalIssue.blank?
+			# save Resident
+			rmResidentObj = saveResident(nil, contactId, contactType, moveInDate,nil, apartmentId, bedId)
+			#save Billable Projects for resident
+			
+			# rentalTrackerId = getResidentPluginSetting('rm_rental_tracker')
+			# issueObj = Issue.where(:tracker_id => rentalTrackerId)
+			# issueId = issueObj.blank? ? 0 : issueObj[0].id
+			
+			activityObj = Enumeration.where(:type => 'TimeEntryActivity')
+			activityId = activityObj.blank? ? 0 : activityObj[0].id
+			uomObj = WkMesureUnit.all
+			uomId = uomObj.blank? ? 0 : uomObj[0].id
+			saveBillableProjects(nil, projectId, contactId, contactType, false, true, 'TM')
+			#log asset entries for resident
+			
+			materialObj = saveMatterialEntries(nil, projectId, User.current.id, rentalIssue.id, 1, rate, '$', activityId, moveInDate, invItemId, uomId)
+			# update material id for used asset
+			invItemObj = WkInventoryItem.find(invItemId)
+			assetProperty = invItemObj.asset_property
+			assetProperty.matterial_entry_id = materialObj.id
+			assetProperty.save
+			
+			# save spent for resident
+			saveSpentFor(nil, contactId, contactType, materialObj.id, materialObj.class.name, moveInDate, moveInHr, moveInMm, nil)
+			
+			#update the rental proration
+			rentalProration(rmResidentObj)
+		else
+			errorMsg = l(:label_movein_error_msg)
+		end
+		errorMsg
 	end
 	
 	# Return the issue for rental material entries
@@ -302,5 +314,14 @@ include WkinvoiceHelper
 	
 	def getYearlyDiff(from, to)
 		((to - from) / 365.0).floor
+	end
+	
+	def getRentalRate(id)
+		rate = 0 
+		unless id.blank?
+			invItemObj = WkInventoryItem.find(id.to_i)
+			rate = invItemObj.asset_property.blank? ? 0 : invItemObj.asset_property.rate unless invItemObj.blank?
+		end
+		rate
 	end
 end
