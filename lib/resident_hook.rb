@@ -85,6 +85,10 @@ class ResidentHook < Redmine::Hook::ViewListener
 		period
 	end
 	
+	def additional_contact_type(context={})
+		"RA"
+	end
+	
 	render_on :view_additional_lead_info, :partial => 'rmresident/move_in'	
 	render_on :additional_contact_info, :partial => 'rmresident/additional_resident_info'
 end
