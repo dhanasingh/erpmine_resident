@@ -243,8 +243,10 @@ include WklogmaterialHelper
 		end
 		unless assetObj.blank?
 			materialObj = assetObj.material_entry 
-			moveInDate = resObj.move_in_date
-			moveOutDate = resObj.move_out_date
+			moveInDate = nil
+			moveOutDate = nil
+			moveInDate = resObj.move_in_date.to_date unless resObj.move_in_date.blank?
+			moveOutDate = resObj.move_out_date.to_date unless resObj.move_out_date.blank?
 			frequency = assetObj.rate_per
 			prorationQuantity = getFrequencyProration(frequency, moveInDate, moveOutDate)
 			materialObj.quantity = prorationQuantity
