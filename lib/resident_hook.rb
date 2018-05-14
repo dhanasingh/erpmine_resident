@@ -65,7 +65,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	
 	def additional_product_type(context={})
 		productHash = Hash.new()
-		productHash["RA"] = l(:label_resident)
+		productHash["RA"] = l(:label_resident) + " " + l(:label_asset)
 		productHash
 	end
 	
