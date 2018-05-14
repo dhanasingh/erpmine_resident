@@ -10,7 +10,7 @@
 	<tr>
 		<th align="left"><%= l(:field_name) %></th>
 		<td align="left" style="padding-left:40px;"><%= @leadObj.blank? ? (@contactObj.blank? ? "" : @contactObj.last_name) : @leadObj.contact.last_name %></td>
-		<%= hidden_field_tag 'lead_id', @leadObj.blank? ? (@contactObj.blank? ? "" : @contactObj.id) : @leadObj.id %>
+		<%= hidden_field_tag 'lead_id', @leadObj.blank? ? (@contactObj.blank? ? "" : @contactObj.lead.id) : @leadObj.id %>
 	</tr>
 	<tr>
 		<th align="left"><%= l(:label_location) %></th>
