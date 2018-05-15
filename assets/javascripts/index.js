@@ -56,13 +56,18 @@ function apartmentBasedBeds(apartmentId, bedId, uid, rateId, bedLbl)
 	data: {apartment_id: aprVal},
 	success: function(data){ if(data != "") { showorHide(true, bedLbl, bedId); updateUserDD(data, loadDropdown, userid, needBlankOption, false, "");} else { showorHide(false, bedLbl, bedId); } },
 	beforeSend: function(){ $this.addClass('ajax-loading'); },
-	complete: function(){ bedsLogRate(bedId, rateId, 'move_in_rate_per'); $this.removeClass('ajax-loading'); }	   
+	complete: function(){ bedsLogRate(bedId, rateId, 'move_in_rate_per', apartmentId); $this.removeClass('ajax-loading'); }	   
 	});
 }
 
-function bedsLogRate(bedId, rateId, rateperId)
+function bedsLogRate(bedId, rateId, rateperId, apartmentId)
 {
 	bedVal = document.getElementById(bedId).value;
+	apartmentVal = document.getElementById(apartmentId).value;
+	if(bedVal == "")
+	{
+		bedVal = apartmentVal;
+	}	
 	var $this = $(this);
 	$.ajax({
 	url: bedRateUrl,

@@ -4,6 +4,11 @@
 	bedArr = componentsArray((@residentObj.blank? ? parentArr[0][1] : @residentObj.apartment_id), false, loadDD) unless parentArr.blank?
 	taxentry = WkTax.all
 	@taxentry = taxentry.collect{|m| [ m.name, m.id ] }
+	unless bedArr.blank?
+		invId = bedArr[0][1]
+	else
+		invId = parentArr[0][1]
+	end
 %>
 
 <table>
@@ -14,7 +19,7 @@
 	</tr>
 	<tr>
 		<th align="left"><%= l(:label_location) %></th>
-		<td align="left" style="padding-left:40px;"><%=h select_tag("location_id", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', (@residentObj.blank? ? nil : @residentObj.apartment.location_id), false), :onchange => "locationbasedApartment(this.id, 'apartment_id#{id}', #{User.current.id}, 'bed_id#{id}', 'lblBed#{id}', 'rate#{id}' )", :disabled => disable) %></td>	
+		<td align="left" style="padding-left:40px;"><%=h select_tag("location_id#{id}", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', (@residentObj.blank? ? nil : @residentObj.apartment.location_id), false), :onchange => "locationbasedApartment(this.id, 'apartment_id#{id}', #{User.current.id}, 'bed_id#{id}', 'lblBed#{id}', 'rate#{id}' )", :disabled => disable) %></td>	
 		<%# if @resAction == "T" %>
 			<!-- <th align="left"><label><%#= l(:label_is_transfer) %></label></th>
 			<td style="padding-left:40px;"><%#= check_box_tag("is_transfer#{id}", 1, false) %></td> -->
@@ -24,11 +29,17 @@
 	
 	<tr>
 		<th align="left"><%= l(:label_apartment) %></th>
-		<td align="left" style="padding-left:40px;"><%=h select_tag("apartment_id#{id}", options_for_select(parentArr, :selected=> @residentObj.blank? ? parentArr : @residentObj.apartment_id), :onchange => "apartmentBasedBeds(this.id, 'bed_id#{id}', #{User.current.id}, 'rate#{id}', 'lblBed#{id}' )", :disabled => disable) %></td>
-		<th align="left" style="padding-left:40px;"><label id="lblBed<%= id %>"  display:<%= bedArr.blank? ? 'none' : 'block' %>;"><%= l(:label_beds) %></label></th>
-		<td align="left" style="padding-left:40px;"><%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? bedArr : @residentObj.bed_id), :style=>"display:#{ bedArr.blank? ? 'none' : 'block' };", :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per'  )", :disabled => disable ) %></td>
-		<%  rentalRate = 0 
-			rentalRate =  getRentalRate(bedArr[0][1]) unless bedArr.blank?
+		<td align="left" style="padding-left:40px;">
+			<%=h select_tag("apartment_id#{id}", options_for_select(parentArr, :selected=> @residentObj.blank? ? parentArr : @residentObj.apartment_id), :onchange => "apartmentBasedBeds(this.id, 'bed_id#{id}', #{User.current.id}, 'rate#{id}', 'lblBed#{id}' )", :disabled => disable) %>
+		</td>
+		<th align="left" style="padding-left:40px;">
+			<label id="lblBed<%= id %>"  style='display:<%= bedArr.blank? ? 'none' : 'block' %>;'"><%= l(:label_beds) %></label>
+		</th>
+		<td align="left" style="padding-left:40px;">
+			<%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? bedArr : @residentObj.bed_id), :style=>"display:#{ bedArr.blank? ? 'none' : 'block' };", :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per', 'apartment_id#{id}'  )", :disabled => disable ) %>
+		</td>
+		<%  rentalRate = 0 			
+			rentalRate =  getRentalRate(invId) 
 			unless @residentObj.blank? 
 				unless @residentObj.bed_id.blank?
 					rentalRate = @residentObj.bed.asset_property.rate

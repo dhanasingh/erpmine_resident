@@ -16,11 +16,11 @@
 			<% @resident_entries.each do |entry| %>
 				<tr>
 					  <td class="lbl-txt-align"><%=h entry.resident.first_name + "  " + entry.resident.last_name %></td>
-					  <td class="lbl-txt-align"><%=h "" %></td>
+					  <td class="lbl-txt-align"><%=h entry.resident.location.name unless entry.resident.location.blank? %></td>
 					  <td class="lbl-txt-align"><%=h entry.apartment.blank? ? "" : entry.apartment.asset_property.name  %></td>
 					  <td class="lbl-txt-align"><%=h entry.bed.blank? ? "" : entry.bed.asset_property.name %></td>
-					  <td class="lbl-txt-align"><%=h entry.move_in_date %></td>
-					  <td class="lbl-txt-align"><%=h entry.move_out_date %></td>
+					  <td class="lbl-txt-align"><%=h entry.move_in_date.strftime("%Y-%m-%d") unless entry.move_in_date.blank? %></td>
+					  <td class="lbl-txt-align"><%=h entry.move_out_date.strftime("%Y-%m-%d") unless entry.move_out_date.blank? %></td>
 					  <td align="center">
 						  <%= link_to image_tag('edit.png'), {:controller => controller.controller_name, :action => 'edit', :contact_id => entry.resident_id}, :title => l(:button_edit) %> 
 							<%= link_to image_tag('delete.png'), {:controller => controller.controller_name, :action => 'destroy', :contact_id => entry.resident.id, :tab => controller.controller_name},  :data => {:confirm => l(:text_are_you_sure)}, :method => :delete, :title => l(:button_delete) %>
