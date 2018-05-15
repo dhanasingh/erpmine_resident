@@ -30,7 +30,7 @@ include WklogmaterialHelper
 
 	def residentArray(needBlank)
 		resdientArr = Array.new
-		residentObj = RmResident.order(:id) 
+		residentObj = RmResident.current_resident.left_join_contacts.order("wk_crm_contacts.first_name, wk_crm_contacts.last_name") 
 		residentObj.each do | resident |
 			resdientArr << [resident.resident.name, resident.resident.id]
 		end

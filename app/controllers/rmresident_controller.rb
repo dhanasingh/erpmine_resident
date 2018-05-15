@@ -87,10 +87,14 @@ class RmresidentController < WkcontactController
 	
 	def newresidentservice
 		@residentService = nil
+		@contact = nil
 		if params[:res_service_id].blank?
 			@residentService = RmResidentService.new
 		else
 			@residentService = RmResidentService.find(params[:res_service_id].to_i)
+		end
+		unless params[:parentId].blank?
+			@contact  = WkCrmContact.find(params[:parentId].to_i)
 		end
 		@residentType = params[:resdient_type]	
 			
