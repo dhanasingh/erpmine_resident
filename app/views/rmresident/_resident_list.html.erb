@@ -15,7 +15,7 @@
 		<tbody>
 			<% @resident_entries.each do |entry| %>
 				<tr>
-					  <td class="lbl-txt-align"><%=h entry.resident.last_name %></td>
+					  <td class="lbl-txt-align"><%=h entry.resident.first_name + "  " + entry.resident.last_name %></td>
 					  <td class="lbl-txt-align"><%=h "" %></td>
 					  <td class="lbl-txt-align"><%=h entry.apartment.blank? ? "" : entry.apartment.asset_property.name  %></td>
 					  <td class="lbl-txt-align"><%=h entry.bed.blank? ? "" : entry.bed.asset_property.name %></td>
