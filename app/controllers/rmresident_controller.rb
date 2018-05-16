@@ -202,23 +202,46 @@ class RmresidentController < WkcontactController
 	end
 	
 	def residentTransfer
-		residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], nil)
-		invItemId = params[:bed_idM].blank? ? params[:apartment_idM] : params[:bed_idM]
-		errorMsg = residentMoveIn(params[:lead_id], 'WkCrmContact', params[:move_in_date], nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
+		errorMsg = ""
+		errorMsg = moveOutValidation
+		if errorMsg.blank?
+			residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], nil)
+			invItemId = params[:bed_idM].blank? ? params[:apartment_idM] : params[:bed_idM]
+			errorMsg = residentMoveIn(params[:res_contact_id], 'WkCrmContact', params[:move_in_date], nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
+		end
 		
 		if errorMsg.blank?
 			flash[:notice] = l(:label_transfer_msg)
 		else
 			flash[:error] = errorMsg
 		end
-		redirect_to :controller => 'rmresident', :action => 'edit', :contact_id => params[:lead_id]
+		redirect_to :controller => 'rmresident', :action => 'edit', :contact_id => params[:res_contact_id]
 	end
 	
 	def moveOut
-		residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], params[:move_out_reason])
-		
-		flash[:notice] = l(:label_move_out_msg)
+		errorMsg = ""
+		errorMsg = moveOutValidation
+		if errorMsg.blank?
+			residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], params[:move_out_reason])
+		end
+		unless errorMsg.blank?
+			flash[:error] = errorMsg
+		else		
+			flash[:notice] = l(:label_move_out_msg)
+		end
 		redirect_to :controller => 'rmresident', :action => 'index', :tab => 'rmresident'
+	end
+	
+	def moveOutValidation
+		errorMsg = ""
+		resObj = nil
+		unless params[:resident_id].blank?
+			resObj = RmResident.find(params[:resident_id].to_i)			
+		end
+		if Date.parse(params[:move_in_date]) < Date.parse(resObj.move_in_date.strftime('%F') )
+			errorMsg = l(:label_move_out_validate_msg)
+		end
+		errorMsg
 	end
 	
 	def getItemType

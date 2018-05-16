@@ -16,6 +16,7 @@
 		<th align="left"><%= l(:field_name) %></th>
 		<td align="left" style="padding-left:40px;"><%= @leadObj.blank? ? (@contactObj.blank? ? "" : @contactObj.last_name) : @leadObj.contact.last_name %></td>
 		<%= hidden_field_tag 'lead_id', @leadObj.blank? ? (@contactObj.blank? ? "" : @contactObj.lead.id) : @leadObj.id %>
+		<%= hidden_field_tag 'res_contact_id', @residentObj.blank? ? nil : @residentObj.resident_id %>
 	</tr>
 	<tr>
 		<th align="left"><%= l(:label_location) %></th>
@@ -40,13 +41,17 @@
 		</td>
 		<%  rentalRate = 0 			
 			rentalRate =  getRentalRate(invId) 
+			moveInDateLbl = nil
 			unless @residentObj.blank? 
+				moveInDateLbl = @residentObj.move_in_date.strftime('%F') if id == 'T'
 				unless @residentObj.bed_id.blank?
 					rentalRate = @residentObj.bed.asset_property.rate
 				else
 					rentalRate = @residentObj.apartment.asset_property.rate
 				end
 			end
+			
+			
 		%>
 		<th align="left"><%= l(:label_rental_rate)  %></th>
 		<td align="left" style="padding-left:40px;">
@@ -56,7 +61,7 @@
 	</tr>
 	<tr>
 		<th align="left"><%= dateLbl  %></th>
-		<td align="left" style="padding-left:40px;" ><%= date_field_tag('move_in_date',  Date.today, {:id => 'move_in_date', :size => 12, :style => "width:160px;"}) + calendar_for('move_in_date') %><%#=h select_tag("move_in_hr", options_for_number_select(0, 23, 1, Time.now.strftime("%H") ), :disabled => disable) %>
+		<td align="left" style="padding-left:40px;" ><%= date_field_tag('move_in_date',  moveInDateLbl.blank? ? Date.today : moveInDateLbl, {:id => 'move_in_date', :size => 12, :style => "width:160px;"}) + calendar_for('move_in_date') %><%#=h select_tag("move_in_hr", options_for_number_select(0, 23, 1, Time.now.strftime("%H") ), :disabled => disable) %>
 		<%#=h select_tag("move_in_min", options_for_number_select(0, 59, 1, Time.now.strftime("%M") ), :disabled => disable) %></td>
 		<% if @resAction == "MO" %>
 			<th style="padding-left:130px;"><label><%= l(:label_move_out_reason) %></label></th>

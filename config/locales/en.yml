@@ -44,3 +44,4 @@ en:
    label_movein_error_msg: Please configure the Rental Project and Trackers
    label_move_out_msg: Resident moved out.
    label_transfer_msg: Resident Transferred.
+   label_move_out_validate_msg: Move out date should be greater then move in date
