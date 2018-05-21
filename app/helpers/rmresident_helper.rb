@@ -49,17 +49,17 @@ include WklogmaterialHelper
 	
 	# Add Rent, Amenities Entries for next invoice cycle
 	def addUnbilledEntries(contactId, entryDate, quantity)
-		invPeriod = getInvoiceFrequency #Setting.plugin_redmine_wktime['wktime_generate_invoice_period']
-		invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
-		invMonthDay = getMonthStartDay #should get from settings
-		periodStart = invPeriod == 'W' ? invDay : invMonthDay
+		# invPeriod = getInvoiceFrequency #Setting.plugin_redmine_wktime['wktime_generate_invoice_period']
+		# invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
+		# invMonthDay = getMonthStartDay #should get from settings
+		# periodStart = invPeriod == 'W' ? invDay : invMonthDay
 		contact = WkCrmContact.find(contactId)
 		currentResident = contact.residents.where("rm_residents.move_out_date is null OR rm_residents.move_out_date >= ?", entryDate).first
-		nextInvInterval = getIntervals(entryDate, entryDate, invPeriod, periodStart, true, true)
+		nextInvInterval = getInvoiceInterval(entryDate, entryDate, true, true) #getIntervals(entryDate, entryDate, invPeriod, periodStart, true, true)
 		# periodArr = getFinancialPeriodArray(entryDate, entryDate, invPeriod, invMonthDay)
 		unless currentResident.blank?
 			addNewRentalEntry(currentResident, nextInvInterval[0], quantity)
-			services = contact.resident_services.where("rm_resident_services.end_date is null OR rm_resident_services.end_date >= ?", nextInvInterval[0][1])
+			services = contact.resident_services.where("rm_resident_services.start_date <= ? AND (rm_resident_services.end_date is null OR rm_resident_services.end_date >= ?)", nextInvInterval[0][1], nextInvInterval[0][0])
 			services.each do |service|
 				addNewAmenityEntry(service, nextInvInterval[0], quantity)
 			end
@@ -69,28 +69,37 @@ include WklogmaterialHelper
 	# Add Rent, Amenities Entries for next invoice cycle
 	def addNewAmenityEntry(service, invInterval, quantity)
 		issue = Issue.find(service.issue_id)
-		rateHash = getIssueRateHash(issue)
-		invInterval[0] = service.start_date if  service.start_date > invInterval[0]
-		invInterval[1] = service.end_date if !service.end_date.blank? && service.end_date < invInterval[1]
-		invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
-		invMonthDay = getMonthStartDay #should get from settings
-		periodStart = rateHash['rate_per'] == 'W' ? invDay.to_i : invMonthDay
-		serviceInterval = getIntervals(invInterval[0], invInterval[1], rateHash['rate_per'], periodStart, true, true)
-		serviceInterval.each_with_index do |interval, index|
-			intervalStart = interval[0] < invInterval[0] ? invInterval[0] : interval[0]
-			intervalEnd = interval[1] > invInterval[1] ? invInterval[1] : interval[1]
-			# Add entries in the beginning of the interval so here we take intervalStart
-			teCount = TimeEntry.joins(:spent_for).where(:spent_on => intervalStart, :issue_id => service.issue_id, wk_spent_fors: { spent_for_type: service.resident_type, spent_for_id: service.resident_id }).count
-			teEntry = nil
-			unless teCount > 0
-				quantity = getDuration(intervalStart, intervalEnd, rateHash['rate_per'], 0, false)
-				teAttributes = { project_id: issue.project_id, issue_id: service.issue_id, hours: quantity, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: intervalStart, spent_for_attributes: { spent_for_id: service.resident_id, spent_for_type: service.resident_type, spent_on_time: intervalStart.to_datetime } }
-				teEntry = TimeEntry.new(teAttributes)
-				teEntry.user_id = User.current.id
-				teEntry.save
+		if issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i
+			rateHash = getIssueRateHash(issue)
+			invInterval[0] = service.start_date if  service.start_date > invInterval[0]
+			invInterval[1] = service.end_date if !service.end_date.blank? && service.end_date < invInterval[1]
+			# invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
+			# invMonthDay = getMonthStartDay #should get from settings
+			# periodStart = rateHash['rate_per'] == 'W' ? invDay.to_i : invMonthDay
+			periodStart = getPeriodStart(rateHash['rate_per'])
+			serviceInterval = getIntervals(invInterval[0], invInterval[1], rateHash['rate_per'], periodStart, true, true)
+			serviceInterval.each_with_index do |interval, index|
+				intervalStart = interval[0] < invInterval[0] ? invInterval[0] : interval[0]
+				intervalEnd = interval[1] > invInterval[1] ? invInterval[1] : interval[1]
+				# Add entries in the beginning of the interval so here we take intervalStart
+				teCount = TimeEntry.joins(:spent_for).where(:spent_on => intervalStart, :issue_id => service.issue_id, wk_spent_fors: { spent_for_type: service.resident_type, spent_for_id: service.resident_id }).count
+				teEntry = nil
+				unless teCount > 0
+					quantity = getDuration(intervalStart, intervalEnd, rateHash['rate_per'], 0, false)
+					teAttributes = { project_id: issue.project_id, issue_id: service.issue_id, hours: quantity, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: intervalStart, spent_for_attributes: { spent_for_id: service.resident_id, spent_for_type: service.resident_type, spent_on_time: intervalStart.to_datetime } }
+					teEntry = TimeEntry.new(teAttributes)
+					teEntry.user_id = User.current.id
+					teEntry.save
+				end
+				teEntry
 			end
-			teEntry
 		end
+	end
+	
+	def delAutoGenAmenityEntries(residentAmenity)
+		amenityEntries =  TimeEntry.joins(:spent_for).where(:issue_id => residentAmenity.issue_id, wk_spent_fors: { spent_for_id: residentAmenity.resident_id, spent_for_type: residentAmenity.resident_type, invoice_item_id: nil}).where("time_entries.spent_on < ? OR time_entries.spent_on > ? ", residentAmenity.start_date, residentAmenity.end_date)
+		amenityEntries.destroy_all
+		
 	end
 	
 	def addNewRentalEntry(currentResident, invInterval, quantity)
@@ -100,9 +109,10 @@ include WklogmaterialHelper
 		sellPrice = currentMEntry.blank? ? assetProperty.rate: currentMEntry.selling_price
 		rentCurrency = currentMEntry.blank? ? assetProperty.currency : currentMEntry.currency
 		uomId = currentMEntry.blank? ? residingOn.uom_id : currentMEntry.uom_id
-		invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
-		invMonthDay = getMonthStartDay #should get from settings
-		periodStart = assetProperty.rate_per == 'W' ? invDay : invMonthDay
+		# invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
+		# invMonthDay = getMonthStartDay #should get from settings
+		# periodStart = assetProperty.rate_per == 'W' ? invDay : invMonthDay
+		periodStart = getPeriodStart(assetProperty.rate_per)
 		invInterval[0] = currentResident.move_in_date.to_date if  currentResident.move_in_date.to_date > invInterval[0]
 		invInterval[1] = currentResident.move_out_date.to_date if !currentResident.move_out_date.blank? && currentResident.move_out_date.to_date < invInterval[1]
 		rentInterval = getIntervals(invInterval[0], invInterval[1], assetProperty.rate_per, periodStart, true, true)

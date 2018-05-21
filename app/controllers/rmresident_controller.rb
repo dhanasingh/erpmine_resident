@@ -113,6 +113,11 @@ class RmresidentController < WkcontactController
 		end
 		@residentService.updated_by_user_id = User.current.id
 		if @residentService.save 
+			if @residentService.issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i
+				invInterval = getInvoiceInterval(Date.today, Date.today, true, true)
+				addNewAmenityEntry(@residentService, invInterval[0], 1)
+				delAutoGenAmenityEntries(@residentService)
+			end
 			redirect_to :controller_name => 'rmresident', :action => 'edit' , :contact_id => @residentService.resident_id, :tab => controller_name
 			flash[:notice] = l(:notice_successful_update)
 	   else
