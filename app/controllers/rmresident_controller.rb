@@ -100,6 +100,13 @@ class RmresidentController < WkcontactController
 			
 	end
 	
+	def residentservicedestroy
+		resService = RmResidentService.find(params[:id].to_i)
+		resService.destroy
+		flash[:notice] = l(:notice_successful_delete)
+		redirect_back_or_default :controller => 'rmresident', :action => 'edit', :contact_id => resService.resident_id
+	end
+	
 	def updateresidentservice
 		if params[:residentService][:id].blank?
 			@residentService = RmResidentService.new
@@ -121,8 +128,9 @@ class RmresidentController < WkcontactController
 			redirect_to :controller_name => 'rmresident', :action => 'edit' , :contact_id => @residentService.resident_id, :tab => controller_name
 			flash[:notice] = l(:notice_successful_update)
 	   else
+			@contact  = WkCrmContact.find(params[:residentService][:resident_id].to_i)		
 			flash[:error] = @residentService.errors.full_messages.join("<br>")
-			redirect_to :action => 'newresidentservice', :resdient_type => @residentType 
+			redirect_to :action => 'newresidentservice', :resdient_type => params[:service_type], :parentId => params[:residentService][:resident_id], :res_service_id => @residentService.id
 	   end
 	end
 	

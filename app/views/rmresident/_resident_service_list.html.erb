@@ -30,7 +30,7 @@
 					  <td align="center">
 						 <%= link_to image_tag('edit.png'), url_for(:controller => 'rmresident', :action => 'newresidentservice', :res_service_id => entry.id, :parentId => entry.resident_id,   :resdient_type => residentType), :title => l(:button_edit) %> 
 						  
-						<%= link_to image_tag('delete.png'), {:controller => controller.controller_name, :action => 'destroy', :id => entry.id, :tab => controller.controller_name},  :data => {:confirm => l(:text_are_you_sure)}, :method => :delete, :title => l(:button_delete) %>
+						<%= link_to image_tag('delete.png'), {:controller => 'rmresident', :action => 'residentservicedestroy', :id => entry.id, :tab => controller.controller_name},  :data => {:confirm => l(:text_are_you_sure)}, :method => :delete, :title => l(:button_delete) %>
 						  
 					  </td>
 				</tr>
