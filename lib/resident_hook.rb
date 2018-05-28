@@ -89,6 +89,10 @@ class ResidentHook < Redmine::Hook::ViewListener
 		"RA"
 	end
 	
+	def payment_additional_where_query(context={})
+		" OR CASE WHEN p.parent_type = 'WkAccount'  THEN a.account_type ELSE c.contact_type END = 'RA'"
+	end
+	
 	render_on :view_additional_lead_info, :partial => 'rmresident/move_in'	
 	render_on :additional_contact_info, :partial => 'rmresident/additional_resident_info'
 end
