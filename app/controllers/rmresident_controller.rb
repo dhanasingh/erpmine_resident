@@ -43,6 +43,15 @@ class RmresidentController < WkcontactController
 		formPagination(entries)
 	end
 	
+	def edit
+		super
+		@resObj = nil
+		unless params[:rm_resident_id].blank?
+			@resObj = RmResident.find(params[:rm_resident_id].to_i)
+		end
+		
+	end
+	
 	def formPagination(entries)
 		@entry_count = entries.count
         setLimitAndOffset()
