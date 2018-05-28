@@ -23,12 +23,17 @@
 			bedName = contactObj.residents.current_resident[0].bed.asset_property.name
 			unless @resObj.blank?
 			end
+			
+			unless @resObj.blank?
+				apartmentName = @resObj.apartment.asset_property.name
+				bedName = @resObj.bed.asset_property.name
+			end
 		%>
 		<table>
 			<tr>
 				<th align="left"><%= l(:label_apartment) %></th>
 				<td align="left" style="padding-left:40px;">
-					<%= contactObj.residents.current_resident[0].apartment.asset_property.name unless contactObj.residents.current_resident[0].blank? %>
+					<%= apartmentName %>
 				</td>
 				<td style="float:right;">
 					<%= link_to l(:label_transfer), url_for(:controller => "rmresident", :action => "movein", :tab => "rmresident", :lead_id => nil, :contact_id => contactObj.id, :resident_id => contactObj.residents.current_resident[0].id, :res_action => "T"),  :class=> "buttons", :style=> "padding-left:60px;  margin-top:220px;" %>
@@ -40,7 +45,7 @@
 			<% unless contactObj.residents.current_resident[0].bed.blank? %>
 			<tr>
 				<th align="left"><%= l(:label_bed) %></th>
-				<td align="left" style="padding-left:40px;"><%=   %></td>
+				<td align="left" style="padding-left:40px;"><%= bedName  %></td>
 			</tr>
 			<% end %>
 		</table>
