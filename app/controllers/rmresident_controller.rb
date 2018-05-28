@@ -243,12 +243,13 @@ class RmresidentController < WkcontactController
 	def moveOut
 		errorMsg = ""
 		errorMsg = moveOutValidation
-		if errorMsg.blank?
-			residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], params[:move_out_reason])
-		end
+		# if errorMsg.blank?
+			# residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], params[:move_out_reason])
+		# end
 		unless errorMsg.blank?
 			flash[:error] = errorMsg
-		else		
+		else
+			residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], params[:move_out_reason])
 			flash[:notice] = l(:label_move_out_msg)
 		end
 		redirect_to :controller => 'rmresident', :action => 'index', :tab => 'rmresident'
