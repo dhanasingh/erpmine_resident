@@ -20,13 +20,13 @@
 		<% 
 			apartmentName = contactObj.residents.current_resident[0].apartment.asset_property.name unless contactObj.residents.current_resident[0].blank?
 			
-			bedName = contactObj.residents.current_resident[0].bed.asset_property.name
+			bedName = contactObj.residents.current_resident[0].bed.asset_property.name unless contactObj.residents.current_resident[0].bed.blank?
 			unless @resObj.blank?
 			end
 			
 			unless @resObj.blank?
-				apartmentName = @resObj.apartment.asset_property.name
-				bedName = @resObj.bed.asset_property.name
+				apartmentName = @resObj.apartment.asset_property.name unless @resObj.apartment.blank?
+				bedName = @resObj.bed.asset_property.name unless @resObj.bed.blank?
 			end
 		%>
 		<table>
