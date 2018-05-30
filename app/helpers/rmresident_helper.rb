@@ -230,13 +230,41 @@ include WklogmaterialHelper
 	def residentMoveOut(id, spentDate, spentHr,  spentMm, moveOutReason)
 		unless id.blank?
 			resObj = RmResident.find(id.to_i)
+			dateVal = getDateTime(spentDate, spentHr, spentMm, '00')
+			resObj.move_out_date = spentDate #dateVal
+			resObj.move_out_reason_id = moveOutReason
+			resObj.save
+			rentalProration(resObj)
+			unblockApartBeds(resObj)
+			endServiceAmenities(resObj)
 		end
-		dateVal = getDateTime(spentDate, spentHr, spentMm, '00')
-		resObj.move_out_date = spentDate #dateVal
-		resObj.move_out_reason_id = moveOutReason
-		resObj.save
-		rentalProration(resObj)
-		unblockApartBeds(resObj)
+	end
+	
+	def endServiceAmenities(residentObj)
+		resContact =  residentObj.resident
+		resServices = resContact.resident_services
+		currentResServices = resServices.where("rm_resident_services.start_date >= ? AND (rm_resident_services.end_date is null OR rm_resident_services.end_date > ?)", residentObj.move_in_date.to_date, residentObj.move_out_date.to_date)
+		currentResServices.each do |resService|
+			if resService.start_date > residentObj.move_out_date.to_date
+				resService.start_date = residentObj.move_out_date.to_date
+				resService.end_date = residentObj.move_out_date.to_date
+				delAutoGenAmenityEntries(resService)
+				resService.destroy
+			else
+				resService.end_date = residentObj.move_out_date.to_date
+				if resService.save
+					updateAutoTEntries(resService, residentObj.move_out_date.to_date)
+				end
+			end
+		end
+	end
+	
+	def updateAutoTEntries(resService, intevalDt)
+		if resService.issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i
+			invInterval = getInvoiceInterval(intevalDt, intevalDt, true, true)
+			addNewAmenityEntry(resService, invInterval[0], 1)
+			delAutoGenAmenityEntries(resService)
+		end
 	end
 	
 	def getResidentPluginSetting(setting_name)
