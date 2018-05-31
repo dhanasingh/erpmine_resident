@@ -64,9 +64,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	end
 	
 	def additional_product_type(context={})
-		productHash = Hash.new()
-		productHash["RA"] = l(:label_resident) + " " + l(:label_asset)
-		productHash
+		productTypeHash
 	end
 	
 	def external_enum_type(context={})
@@ -91,6 +89,52 @@ class ResidentHook < Redmine::Hook::ViewListener
 	
 	def payment_additional_where_query(context={})
 		" OR CASE WHEN p.parent_type = 'WkAccount'  THEN a.account_type ELSE c.contact_type END = 'RA'"
+	end
+	
+	def additional_spent_type(context={})
+		productTypeHash
+	end
+	
+	def productTypeHash
+		productHash = Hash.new()
+		productHash["RA"] = l(:label_resident) + " " + l(:label_asset)
+		productHash
+	end
+	
+	def retrieve_time_entry_query_model(context={})
+		model = nil
+		if !context[:params][:spent_type].blank? && context[:params][:spent_type] == "RA"
+			model = WkMaterialEntryQuery
+		end
+		model
+	end
+	
+	def time_entry_detail_where_query(context={})
+		time_entry_where_query(context[:params][:spent_type])
+	end
+	
+	def time_entry_report_where_query(context={})
+		time_entry_where_query(context[:params][:spent_type])
+	end
+	
+	def time_entry_where_query(spentType)
+		strQuery = ""
+		if !spentType.blank? && spentType == "RA"
+			strQuery = "wk_inventory_items.product_type = 'RA' "
+		end
+		strQuery
+	end
+	
+	def create_time_entry_log_type(context={})
+		"RA"
+	end
+	
+	def update_time_entry_log_type(context={})
+		"RA"
+	end
+	
+	def modify_product_log_type(context={})
+		"RA"
 	end
 	
 	render_on :view_additional_lead_info, :partial => 'rmresident/move_in'	
