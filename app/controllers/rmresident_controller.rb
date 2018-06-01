@@ -295,7 +295,10 @@ class RmresidentController < WkcontactController
 		invItemObj = nil
 		bedArr = ""
 		if !params[:apartment_id].blank?
-			invItemObj = WkInventoryItem.where(:product_type => "RA", :parent_id => params[:apartment_id].to_i).includes(:asset_property).where(:wk_asset_properties => {:matterial_entry_id => nil} )
+			invItemObj = WkInventoryItem.where(:product_type => "RA", :parent_id => params[:apartment_id].to_i).includes(:asset_property)
+			if params[:resMoveIn] == "true"
+				invItemObj = invItemObj.where(:wk_asset_properties => {:matterial_entry_id => nil} )
+			end
 		# else
 			# invItemObj = WkInventoryItem.where(:product_type => "RA").includes(:asset_property)
 		end
@@ -312,9 +315,24 @@ class RmresidentController < WkcontactController
 	def bedRate
 		invItemObj = nil
 		bedArr = ""
-		if !params[:bed_id].blank?
-			invItemObj = WkInventoryItem.where(:product_type => "RA", :id => params[:bed_id].to_i).includes(:asset_property).where(:wk_asset_properties => {:matterial_entry_id => nil} )
-		end		
+		invId = params[:bed_id]
+		if !params[:apartment_id].blank?
+			itemArr = WkInventoryItem.where(:parent_id => params[:apartment_id].to_i).pluck(:id)		
+			if itemArr.blank?
+				invId = params[:apartment_id]
+			elsif itemArr.include? params[:bed_id]
+				invId = params[:bed_id]
+			end
+		end
+		
+		if !invId.blank?
+			invItemObj = WkInventoryItem.where(:product_type => "RA", :id => invId.to_i).includes(:asset_property).where(:wk_asset_properties => {:matterial_entry_id => nil} )
+		end	
+		if invItemObj.blank?
+			if !params[:apartment_id].blank?
+				invItemObj = WkInventoryItem.where(:product_type => "RA", :id => params[:apartment_id].to_i).includes(:asset_property)#.where(:wk_asset_properties => {:matterial_entry_id => nil} )
+			end
+		end
 		unless invItemObj.blank?
 			wkasset_helper = Object.new.extend(WkassetHelper)
 			rateHash = wkasset_helper.getRatePerHash(false)

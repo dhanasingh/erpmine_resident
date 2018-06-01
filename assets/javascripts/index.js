@@ -26,7 +26,7 @@ function changeProp(tab,indexUrl)
 	}
 }
 
-function locationbasedApartment(locationId, apartmentId, uid, bedId, bedLbl, rateId)
+function locationbasedApartment(locationId, apartmentId, uid, bedId, bedLbl, rateId, resMoveIn)
 {
 	locVal = document.getElementById(locationId).value;
 	var loadDropdown = document.getElementById(apartmentId);	
@@ -36,14 +36,14 @@ function locationbasedApartment(locationId, apartmentId, uid, bedId, bedLbl, rat
 	$.ajax({
 	url: locationUrl,
 	type: 'get',
-	data: {location_id: locVal},
+	data: {location_id: locVal, resMoveIn: resMoveIn},
 	success: function(data){ updateUserDD(data, loadDropdown, userid, needBlankOption, false, "");},
 	beforeSend: function(){ $this.addClass('ajax-loading'); },
-	complete: function(){ apartmentBasedBeds(apartmentId, bedId, uid, rateId, bedLbl); $this.removeClass('ajax-loading');  }	   
+	complete: function(){ apartmentBasedBeds(apartmentId, bedId, uid, rateId, bedLbl, resMoveIn); $this.removeClass('ajax-loading');  }	   
 	});
 }
 
-function apartmentBasedBeds(apartmentId, bedId, uid, rateId, bedLbl)
+function apartmentBasedBeds(apartmentId, bedId, uid, rateId, bedLbl, resMoveIn)
 {
 	aprVal = document.getElementById(apartmentId).value;
 	var loadDropdown = document.getElementById(bedId);	
@@ -53,7 +53,7 @@ function apartmentBasedBeds(apartmentId, bedId, uid, rateId, bedLbl)
 	$.ajax({
 	url: bedUrl,
 	type: 'get',
-	data: {apartment_id: aprVal},
+	data: {apartment_id: aprVal, resMoveIn: resMoveIn},
 	success: function(data){ if(data != "") { showorHide(true, bedLbl, bedId); updateUserDD(data, loadDropdown, userid, needBlankOption, false, "");} else { showorHide(false, bedLbl, bedId); } },
 	beforeSend: function(){ $this.addClass('ajax-loading'); },
 	complete: function(){ bedsLogRate(bedId, rateId, 'move_in_rate_per', apartmentId); $this.removeClass('ajax-loading'); }	   
@@ -64,15 +64,12 @@ function bedsLogRate(bedId, rateId, rateperId, apartmentId)
 {
 	bedVal = document.getElementById(bedId).value;
 	apartmentVal = document.getElementById(apartmentId).value;
-	if(bedVal == "")
-	{
-		bedVal = apartmentVal;
-	}	
+		
 	var $this = $(this);
 	$.ajax({
 	url: bedRateUrl,
 	type: 'get',
-	data: {bed_id: bedVal},
+	data: {bed_id: bedVal, apartment_id: apartmentVal},
 	success: function(data){ setLogRate(data, rateId, rateperId);  },
 	beforeSend: function(){ $this.addClass('ajax-loading'); },
 	complete: function(){ $this.removeClass('ajax-loading'); }	   
@@ -82,6 +79,6 @@ function bedsLogRate(bedId, rateId, rateperId, apartmentId)
 function setLogRate(rateArr, rateId, rateperId)
 {
 	logValue = rateArr.split(',');
-	document.getElementById(rateperId).innerHTML = logValue[0];
-	document.getElementById(rateId).value = logValue[1] == "" ? "" : logValue[1];
+	document.getElementById(rateperId).innerHTML = (logValue[0] == null || logValue[0] == "") ? "" : logValue[0];
+	document.getElementById(rateId).value = (logValue[1] == null || logValue[1] == "") ? "" : logValue[1];
 }
