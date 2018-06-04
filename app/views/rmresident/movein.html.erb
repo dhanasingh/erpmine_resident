@@ -31,8 +31,8 @@
 <% end %>
 <%= form_tag({:controller => controllerName, :action => actionName}, :method => :get, :id => 'query_form') do %>
 <fieldset class="box tabular">
-	<%= hidden_field_tag 'resident_id', (@contactObj.blank? ? "" : (@contactObj.residents.current_resident.blank? ? "" : @contactObj.residents.current_resident[0].id)) %>
-	<%= render partial: "rmresident/move_in_details", locals: { disable: false, dateLbl: lblDate, loadDD: isLoadDD , id: 'M'} %>	
+	<%= hidden_field_tag 'resident_id', (@contactObj.blank? ? "" : (@contactObj.residents.current_move_out_resident.blank? ? "" : @contactObj.residents.current_move_out_resident[0].id)) %>
+	<%= render partial: "rmresident/move_in_details", locals: { disable: @resAction == "MO" ? true : false, dateLbl: lblDate, loadDD: isLoadDD , id: 'M'} %>	
 </fieldset>
 <%= submit_tag pageLbl ,:id => 'move_in_save'%>
 <% end %>

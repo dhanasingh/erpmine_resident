@@ -5,6 +5,7 @@ class RmResident < ActiveRecord::Base
   belongs_to :bed, foreign_key: "bed_id", class_name: "WkInventoryItem"
   belongs_to :apartment, foreign_key: "apartment_id", class_name: "WkInventoryItem"
   belongs_to :wk_crm_contact, -> { where(rm_residents: {resident_type: 'WkCrmContact'}) }, foreign_key: 'resident_id'
+  scope :current_move_out_resident,  -> { where(:move_out_date => nil) }
   
 	# Ensure resident.resident (contact Object) returns nil unless resident.resident_type == "WkCrmContact"
 	def resident
