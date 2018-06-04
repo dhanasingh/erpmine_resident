@@ -97,9 +97,14 @@ include WklogmaterialHelper
 	end
 	
 	def delAutoGenAmenityEntries(residentAmenity)
-		amenityEntries =  TimeEntry.joins(:spent_for).where(:issue_id => residentAmenity.issue_id, wk_spent_fors: { spent_for_id: residentAmenity.resident_id, spent_for_type: residentAmenity.resident_type, invoice_item_id: nil}).where("time_entries.spent_on < ? OR time_entries.spent_on > ? ", residentAmenity.start_date, residentAmenity.end_date)
-		amenityEntries.destroy_all
-		
+		resident = getResidentEntry(residentAmenity.start_date)
+		amenityEntries =  TimeEntry.joins(:spent_for).where(:issue_id => residentAmenity.issue_id, wk_spent_fors: { spent_for_id: residentAmenity.resident_id, spent_for_type: residentAmenity.resident_type, invoice_item_id: nil}).where("(time_entries.spent_on < ? AND time_entries.spent_on >= ?) OR (time_entries.spent_on > ? AND time_entries.spent_on <= ?)", residentAmenity.start_date, resident.move_in_date, residentAmenity.end_date, (resident.move_out_date.blank? ? Date.today + 1.year : resident.move_out_date))
+		amenityEntries.destroy_all		
+	end
+	
+	def getResidentEntry(resDate)
+		resident = RmResident.where("move_in_date < ? and (move_out_date > ? OR move_out_date is null)", resDate, resDate).first
+		resident
 	end
 	
 	def addNewRentalEntry(currentResident, invInterval, quantity)
@@ -147,16 +152,22 @@ include WklogmaterialHelper
 	
 	def getResidentServicePeriod(invStartDt, invEndDt, residentId, residentType, issue)
 		projectId = getResidentPluginSetting('rm_project').to_i
-		periodHash = {"start" => invStartDt, "end" => invEndDt}
+		#invPeriodHash = {"start" => invStartDt, "end" => invEndDt}
+		periodArr = Array.new
 		if issue.project_id == projectId
-			residentService = RmResidentService.where(:resident_id => residentId, :resident_type => residentType, :issue_id => issue.id).where("(end_date is null OR end_date >= ?) AND start_date <= ? ", invStartDt, invEndDt).first
-			unless residentService.blank?
-				startDt = residentService.start_date > invStartDt ? residentService.start_date : invStartDt
-				endDt = residentService.end_date.blank? || residentService.end_date > invEndDt ? invEndDt : residentService.end_date
+			residentService = RmResidentService.where(:resident_id => residentId, :resident_type => residentType, :issue_id => issue.id).where("(end_date is null OR end_date >= ?) AND start_date <= ? ", invStartDt, invEndDt)  #.first
+			#unless residentService.blank?
+			residentService.each do |resServ|
+				startDt = resServ.start_date > invStartDt ? resServ.start_date : invStartDt
+				endDt = resServ.end_date.blank? || resServ.end_date > invEndDt ? invEndDt : resServ.end_date
 				periodHash = {"start" => startDt, "end" => endDt}
+				periodArr << periodHash
 			end
 		end
-		periodHash
+		if periodArr.empty?
+			periodArr << {"start" => invStartDt, "end" => invEndDt}
+		end
+		periodArr
 	end
 	
 	def residentMoveIn(contactId, contactType, moveInDate, moveOutDate, invItemId, apartmentId, bedId, rate, moveInHr, moveInMm)
