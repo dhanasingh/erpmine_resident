@@ -1,6 +1,6 @@
 class RmResidentService < ActiveRecord::Base
   include Redmine::SafeAttributes
-  attr_protected :others
+  # attr_protected :others
   belongs_to :resident, :polymorphic => true
   belongs_to :issue
   belongs_to :created_user, :class_name => 'User', :foreign_key => 'created_by_user_id'

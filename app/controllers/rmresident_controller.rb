@@ -286,7 +286,7 @@ class RmresidentController < WkcontactController
 			end
 		end
 		respond_to do |format|
-			format.text  { render :text => apartmentArr }
+			format.text  { render :plain => apartmentArr }
 		end
 	
 	end
@@ -308,7 +308,7 @@ class RmresidentController < WkcontactController
 			end
 		end
 		respond_to do |format|
-			format.text  { render :text => bedArr }
+			format.text  { render :plain => bedArr }
 		end
 	end
 	
@@ -341,7 +341,7 @@ class RmresidentController < WkcontactController
 			end
 		end
 		respond_to do |format|
-			format.text  { render :text => bedArr }
+			format.text  { render :plain => bedArr }
 		end
 	end
 end

@@ -1,4 +1,4 @@
-class CreateWkResidentManagement  < ActiveRecord::Migration
+class CreateWkResidentManagement  < ActiveRecord::Migration[4.2]
 
 	def change
 		create_table :rm_resident_services do |t|
