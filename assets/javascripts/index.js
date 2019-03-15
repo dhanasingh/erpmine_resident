@@ -89,3 +89,21 @@ function setLogRate(rateArr, rateId, rateperId)
 	document.getElementById(rateperId).innerHTML = (logValue[0] == null || logValue[0] == "") ? "" : logValue[0];
 	document.getElementById(rateId).value = (logValue[1] == null || logValue[1] == "") ? "" : logValue[1];
 }
+
+function dateRangeValidation(fromId, toId)
+{	
+	var fromElement = document.getElementById(fromId);
+	var toElement = document.getElementById(toId);
+	var fromdate = new Date(fromElement.value);
+	var todate = new Date(toElement.value);
+	var d = new Date();
+	if(fromdate > todate)
+	{
+		fromElement.value = fromElement.defaultValue;
+		d.setDate(fromdate.getDate()+30);
+		d.setMonth(d.getMonth()+1);
+		toElement.value = d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate();
+		alert(" End date should be greater then start date ");
+	}
+	
+}
