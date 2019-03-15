@@ -9,7 +9,8 @@
 	<% controllerName = "rmresident" %>
 	<% actionName = "residentTransfer" %>
 	<% lblDate = l(:field_spent_on) %>
-	<% isLoadDD = false %>
+	<% isLoadDD = true %>
+	<% isLoadDDT = false %>
 <% else %>
 	<% pageLbl =  l(:label_move_out) %>
 	<% controllerName = "rmresident" %>
@@ -17,6 +18,7 @@
 	<% lblDate = l(:label_move_out_date) %>
 	<% isLoadDD = false %>
 <% end %>
+
 <h2><%= pageLbl %></h2>
 <%= javascript_include_tag 'index', :plugin => "redmine_wktime" %>
 <%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
@@ -27,7 +29,7 @@
 	bedRateUrl = "<%= "#{url_for(:controller => 'rmresident', :action => 'bedRate')}" %>";
 </script>
 <% if @resAction == "T" %>
-	<%= render partial: "rmresident/move_in_details", locals: { disable: true, dateLbl: lblDate, loadDD: isLoadDD, id: 'T'} %>
+	<%= render partial: "rmresident/move_in_details", locals: { disable: true, dateLbl: lblDate, loadDD: isLoadDDT, id: 'T'} %>
 <% end %>
 <%= form_tag({:controller => controllerName, :action => actionName}, :method => :get, :id => 'query_form') do %>
 <fieldset class="box tabular">

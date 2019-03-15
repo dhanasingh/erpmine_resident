@@ -26,7 +26,7 @@ class RmperformserviceController < WktimeController
 		trackerId = Setting.plugin_erpmine_resident['rm_service_tracker']
 		@renderer.issue_join_cond = " and i.tracker_id = #{trackerId}"
 		@renderer.spent_for_join = " left join rm_resident_services rs on (i.id = rs.issue_id and ap.parent_type = rs.resident_type and ap.parent_id = rs.resident_id )"
-		@renderer.spent_for_cond = " and rs.id IS NOT NULL and (rs.end_date is null or rs.end_date >= '#{start_date}')"
+		@renderer.spent_for_cond = " and (rs.end_date is null or rs.end_date >= '#{start_date}')"
 		# cond = " and i.tracker_id = #{trackerId}"
 		super
 	end

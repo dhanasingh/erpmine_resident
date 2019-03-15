@@ -5,6 +5,13 @@ $(document).ready(function()
 	changeProp('tab-rmapartment',apartmentUrl);
 	changeProp('tab-rmresident',residentUrl);
 	changeProp('tab-rmperformservice',performserviceUrl);
+	
+	var url_string = window.location.href;
+	var url = new URL(url_string);
+	var res_action = url.searchParams.get("res_action");
+	if(res_action == 'T')
+	bedsLogRate('bed_idM', 'rateM', 'move_in_rate_perM', 'apartment_idM');
+
 });
 
 function changeProp(tab,indexUrl)
@@ -54,9 +61,9 @@ function apartmentBasedBeds(apartmentId, bedId, uid, rateId, bedLbl, resMoveIn)
 	url: bedUrl,
 	type: 'get',
 	data: {apartment_id: aprVal, resMoveIn: resMoveIn},
-	success: function(data){ if(data != "") { showorHide(true, bedLbl, bedId); updateUserDD(data, loadDropdown, userid, needBlankOption, false, "");} else { showorHide(false, bedLbl, bedId); } },
+	success: function(data){ updateUserDD(data, loadDropdown, userid, needBlankOption, false, "");},
 	beforeSend: function(){ $this.addClass('ajax-loading'); },
-	complete: function(){ bedsLogRate(bedId, rateId, 'move_in_rate_per', apartmentId); $this.removeClass('ajax-loading'); }	   
+	complete: function(){ bedsLogRate(bedId, rateId, 'move_in_rate_perM', apartmentId); $this.removeClass('ajax-loading'); }	   
 	});
 }
 
