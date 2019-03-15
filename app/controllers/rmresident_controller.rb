@@ -54,13 +54,17 @@ class RmresidentController < WkcontactController
 
 	def update
 
-		wkLead = update_without_redirect
-		if @wkContact.valid?
-			redirect_to :controller => "rmresident", :action => "movein", :tab => "rmresident", :res_action => "MI", :lead_id => wkLead.id
-			flash[:notice] = l(:notice_successful_update)
+		if params[:contact_id].blank?
+			wkLead = update_without_redirect
+			if @wkContact.valid?
+				redirect_to :controller => "rmresident", :action => "movein", :tab => "rmresident", :res_action => "MI", :lead_id => wkLead.id
+				flash[:notice] = l(:notice_successful_update)
+			else
+				flash[:error] = @wkContact.errors.full_messages.join("<br>")
+				redirect_to :controller => controller_name,:action => 'edit'
+			end
 		else
-			flash[:error] = errorMsg
-		  redirect_to :controller => controller_name,:action => 'edit'
+			super
 		end
 	end
 	
