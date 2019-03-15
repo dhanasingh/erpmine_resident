@@ -13,7 +13,7 @@ class RmresidentController < WkcontactController
 	helper :queries
 	include QueriesHelper
 	include RmapartmentHelper
-	
+	include WkleadHelper
 	
 	def index
 		
@@ -50,6 +50,18 @@ class RmresidentController < WkcontactController
 			@resObj = RmResident.find(params[:rm_resident_id].to_i)
 		end
 		
+	end
+
+	def update
+
+		wkLead = update_without_redirect
+		if @wkContact.valid?
+			redirect_to :controller => "rmresident", :action => "movein", :tab => "rmresident", :res_action => "MI", :lead_id => wkLead.id
+			flash[:notice] = l(:notice_successful_update)
+		else
+			flash[:error] = errorMsg
+		  redirect_to :controller => controller_name,:action => 'edit'
+		end
 	end
 	
 	def formPagination(entries)
