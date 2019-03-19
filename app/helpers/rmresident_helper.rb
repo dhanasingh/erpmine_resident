@@ -335,7 +335,7 @@ include WklogmaterialHelper
 			ratioVal = getDuration(moveInDate, endDate, 'a', 1, false)
 		when 'w'
 			monthStartDay = getMonthStartDay
-			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', weekStartDay)[0][1] : moveOutDate
+			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', monthStartDay)[0][1] : moveOutDate
 			ratioVal = getDuration(moveInDate, endDate, 'w', 1, false)
 		else
 			raise "Given frequency is mismatched"
