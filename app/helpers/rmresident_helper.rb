@@ -103,7 +103,7 @@ include WklogmaterialHelper
 	end
 	
 	def getResidentEntry(resDate)
-		resident = RmResident.where("move_in_date < ? and (move_out_date > ? OR move_out_date is null)", resDate, resDate).first
+		resident = RmResident.where("move_in_date <= ? and (move_out_date >= ? OR move_out_date is null)", resDate.beginning_of_day().utc, resDate.beginning_of_day().utc).first
 		resident
 	end
 	
@@ -334,7 +334,7 @@ include WklogmaterialHelper
 			#ratioVal = getYearlyDiff(moveInDate, endDate)
 			ratioVal = getDuration(moveInDate, endDate, 'a', 1, false)
 		when 'w'
-			weekStartDay = getInvWeekStartDay
+			monthStartDay = getMonthStartDay
 			endDate = moveOutDate.blank? ? getFinancialPeriodArray(moveInDate, moveInDate, 'm', weekStartDay)[0][1] : moveOutDate
 			ratioVal = getDuration(moveInDate, endDate, 'w', 1, false)
 		else
