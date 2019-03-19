@@ -27,7 +27,7 @@
 			
 			moveInDate = contactObj.residents.current_move_out_resident[0].move_in_date unless contactObj.residents.current_move_out_resident[0].blank?
 			
-			moveOutDate = contactObj.residents.current_move_out_resident[0].move_in_date unless contactObj.residents.current_move_out_resident[0].blank?
+			moveOutDate = nil unless contactObj.residents.current_move_out_resident[0].blank?
 			
 			unless @resObj.blank?
 				apartmentName = @resObj.apartment.asset_property.name unless @resObj.apartment.blank?
