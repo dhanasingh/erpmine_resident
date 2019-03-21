@@ -294,11 +294,22 @@ include WklogmaterialHelper
 			materialObj = assetObj.material_entry 
 			moveInDate = nil
 			moveOutDate = nil
-			moveInDate = resObj.move_in_date.to_date unless resObj.move_in_date.blank?
-			moveOutDate = resObj.move_out_date.to_date unless resObj.move_out_date.blank?
+			#WkMaterialEntry.where(:inventory_item_id => resObj.id)
+			inv_item_id = WkSpentFor.where(:spent_for_id => resObj.resident_id).order("id DESC").drop(1)
+			inv_item_id = inv_item_id.first.invoice_item_id unless inv_item_id.blank?
+			if inv_item_id.blank? || resObj.move_out_date.blank?
+				moveInDate = resObj.move_in_date.to_date unless resObj.move_in_date.blank?
+				moveOutDate = resObj.move_out_date.to_date unless resObj.move_out_date.blank?
+			else
+				moveInDate = resObj.move_out_date.to_date
+			end
 			frequency = assetObj.rate_per
 			prorationQuantity = getFrequencyProration(frequency, moveInDate, moveOutDate)
-			materialObj.quantity = prorationQuantity
+			if inv_item_id.blank? || resObj.move_out_date.blank?
+				materialObj.quantity = prorationQuantity
+			else
+				materialObj.quantity = prorationQuantity * -1
+			end
 			materialObj.save
 		end
 	end	
