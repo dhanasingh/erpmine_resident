@@ -9,7 +9,6 @@ $(document).ready(function()
 	var url_string = window.location.href;
 	var url = new URL(url_string);
 	var res_action = url.searchParams.get("res_action");
-	if(res_action == 'T')
 	bedsLogRate('bed_idM', 'rateM', 'move_in_rate_perM', 'apartment_idM');
 
 });
