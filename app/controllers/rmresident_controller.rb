@@ -26,20 +26,30 @@ class RmresidentController < WkcontactController
 		entries = nil
 		entries = RmResident.left_join_contacts
 		
+		if moveInOutId == "MI"
+			entries = entries.where("move_out_date IS NULL")
+		elsif moveInOutId == "MO"
+			entries = entries.joins("LEFT JOIN rm_residents AS R2 ON rm_residents.resident_id = R2.resident_id 
+				AND R2.Move_out_date IS NULL").where("rm_residents.Move_out_date IS NOT NULL AND R2.resident_id IS NULL")
+		end
+		
 		unless residentName.blank?
 			entries = entries.where("LOWER(wk_crm_contacts.first_name) like LOWER('%#{residentName}%') OR LOWER(wk_crm_contacts.last_name) like LOWER('%#{residentName}%')")
 		end
+		
 		unless locationId.blank?
 			entries = entries.where("wk_crm_contacts.location_id = #{locationId.to_i} ")
 		end
 		
-		unless moveInOutId.blank?
-			if moveInOutId == "MI" && !@from.blank? && !@to.blank?
-				entries = entries.where(:move_in_date => @from..@to)
-			elsif !@from.blank? && !@to.blank?
-				entries = entries.where(:move_out_date => @from..@to)
-			end
+		if @from.blank? && !@to.blank?
+			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date <= ?", @to) : (moveInOutId == "MO" ? entries.where("rm_residents.move_out_date <= ?", @to) : entries)
+		elsif !@from.blank? && @to.blank?
+			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date >= ?", @from) : (moveInOutId == "MO" ? entries.where("rm_residents.move_out_date >= ?", @from) : entries)
+		elsif !@from.blank? && !@to.blank?
+			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date BETWEEN ? AND ?", @from, @to) : 
+			(moveInOutId == "MO" ? entries.where("rm_residents.move_out_date BETWEEN ? AND ?", @from, @to) : entries)
 		end
+		
 		formPagination(entries)
 	end
 	
