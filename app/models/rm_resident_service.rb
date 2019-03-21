@@ -21,7 +21,7 @@ class RmResidentService < ActiveRecord::Base
 			
 			currentRes = self.resident.residents.current_resident
 			if currentRes[0].blank?
-				errors.add("Could not add Service and Amenities for Former residents") 
+				errors.add(:invalid, "Could not add Service and Amenities for Former residents") 
 			else
 				if !end_date.blank? && !currentRes[0].move_out_date.blank? && currentRes[0].move_out_date.to_date < end_date 
 					errors.add(:end_date, "cannot be after the move out date") 
