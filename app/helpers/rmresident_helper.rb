@@ -135,7 +135,7 @@ include WklogmaterialHelper
 			quantity = quantity + getDuration(intervalStart, intervalEnd, assetProperty.rate_per, 0, false)
 		end
 			# Add entries in the beginning of the interval so here we take intervalStart
-			meCount = getMaterialEntries(intervalStart, rentalIssue, currentResident, nil)
+			meCount = getMaterialEntries(invInterval[0], rentalIssue, currentResident, nil)
 			unless meCount > 0
 				meEntry = nil
 				meAttributes = { project_id: rentalIssue.project_id, issue_id: rentalIssue.id, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: invInterval[0], quantity: quantity, quantity_returned: nil, org_selling_price: nil, is_deleted: false, org_currency: nil, selling_price: sellPrice, currency: rentCurrency, uom_id: uomId, inventory_item_id: residingOn.id, spent_for_attributes: { spent_for_id: currentResident.resident_id, spent_for_type: currentResident.resident_type, spent_on_time: invInterval[0].to_datetime } }

@@ -276,13 +276,14 @@ class RmresidentController < WkcontactController
 					materialObj = assetObj.material_entry
 
 					updateMaterialEntries(resident_id, nil, assetObj.rate_per, materialObj, entryDate)
+				end
 			end
-		end
 		
-		if errorMsg.blank?
-			flash[:notice] = l(:label_transfer_msg)
-		else
-			flash[:error] = errorMsg
+			if errorMsg.blank?
+				flash[:notice] = l(:label_transfer_msg)
+			else
+				flash[:error] = errorMsg
+			end
 		end
 		redirect_to :controller => 'rmresident', :action => 'edit', :contact_id => params[:res_contact_id]
 	end
