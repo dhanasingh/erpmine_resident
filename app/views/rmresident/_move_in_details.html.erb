@@ -48,10 +48,11 @@
 			<%=h select_tag("apartment_id#{id}", options_for_select(parentArr, :selected=> @residentObj.blank? ? parentArr : @residentObj.apartment_id), :onchange => "apartmentBasedBeds(this.id, 'bed_id#{id}', #{User.current.id}, 'rate#{id}', 'lblBed#{id}', #{loadDD} )", :disabled => disable, :required => true) %>
 		</td>
 		<th align="left" style="padding-left:40px;">
-			<label id="lblBed<%= id %>"><%= l(:label_beds) %></label>
+			<label id="lblBed<%= id %>"  style='display:<%= bedArr.blank? ? 'none' : 'block' %>;'"><%= l(:label_beds) %></label>
 		</th>
 		<td align="left" style="padding-left:40px;">
-			<%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? bedArr : @residentObj.bed_id),  :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per#{id}', 'apartment_id#{id}'  )", :disabled => disable, :required => true ) %>
+			<%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? bedArr : @residentObj.bed_id), :style=>"display:#{ bedArr.blank? ? 'none' : 'block' 
+			};", :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per#{id}', 'apartment_id#{id}'  )", :disabled => disable ) %>
 		</td>
 		<%  
 			rateHash = getRatePerHash(false)

@@ -9,9 +9,9 @@ $(document).ready(function()
 	var url_string = window.location.href;
 	var url = new URL(url_string);
 	var res_action = url.searchParams.get("res_action");
-	bedsLogRate('bed_idM', 'rateM', 'move_in_rate_perM', 'apartment_idM');
-
-});
+	if(res_action != 'MO')
+		apartmentBasedBeds('apartment_idM', 'bed_idM', 1, 'rateM', 'lblBedM', true );
+	});
 
 function changeProp(tab,indexUrl)
 {
@@ -60,7 +60,16 @@ function apartmentBasedBeds(apartmentId, bedId, uid, rateId, bedLbl, resMoveIn)
 	url: bedUrl,
 	type: 'get',
 	data: {apartment_id: aprVal, resMoveIn: resMoveIn},
-	success: function(data){ updateUserDD(data, loadDropdown, userid, needBlankOption, false, "");},
+	success: function(data){
+		if(data != "") {
+			showorHide(true, bedLbl, bedId);
+			updateUserDD(data, loadDropdown, userid, needBlankOption, false, "");
+		} 
+		else {
+			$('#'+ bedId +' option').remove();
+			showorHide(false, bedLbl, bedId); 
+		} 
+	},
 	beforeSend: function(){ $this.addClass('ajax-loading'); },
 	complete: function(){ bedsLogRate(bedId, rateId, 'move_in_rate_perM', apartmentId); $this.removeClass('ajax-loading'); }	   
 	});
