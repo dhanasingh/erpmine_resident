@@ -47,19 +47,24 @@ include WklogmaterialHelper
 		moveHash
 	end
 	
-	# Add Rent, Amenities Entries for next invoice cycle
+	def getCurrentResident(contactId, entryDate)
+		@contact = WkCrmContact.find(contactId)
+		currentResident = @contact.residents.where("rm_residents.move_out_date is null OR rm_residents.move_out_date >= ?", entryDate).first
+		currentResident
+	  end
+
+		# Add Rent, Amenities Entries for next invoice cycle
 	def addUnbilledEntries(contactId, entryDate, quantity)
 		# invPeriod = getInvoiceFrequency #Setting.plugin_redmine_wktime['wktime_generate_invoice_period']
 		# invDay = getInvWeekStartDay #Setting.plugin_redmine_wktime['wktime_generate_invoice_day']
 		# invMonthDay = getMonthStartDay #should get from settings
 		# periodStart = invPeriod == 'W' ? invDay : invMonthDay
-		contact = WkCrmContact.find(contactId)
-		currentResident = contact.residents.where("rm_residents.move_out_date is null OR rm_residents.move_out_date >= ?", entryDate).first
+		currentResident = getCurrentResident(contactId, entryDate)
 		nextInvInterval = getInvoiceInterval(entryDate, entryDate, true, true) #getIntervals(entryDate, entryDate, invPeriod, periodStart, true, true)
 		# periodArr = getFinancialPeriodArray(entryDate, entryDate, invPeriod, invMonthDay)
 		unless currentResident.blank?
 			addNewRentalEntry(currentResident, nextInvInterval[0], quantity)
-			services = contact.resident_services.where("rm_resident_services.start_date <= ? AND (rm_resident_services.end_date is null OR rm_resident_services.end_date >= ?)", nextInvInterval[0][1], nextInvInterval[0][0])
+			services = @contact.resident_services.where("rm_resident_services.start_date <= ? AND (rm_resident_services.end_date is null OR rm_resident_services.end_date >= ?)", nextInvInterval[0][1], nextInvInterval[0][0])
 			services.each do |service|
 				addNewAmenityEntry(service, nextInvInterval[0], quantity)
 			end
@@ -127,7 +132,7 @@ include WklogmaterialHelper
 			intervalStart = interval[0] < invInterval[0] ? invInterval[0] : interval[0]
 			intervalEnd = interval[1] > invInterval[1] ? invInterval[1] : interval[1]
 			# Add entries in the beginning of the interval so here we take intervalStart
-			meCount = WkMaterialEntry.joins(:spent_for).where(:spent_on => intervalStart, :issue_id => rentalIssue.id, wk_spent_fors: { spent_for_type: currentResident.resident_type, spent_for_id: currentResident.resident_id }).count
+			meCount = getMaterialEntries(intervalStart, rentalIssue, currentResident, nil)
 			unless meCount > 0
 				meEntry = nil
 				quantity = getDuration(intervalStart, intervalEnd, assetProperty.rate_per, 0, false)
@@ -143,6 +148,13 @@ include WklogmaterialHelper
 			assetProperty.save
 		end
 	end
+	
+	def getMaterialEntries(intervalStart, rentalIssue, currentResident, invItemId)
+
+		material_entry = WkMaterialEntry.joins(:spent_for).where(:spent_on => intervalStart, :issue_id => rentalIssue.id, wk_spent_fors: { spent_for_type: currentResident.resident_type, spent_for_id: currentResident.resident_id })
+		material_entry = material_entry.where(:inventory_item_id => invItemId) unless invItemId.blank?
+		material_entry.count
+	  end
 	
 	def getDefultActivity
 		activityObj = Enumeration.where(:type => 'TimeEntryActivity')
@@ -183,30 +195,36 @@ include WklogmaterialHelper
 			# issueObj = Issue.where(:tracker_id => rentalTrackerId)
 			# issueId = issueObj.blank? ? 0 : issueObj[0].id
 			
-			activityObj = Enumeration.where(:type => 'TimeEntryActivity')
-			activityId = activityObj.blank? ? 0 : activityObj[0].id
-			uomObj = WkMesureUnit.all
-			uomId = uomObj.blank? ? 0 : uomObj[0].id
+			@activityObj = Enumeration.where(:type => 'TimeEntryActivity')
 			saveBillableProjects(nil, projectId, contactId, contactType, false, true, 'TM')
 			#log asset entries for resident
 			
-			materialObj = saveMatterialEntries(nil, projectId, User.current.id, rentalIssue.id, 1, rate, '$', activityId, moveInDate, invItemId, uomId)
+			save_material_entry_and_asset_properties(nil, projectId, User.current.id, rentalIssue.id, rate, moveInDate, invItemId, contactId, contactType, moveInHr, moveInMm)
+
+			#update the rental proration
+			rentalProration(rmResidentObj)
+		  else
+			errorMsg = l(:label_movein_error_msg)
+		  end
+		  errorMsg
+		end
+	  
+		  def save_material_entry_and_asset_properties(id, projectId, user_id, rental_issue_id, rate, moveInDate, invItemId, contactId, contactType, moveInHr, moveInMm)
+			  
+			  activityId = @activityObj.blank? ? 0 : @activityObj[0].id
+			  uomObj = WkMesureUnit.all
+			  uomId = uomObj.blank? ? 0 : uomObj[0].id
+			  materialObj = saveMatterialEntries(nil, projectId, user_id, rental_issue_id, 1, rate, '$', activityId, moveInDate, invItemId, uomId)
+	  
 			# update material id for used asset
 			invItemObj = WkInventoryItem.find(invItemId)
 			assetProperty = invItemObj.asset_property
 			assetProperty.matterial_entry_id = materialObj.id
 			assetProperty.save
-			
 			# save spent for resident
 			saveSpentFor(nil, contactId, contactType, materialObj.id, materialObj.class.name, moveInDate, moveInHr, moveInMm, nil)
 			
-			#update the rental proration
-			rentalProration(rmResidentObj)
-		else
-			errorMsg = l(:label_movein_error_msg)
 		end
-		errorMsg
-	end
 	
 	# Return the issue for rental material entries
 	def getRentalIssue
@@ -290,29 +308,39 @@ include WklogmaterialHelper
 		else
 			assetObj = resObj.apartment.asset_property
 		end
+
 		unless assetObj.blank?
-			materialObj = assetObj.material_entry 
+			materialObj = assetObj.material_entry
+			frequency = assetObj.rate_per
+	  move_in_date = resObj.move_in_date.to_date unless resObj.move_in_date.blank?
+	  move_out_date = resObj.move_out_date.blank? ? nil : resObj.move_out_date.to_date
+	  updateMaterialEntries(resObj.resident_id, move_out_date, frequency, materialObj, move_in_date)
+	end
+  end
+
+  def updateMaterialEntries(resident_id, move_out_date, frequency, materialObj, move_in_date)
+
+	inv_item_id = WkSpentFor.where(:spent_for_id => resident_id).order("id DESC")
 			moveInDate = nil
 			moveOutDate = nil
-			#WkMaterialEntry.where(:inventory_item_id => resObj.id)
-			inv_item_id = WkSpentFor.where(:spent_for_id => resObj.resident_id).order("id DESC").drop(1)
-			inv_item_id = inv_item_id.first.invoice_item_id unless inv_item_id.blank?
-			if inv_item_id.blank? || resObj.move_out_date.blank?
-				moveInDate = resObj.move_in_date.to_date unless resObj.move_in_date.blank?
-				moveOutDate = resObj.move_out_date.to_date unless resObj.move_out_date.blank?
-			else
-				moveInDate = resObj.move_out_date.to_date
-			end
-			frequency = assetObj.rate_per
-			prorationQuantity = getFrequencyProration(frequency, moveInDate, moveOutDate)
-			if inv_item_id.blank? || resObj.move_out_date.blank?
-				materialObj.quantity = prorationQuantity
-			else
-				materialObj.quantity = prorationQuantity * -1
-			end
-			materialObj.save
-		end
-	end	
+
+			unless inv_item_id.blank? || inv_item_id.drop(1).blank? || move_out_date.blank?
+				closed_inv_item = inv_item_id.first
+				inv_item_id = (inv_item_id.drop(1)).first.invoice_item_id
+				
+				if !inv_item_id.blank? && (closed_inv_item.spent_on_time == move_out_date) || move_in_date.to_date == move_out_date
+				 materialObj.quantity = 0
+				elsif !inv_item_id.blank? && (closed_inv_item.spent_on_time > move_out_date) 
+				  moveInDate = move_out_date + 1.day
+				  materialObj.quantity = getFrequencyProration(frequency, moveInDate, moveOutDate) * -1
+				end
+			  else
+				moveInDate = move_in_date
+				moveOutDate = move_out_date
+				materialObj.quantity = (moveInDate == moveOutDate) ? 0 : getFrequencyProration(frequency, moveInDate, moveOutDate)
+			  end
+			  materialObj.save
+			end 
 	
 	def getFrequencyProration(frequency, moveInDate, moveOutDate)
 		ratioVal = 0
@@ -386,4 +414,9 @@ include WklogmaterialHelper
 		end
 		rate
 	end
+	
+  def getResidentobj(id)
+	resObj = RmResident.find(id.to_i)
+  end
+
 end

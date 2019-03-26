@@ -1,7 +1,7 @@
 class RmresidentController < WkcontactController
   unloadable
 	menu_item	:apartment
-	
+	require "active_support"
 	accept_api_auth :updateresidentservice
 	
  
@@ -254,9 +254,29 @@ class RmresidentController < WkcontactController
 		errorMsg = ""
 		errorMsg = moveOutValidation
 		if errorMsg.blank?
-			residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], nil)
+			resident_id = params[:resident_id]
+			resObj = getResidentobj(resident_id)
+			move_out_date = params[:move_in_date].to_date
+			move_out_date = move_out_date - 1.day if (move_out_date > resObj.move_in_date.to_date)
+			residentMoveOut(resident_id, move_out_date, params[:move_in_hr],  params[:move_in_min], nil)
 			invItemId = params[:bed_idM].blank? ? params[:apartment_idM] : params[:bed_idM]
 			errorMsg = residentMoveIn(params[:res_contact_id], 'WkCrmContact', params[:move_in_date], nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
+			if errorMsg.blank?
+				projectId = getResidentPluginSetting('rm_project')
+				rentalIssue = getRentalIssue
+				entryDate = (params[:move_in_date].to_date).at_beginning_of_month.next_month
+				currentResident = getCurrentResident(params[:res_contact_id], entryDate)
+				invoice_count =  getMaterialEntries(entryDate, rentalIssue, currentResident, invItemId)
+				
+				if invoice_count = 0
+					save_material_entry_and_asset_properties(nil, projectId, User.current.id, rentalIssue.id, params[:rateM], entryDate, invItemId, params[:res_contact_id], 'WkCrmContact', params[:move_in_hr], params[:move_in_min])
+
+					invItemObj = WkInventoryItem.find(invItemId)
+					assetObj = invItemObj.asset_property
+					materialObj = assetObj.material_entry
+
+					updateMaterialEntries(resident_id, nil, assetObj.rate_per, materialObj, entryDate)
+			end
 		end
 		
 		if errorMsg.blank?
