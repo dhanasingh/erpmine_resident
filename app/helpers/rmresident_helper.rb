@@ -128,21 +128,22 @@ include WklogmaterialHelper
 		rentInterval = getIntervals(invInterval[0], invInterval[1], assetProperty.rate_per, periodStart, true, true)
 		rentalIssue = getRentalIssue
 		meEntry = nil
+		quantity = 0
 		rentInterval.each_with_index do |interval, index|
 			intervalStart = interval[0] < invInterval[0] ? invInterval[0] : interval[0]
 			intervalEnd = interval[1] > invInterval[1] ? invInterval[1] : interval[1]
+			quantity = quantity + getDuration(intervalStart, intervalEnd, assetProperty.rate_per, 0, false)
+		end
 			# Add entries in the beginning of the interval so here we take intervalStart
 			meCount = getMaterialEntries(intervalStart, rentalIssue, currentResident, nil)
 			unless meCount > 0
 				meEntry = nil
-				quantity = getDuration(intervalStart, intervalEnd, assetProperty.rate_per, 0, false)
-				meAttributes = { project_id: rentalIssue.project_id, issue_id: rentalIssue.id, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: intervalStart, quantity: quantity, quantity_returned: nil, org_selling_price: nil, is_deleted: false, org_currency: nil, selling_price: sellPrice, currency: rentCurrency, uom_id: uomId, inventory_item_id: residingOn.id, spent_for_attributes: { spent_for_id: currentResident.resident_id, spent_for_type: currentResident.resident_type, spent_on_time: intervalStart.to_datetime } }
+				meAttributes = { project_id: rentalIssue.project_id, issue_id: rentalIssue.id, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: invInterval[0], quantity: quantity, quantity_returned: nil, org_selling_price: nil, is_deleted: false, org_currency: nil, selling_price: sellPrice, currency: rentCurrency, uom_id: uomId, inventory_item_id: residingOn.id, spent_for_attributes: { spent_for_id: currentResident.resident_id, spent_for_type: currentResident.resident_type, spent_on_time: invInterval[0].to_datetime } }
 				meEntry = WkMaterialEntry.new(meAttributes)
 				meEntry.user_id = User.current.id
 				meEntry.save
 			end
-			meEntry
-		end
+		meEntry
 		unless meEntry.blank?
 			assetProperty.matterial_entry_id = meEntry.id
 			assetProperty.save
