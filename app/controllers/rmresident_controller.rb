@@ -263,7 +263,9 @@ class RmresidentController < WkcontactController
 			assetEntryObj = getMaterialEntryObj(oldInvItemId)
 			materialEntryObj = assetEntryObj.material_entry
 			residentMoveOut(resident_id, move_out_date, params[:move_in_hr],  params[:move_in_min], nil)
-			updateMaterialEntries(resident_id, moveOutDate, assetEntryObj.rate_per, materialEntryObj, materialEntryObj.spent_on.to_date, true)
+			if materialEntryObj.spent_on.to_date == moveOutDate
+				updateMaterialEntries(resident_id, moveOutDate, assetEntryObj.rate_per, materialEntryObj, materialEntryObj.spent_on.to_date, true)
+			end
 
 			errorMsg = residentMoveIn(params[:res_contact_id], 'WkCrmContact', params[:move_in_date], nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
 			if errorMsg.blank?
