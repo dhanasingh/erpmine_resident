@@ -22,7 +22,7 @@
 	else
 		invId = parentArr[0][1] unless parentArr.blank?
 	end
-	showBed = (bedArr.blank? || @residentObj.bed_id.blank?) ? 'none' : 'block'
+	showBed = (bedArr.blank? || (!@residentObj.blank? && @residentObj.bed_id.blank?)) ? 'none' : 'block'
 %>
 
 <table>
