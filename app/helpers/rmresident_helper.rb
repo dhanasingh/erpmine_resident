@@ -313,36 +313,47 @@ include WklogmaterialHelper
 		unless assetObj.blank?
 			materialObj = assetObj.material_entry
 			frequency = assetObj.rate_per
-	  move_in_date = resObj.move_in_date.to_date unless resObj.move_in_date.blank?
+	  move_in_date = materialObj.spent_on.to_date
 	  move_out_date = resObj.move_out_date.blank? ? nil : resObj.move_out_date.to_date
-	  updateMaterialEntries(resObj.resident_id, move_out_date, frequency, materialObj, move_in_date)
+	  updateMaterialEntries(resObj.resident_id, move_out_date, frequency, materialObj, move_in_date, false)
 	end
   end
 
-  def updateMaterialEntries(resident_id, move_out_date, frequency, materialObj, move_in_date)
+  def updateMaterialEntries(resident_id, move_out_date, frequency, materialObj, move_in_date, isTransfer)
 
 	inv_item_id = WkSpentFor.where(:spent_for_id => resident_id).order("id DESC")
 			moveInDate = nil
 			moveOutDate = nil
+			closed_inv_item = nil
+			inv_item_id = nil
 
-			unless inv_item_id.blank? || inv_item_id.drop(1).blank? || move_out_date.blank?
+			unless inv_item_id.blank? || inv_item_id.drop(1).blank?
 				closed_inv_item = inv_item_id.first
 				inv_item_id = (inv_item_id.drop(1)).first.invoice_item_id
-				
-				if !inv_item_id.blank? && (closed_inv_item.spent_on_time == move_out_date) || move_in_date.to_date == move_out_date
-				 materialObj.quantity = 0
-				elsif !inv_item_id.blank? && (closed_inv_item.spent_on_time > move_out_date) 
-				  moveInDate = move_out_date + 1.day
-				  materialObj.quantity = getFrequencyProration(frequency, moveInDate, moveOutDate) * -1
+			end
+
+			if (isTransfer && move_in_date.to_date == move_out_date)
+				materialObj.quantity = 0
+			else
+			
+				if !inv_item_id.blank? && (closed_inv_item.spent_on_time > move_out_date) 
+					moveInDate = move_out_date + 1.day
+					materialObj.quantity = getFrequencyProration(frequency, moveInDate, moveOutDate) * -1
+				else
+					moveInDate = move_in_date
+					moveOutDate = move_out_date
+					materialObj.quantity = getFrequencyProration(frequency, moveInDate, moveOutDate)
 				end
-			  else
-				moveInDate = move_in_date
-				moveOutDate = move_out_date
-				materialObj.quantity = (moveInDate == moveOutDate) ? 0 : getFrequencyProration(frequency, moveInDate, moveOutDate)
-			  end
+			end
+
 			  materialObj.save
 			end 
 	
+	def getMaterialEntryObj(invItemId)
+		invItemObj = WkInventoryItem.find(invItemId)
+		invItemObj.asset_property
+	end 
+
 	def getFrequencyProration(frequency, moveInDate, moveOutDate)
 		ratioVal = 0
 		case frequency

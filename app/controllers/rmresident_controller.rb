@@ -155,7 +155,7 @@ class RmresidentController < WkcontactController
 		end
 		@residentService.updated_by_user_id = User.current.id
 		if @residentService.save 
-			updateAutoTEntries(@residentService, Date.today)
+			updateAutoTEntries(@residentService, @residentService.start_date)
 			# if @residentService.issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i
 				# invInterval = getInvoiceInterval(Date.today, Date.today, true, true)
 				# addNewAmenityEntry(@residentService, invInterval[0], 1)
@@ -256,10 +256,15 @@ class RmresidentController < WkcontactController
 		if errorMsg.blank?
 			resident_id = params[:resident_id]
 			resObj = getResidentobj(resident_id)
-			move_out_date = params[:move_in_date].to_date
-			move_out_date = move_out_date - 1.day if (move_out_date > resObj.move_in_date.to_date)
-			residentMoveOut(resident_id, move_out_date, params[:move_in_hr],  params[:move_in_min], nil)
+			moveOutDate = params[:move_in_date].to_date
+			move_out_date = (moveOutDate > resObj.move_in_date.to_date) ? (moveOutDate - 1.day) : moveOutDate
 			invItemId = params[:bed_idM].blank? ? params[:apartment_idM] : params[:bed_idM]
+			oldInvItemId = resObj.bed_id.blank? ? resObj.apartment_id : resObj.bed_id
+			assetEntryObj = getMaterialEntryObj(oldInvItemId)
+			materialEntryObj = assetEntryObj.material_entry
+			residentMoveOut(resident_id, move_out_date, params[:move_in_hr],  params[:move_in_min], nil)
+			updateMaterialEntries(resident_id, moveOutDate, assetEntryObj.rate_per, materialEntryObj, materialEntryObj.spent_on.to_date, true)
+
 			errorMsg = residentMoveIn(params[:res_contact_id], 'WkCrmContact', params[:move_in_date], nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
 			if errorMsg.blank?
 				projectId = getResidentPluginSetting('rm_project')
@@ -270,12 +275,9 @@ class RmresidentController < WkcontactController
 				
 				if invoice_count = 0
 					save_material_entry_and_asset_properties(nil, projectId, User.current.id, rentalIssue.id, params[:rateM], entryDate, invItemId, params[:res_contact_id], 'WkCrmContact', params[:move_in_hr], params[:move_in_min])
-
-					invItemObj = WkInventoryItem.find(invItemId)
-					assetObj = invItemObj.asset_property
+					assetObj = getMaterialEntryObj(invItemId)
 					materialObj = assetObj.material_entry
-
-					updateMaterialEntries(resident_id, nil, assetObj.rate_per, materialObj, entryDate)
+					updateMaterialEntries(resident_id, nil, assetObj.rate_per, materialObj, entryDate, false)
 				end
 			end
 		
