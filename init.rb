@@ -3,10 +3,10 @@ require 'resident_hook'
 
 
 Redmine::Plugin.register :erpmine_resident do
-  name 'ERPmine Resident plugin'
+  name 'ERPmine Resident Management plugin'
   author 'Adhi Software Pvt Ltd'
   description 'This is a plugin for Resident Management'
-  version '0.0.1'
+  version '0.1'
   url 'http://www.redmine.org/plugins/wk-time'
   author_url 'http://www.adhisoftware.co.in/'
   
