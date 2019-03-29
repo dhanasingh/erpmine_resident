@@ -48,38 +48,39 @@ Dependency:
 
 Customization:
 
-	For any Customization/Support, please contact us, our consulting team will be happy to help you
+For any Customization/Support, please contact us, our consulting team will be happy to help you
 
-	Adhi Software Pvt Ltd
-	http://www.adhisoftware.co.in
-	info@adhisoftware.co.in
-	+1 732 202 5490 
-	+91 44 27470401
-	+91 44 27470402
+  Adhi Software Pvt Ltd
+  http://www.adhisoftware.co.in
+  info@adhisoftware.co.in
+  +1 732 202 5490
+  +91 44 27470401
+  +91 44 27470402
 
-	Here are the Customizations we have done for our clients:
-		1.	Monthly Calendar - Puny Human
-		2.	Supervisor Approvals - Fotonation
-		3.	Hide Modules and Limit Non Submission Mail - Lyra Network
+Here are the Customizations we have done for our clients:
+  1. Monthly Calendar - Puny Human
+  2. Supervisor Approvals - Fotonation
+  3. Hide Modules and Limit Non Submission Mail - Lyra Network
 		
 Please provide your rating at http://www.redmine.org/plugins/wk-time
-	
+
 Resources:
-	User guide:
-	http://www.adhisoftware.co.in/wp-content/uploads/ERPmine-User-Guide.pdf
 
-	Overview presentation in open office format:
-	http://www.adhisoftware.co.in/wp-content/uploads/TE-Overview.odp
+User guide:
+  http://www.adhisoftware.co.in/wp-content/uploads/ERPmine-User-Guide.pdf
 
-	Training Videos:
-	https://www.youtube.com/watch?v=OntsLT1LeLg
-	https://www.youtube.com/watch?v=SzHo5Os-dvU
-	https://www.youtube.com/watch?v=hTgDepFzGXY
-	
-	
-	For more Videos: 
-	http://www.adhisoftware.co.in/products/erpmine/resources/
-	
-	
-	For more:	
-	http://www.adhisoftware.co.in/products/erpmine/resources/
+Overview presentation in open office format:
+  http://www.adhisoftware.co.in/wp-content/uploads/TE-Overview.odp
+
+Training Videos:
+  https://www.youtube.com/watch?v=OntsLT1LeLg
+  https://www.youtube.com/watch?v=SzHo5Os-dvU
+  https://www.youtube.com/watch?v=hTgDepFzGXY
+  
+  
+For more Videos: 
+  http://www.adhisoftware.co.in/products/erpmine/resources/
+  
+  
+For more:	
+  http://www.adhisoftware.co.in/products/erpmine/resources/
