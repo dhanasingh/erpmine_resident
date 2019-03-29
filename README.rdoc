@@ -1,27 +1,30 @@
 = ERPmine Resident Management
 
 This Plugin has the following module:
+
 1) Resident
-    Create Leads
-    Move In Resident
-    Move Out Resident
-	Transfer Resident
-	Perform Services
-	Generate Bills
-	Receive Payments
-	
+  Create Leads
+  Move In Resident
+  Move Out Resident	
+  Transfer Resident
+  Perform Services
+  Generate Bills
+  Receive Payments
+
 For more information on features, please refer to the user guide 
-	http://www.adhisoftware.co.in/wp-content/uploads/ERPmine-User-Guide.pdf
-	
+  http://www.adhisoftware.co.in/wp-content/uploads/ERPmine-User-Guide.pdf
+
 Installation:
+
 Unpack the zip file to the plugins folder of Redmine. It requires db migration.
+
 So run the following command for db migration
 
   rake redmine:plugins:migrate NAME=erpmine_resident RAILS_ENV=production
-  
+
 When uninstalling the plugin, be sure to remove the db changes by running
 
-	rake redmine:plugins:migrate NAME=erpmine_resident VERSION=0 RAILS_ENV=production
+  rake redmine:plugins:migrate NAME=erpmine_resident VERSION=0 RAILS_ENV=production
 
 This plugin uses js and css assets and it will be copied to public/plugin_asset/erpmine_resident
 folder upon server startup, so please make sure public/plugin_asset/erpmine_resident has proper access.
@@ -29,19 +32,22 @@ folder upon server startup, so please make sure public/plugin_asset/erpmine_resi
 Release Notes for 0.1
 
 Features:
+
   Resident module is introduced.
-	- Create Leads
-	- Move In Resident
-	- Move Out Resident
-	- Transfer Resident
-	- Perform Services
-	- Generate Bills
-	- Receive Payments
+    - Create Leads
+    - Move In Resident
+    - Move Out Resident
+    - Transfer Resident
+    - Perform Services
+    - Generate Bills
+    - Receive Payments
 
 Dependency:
-	This plugin is only compatible with ERPmine 3.5.1
+
+  This plugin is only compatible with ERPmine 3.5.1
 
 Customization:
+
 	For any Customization/Support, please contact us, our consulting team will be happy to help you
 
 	Adhi Software Pvt Ltd
