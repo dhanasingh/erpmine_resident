@@ -35,3 +35,13 @@ en:
    field_resident_type: Location
    field_apartment_id: Apartment
    field_bed_id: Bed
+   label_service: Service
+   label_service_for: Service For
+   label_rental_rate: Rental Rate
+   label_rental_asset: Rental Asset
+   label_auto_populated_entry: Auto populated Entry
+   label_edit_bed: Edit Bed
+   label_movein_error_msg: Please configure the Rental Project and Trackers
+   label_move_out_msg: Resident moved out.
+   label_transfer_msg: Resident Transferred.
+   label_move_out_validate_msg: Move out date should be greater then move in date

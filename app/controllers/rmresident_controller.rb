@@ -1,7 +1,7 @@
 class RmresidentController < WkcontactController
   unloadable
 	menu_item	:apartment
-	
+	require "active_support"
 	accept_api_auth :updateresidentservice
 	
  
@@ -12,42 +12,93 @@ class RmresidentController < WkcontactController
 
 	helper :queries
 	include QueriesHelper
+	include RmapartmentHelper
+	include WkleadHelper
 	
 	def index
+		
 		entries = nil
 		set_filter_session
 		retrieve_date_range
 		locationId = session[controller_name][:location_id]
 		moveInOutId = session[controller_name][:moveinout_id]
-		isFarmerResident = session[controller_name][:farmer_resident]	
-		retrieve_query(RmResidentQuery, false)
-		scope = resident_entry_scope
+		residentName = session[controller_name][:resident_name]	
+		entries = nil
+		entries = RmResident.left_join_contacts
 		
+		if moveInOutId == "MI"
+			entries = entries.where("move_out_date IS NULL")
+		elsif moveInOutId == "MO"
+			entries = entries.joins("LEFT JOIN rm_residents AS R2 ON rm_residents.resident_id = R2.resident_id 
+				AND R2.Move_out_date IS NULL").where("rm_residents.Move_out_date IS NOT NULL AND R2.resident_id IS NULL")
+		end
 		
-		respond_to do |format|
-		  format.html {
-			@entry_count = scope.count
-			@entry_pages = Paginator.new @entry_count, per_page_option, params['page']
-			@entries = scope.offset(@entry_pages.offset).limit(@entry_pages.per_page).to_a
-
-			render :layout => !request.xhr?
-		  }
-		  format.api  {
-			@entry_count = scope.count
-			@offset, @limit = api_offset_and_limit
-			@entries = scope.offset(@offset).limit(@limit)
-		  }
-		  format.atom {
-			entries = scope.limit(Setting.feeds_limit.to_i).reorder("#{RmResident.table_name}.created_on DESC").to_a
-			render_feed(entries, :title => l(:label_spent_time))
-		  }
-		  format.csv {
-			# Export all entries
-			@entries = scope.to_a
-			send_data(query_to_csv(@entries, @query, params), :type => 'text/csv; header=present', :filename => 'timelog.csv')
-		  }
-		end			
+		unless residentName.blank?
+			entries = entries.where("LOWER(wk_crm_contacts.first_name) like LOWER('%#{residentName}%') OR LOWER(wk_crm_contacts.last_name) like LOWER('%#{residentName}%')")
+		end
+		
+		unless locationId.blank?
+			entries = entries.where("wk_crm_contacts.location_id = #{locationId.to_i} ")
+		end
+		
+		if @from.blank? && !@to.blank?
+			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date <= ?", @to) : (moveInOutId == "MO" ? entries.where("rm_residents.move_out_date <= ?", @to) : entries)
+		elsif !@from.blank? && @to.blank?
+			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date >= ?", @from) : (moveInOutId == "MO" ? entries.where("rm_residents.move_out_date >= ?", @from) : entries)
+		elsif !@from.blank? && !@to.blank?
+			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date BETWEEN ? AND ?", @from, @to) : 
+			(moveInOutId == "MO" ? entries.where("rm_residents.move_out_date BETWEEN ? AND ?", @from, @to) : entries)
+		end
+		
+		formPagination(entries)
 	end
+	
+	def edit
+		super
+		@resObj = nil
+		unless params[:rm_resident_id].blank?
+			@resObj = RmResident.find(params[:rm_resident_id].to_i)
+		end
+		
+	end
+
+	def update
+
+		if params[:contact_id].blank?
+			wkLead = update_without_redirect
+			if @wkContact.valid?
+				redirect_to :controller => "rmresident", :action => "movein", :tab => "rmresident", :res_action => "MI", :lead_id => wkLead.id
+				flash[:notice] = l(:notice_successful_update)
+			else
+				flash[:error] = @wkContact.errors.full_messages.join("<br>")
+				redirect_to :controller => controller_name,:action => 'edit'
+			end
+		else
+			super
+		end
+	end
+	
+	def formPagination(entries)
+		@entry_count = entries.count
+        setLimitAndOffset()
+		@resident_entries = entries.order("COALESCE(rm_residents.move_out_date, CURRENT_TIMESTAMP) desc, rm_residents.move_in_date desc ").limit(@limit).offset(@offset)
+	end
+  
+    def setLimitAndOffset		
+		if api_request?
+			@offset, @limit = api_offset_and_limit
+			if !params[:limit].blank?
+				@limit = params[:limit]
+			end
+			if !params[:offset].blank?
+				@offset = params[:offset]
+			end
+		else
+			@entry_pages = Paginator.new @entry_count, per_page_option, params['page']
+			@limit = @entry_pages.per_page
+			@offset = @entry_pages.offset
+		end	
+    end
 	
 	def resident_entry_scope(options={})
 		@query.results_scope(options)
@@ -71,13 +122,24 @@ class RmresidentController < WkcontactController
 	
 	def newresidentservice
 		@residentService = nil
+		@contact = nil
 		if params[:res_service_id].blank?
 			@residentService = RmResidentService.new
 		else
 			@residentService = RmResidentService.find(params[:res_service_id].to_i)
 		end
+		unless params[:parentId].blank?
+			@contact  = WkCrmContact.find(params[:parentId].to_i)
+		end
 		@residentType = params[:resdient_type]	
 			
+	end
+	
+	def residentservicedestroy
+		resService = RmResidentService.find(params[:id].to_i)
+		resService.destroy
+		flash[:notice] = l(:notice_successful_delete)
+		redirect_back_or_default :controller => 'rmresident', :action => 'edit', :contact_id => resService.resident_id
 	end
 	
 	def updateresidentservice
@@ -93,11 +155,244 @@ class RmresidentController < WkcontactController
 		end
 		@residentService.updated_by_user_id = User.current.id
 		if @residentService.save 
+			updateAutoTEntries(@residentService, @residentService.start_date)
+			# if @residentService.issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i
+				# invInterval = getInvoiceInterval(Date.today, Date.today, true, true)
+				# addNewAmenityEntry(@residentService, invInterval[0], 1)
+				# delAutoGenAmenityEntries(@residentService)
+			# end
 			redirect_to :controller_name => 'rmresident', :action => 'edit' , :contact_id => @residentService.resident_id, :tab => controller_name
 			flash[:notice] = l(:notice_successful_update)
 	   else
+			@contact  = WkCrmContact.find(params[:residentService][:resident_id].to_i)		
 			flash[:error] = @residentService.errors.full_messages.join("<br>")
-			redirect_to :action => 'newresidentservice', :resdient_type => @residentType 
+			redirect_to :action => 'newresidentservice', :resdient_type => params[:service_type], :parentId => params[:residentService][:resident_id], :res_service_id => @residentService.id
 	   end
+	end
+	
+	def set_filter_session
+		if params[:searchlist].blank? && session[controller_name].nil?
+			session[controller_name] = {:period_type => params[:period_type], :period => params[:period],:location_id => params[:location_id], :resident_name => params[:resident_name], :from => @from, :to => @to, :moveinout_id => params[:moveinout_id]}
+		elsif params[:searchlist] == controller_name
+			session[controller_name][:period_type] = params[:period_type]
+			session[controller_name][:period] = params[:period]
+			session[controller_name][:location_id] = params[:location_id]
+			session[controller_name][:resident_name] = params[:resident_name]
+			session[controller_name][:from] = params[:from]
+			session[controller_name][:to] = params[:to]
+			session[controller_name][:moveinout_id] = params[:moveinout_id]
+		end
+	end
+	
+	# Retrieves the date range based on predefined ranges or specific from/to param dates
+	def retrieve_date_range
+		@free_period = false
+		@from, @to = nil, nil
+		period_type = session[controller_name][:period_type]
+		period = session[controller_name][:period]
+		fromdate = session[controller_name][:from]
+		todate = session[controller_name][:to]
+		if (period_type == '1' || (period_type.nil? && !period.nil?)) 
+		  case period.to_s
+		  when 'today'
+			@from = @to = Date.today
+		  when 'yesterday'
+			@from = @to = Date.today - 1
+		  when 'current_week'
+			@from = getStartDay(Date.today - (Date.today.cwday - 1)%7)
+			@to = Date.today #@from + 6
+		  when 'last_week'
+			@from =getStartDay(Date.today - 7 - (Date.today.cwday - 1)%7)
+			@to = @from + 6
+		  when '7_days'
+			@from = Date.today - 7
+			@to = Date.today
+		  when 'current_month'
+			@from = Date.civil(Date.today.year, Date.today.month, 1)
+			@to = Date.today #(@from >> 1) - 1
+		  when 'last_month'
+			@from = Date.civil(Date.today.year, Date.today.month, 1) << 1
+			@to = (@from >> 1) - 1
+		  when '30_days'
+			@from = Date.today - 30
+			@to = Date.today
+		  when 'current_year'
+			@from = Date.civil(Date.today.year, 1, 1)
+			@to = Date.today 
+		  end
+		
+		elsif period_type == '2' || (period_type.nil? && (!fromdate.nil? || !todate.nil?))
+		  begin; @from = fromdate.to_s.to_date unless fromdate.blank?; rescue; end
+		  begin; @to = todate.to_s.to_date unless todate.blank?; rescue; end
+		  @free_period = true
+		else				
+			@from = Date.civil(Date.today.year, Date.today.month, 1)
+			@to = Date.today #(@from >> 1) - 1
+		end    
+
+		@from, @to = @to, @from if @from && @to && @from > @to
+
+	end
+	
+	def movein
+		@leadObj = nil
+		@contactObj = nil
+		@residentObj = nil
+		unless params[:lead_id].blank?
+			@leadObj = WkLead.find(params[:lead_id].to_i)
+		end
+		unless params[:contact_id].blank?
+			@contactObj = WkCrmContact.find(params[:contact_id].to_i)
+		end
+		unless params[:resident_id].blank?
+			@residentObj = RmResident.find(params[:resident_id].to_i)
+		end
+		@resAction = params[:res_action]
+	end
+	
+	def residentTransfer
+		errorMsg = ""
+		errorMsg = moveOutValidation
+		if errorMsg.blank?
+			resident_id = params[:resident_id]
+			resObj = getResidentobj(resident_id)
+			moveOutDate = params[:move_in_date].to_date
+			move_out_date = (moveOutDate > resObj.move_in_date.to_date) ? (moveOutDate - 1.day) : moveOutDate
+			invItemId = params[:bed_idM].blank? ? params[:apartment_idM] : params[:bed_idM]
+			oldInvItemId = resObj.bed_id.blank? ? resObj.apartment_id : resObj.bed_id
+			assetEntryObj = getMaterialEntryObj(oldInvItemId)
+			materialEntryObj = assetEntryObj.material_entry
+			residentMoveOut(resident_id, move_out_date, params[:move_in_hr],  params[:move_in_min], nil)
+			if materialEntryObj.spent_on.to_date == moveOutDate
+				updateMaterialEntries(resident_id, moveOutDate, assetEntryObj.rate_per, materialEntryObj, materialEntryObj.spent_on.to_date, true)
+			end
+
+			errorMsg = residentMoveIn(params[:res_contact_id], 'WkCrmContact', params[:move_in_date], nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
+			if errorMsg.blank?
+				projectId = getResidentPluginSetting('rm_project')
+				rentalIssue = getRentalIssue
+				entryDate = (params[:move_in_date].to_date).at_beginning_of_month.next_month
+				currentResident = getCurrentResident(params[:res_contact_id], entryDate)
+				invoice_count =  getMaterialEntries(entryDate, rentalIssue, currentResident, invItemId)
+				
+				if invoice_count = 0
+					save_material_entry_and_asset_properties(nil, projectId, User.current.id, rentalIssue.id, params[:rateM], entryDate, invItemId, params[:res_contact_id], 'WkCrmContact', params[:move_in_hr], params[:move_in_min])
+					assetObj = getMaterialEntryObj(invItemId)
+					materialObj = assetObj.material_entry
+					updateMaterialEntries(resident_id, nil, assetObj.rate_per, materialObj, entryDate, false)
+				end
+			end
+		
+			if errorMsg.blank?
+				flash[:notice] = l(:label_transfer_msg)
+			else
+				flash[:error] = errorMsg
+			end
+		end
+		redirect_to :controller => 'rmresident', :action => 'edit', :contact_id => params[:res_contact_id]
+	end
+	
+	def moveOut
+		errorMsg = ""
+		errorMsg = moveOutValidation
+		# if errorMsg.blank?
+			# residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], params[:move_out_reason])
+		# end
+		unless errorMsg.blank?
+			flash[:error] = errorMsg
+		else
+			residentMoveOut(params[:resident_id], params[:move_in_date], params[:move_in_hr],  params[:move_in_min], params[:move_out_reason])
+			flash[:notice] = l(:label_move_out_msg)
+		end
+		redirect_to :controller => 'rmresident', :action => 'index', :tab => 'rmresident'
+	end
+	
+	def moveOutValidation
+		errorMsg = ""
+		resObj = nil
+		unless params[:resident_id].blank?
+			resObj = RmResident.find(params[:resident_id].to_i)			
+		end
+		if Date.parse(params[:move_in_date]) < Date.parse(resObj.move_in_date.strftime('%F') )
+			errorMsg = l(:label_move_out_validate_msg)
+		end
+		errorMsg
+	end
+	
+	def getItemType
+		'RA'
+	end
+	
+	def locationApartments
+		invItemObj = nil
+		apartmentArr = ""
+		if !params[:location_id].blank?
+			invItemObj = WkInventoryItem.where(:product_type => "RA", :location_id => params[:location_id].to_i, :parent_id => nil).includes(:asset_property).where(:wk_asset_properties => {:matterial_entry_id => nil} )
+		else
+			invItemObj = WkInventoryItem.where(:product_type => "RA", :parent_id => nil).includes(:asset_property).where.not(:wk_asset_properties => {:matterial_entry_id => nil} )
+		end
+		unless invItemObj.blank?
+			invItemObj.each do |item|
+				apartmentArr << item.id.to_s() + ',' +  (item.asset_property.blank? ? "" : item.asset_property.name.to_s) + "\n"
+			end
+		end
+		respond_to do |format|
+			format.text  { render :plain => apartmentArr }
+		end
+	
+	end
+	
+	def apartmentBeds
+		invItemObj = nil
+		bedArr = ""
+		if !params[:apartment_id].blank?
+			invItemObj = WkInventoryItem.where(:product_type => "RA", :parent_id => params[:apartment_id].to_i).includes(:asset_property)
+			if params[:resMoveIn] == "true"
+				invItemObj = invItemObj.where(:wk_asset_properties => {:matterial_entry_id => nil} )
+			end
+		# else
+			# invItemObj = WkInventoryItem.where(:product_type => "RA").includes(:asset_property)
+		end
+		unless invItemObj.blank?
+			invItemObj.each do |item|
+				bedArr << item.id.to_s() + ',' +  (item.asset_property.blank? ? "" : item.asset_property.name.to_s) + "\n"
+			end
+		end
+		respond_to do |format|
+			format.text  { render :plain => bedArr }
+		end
+	end
+	
+	def bedRate
+		invItemObj = nil
+		bedArr = ""
+		invId = params[:bed_id]
+		if !params[:apartment_id].blank?
+			itemArr = WkInventoryItem.where(:parent_id => params[:apartment_id].to_i).pluck(:id)		
+			if itemArr.blank?
+				invId = params[:apartment_id]
+			elsif itemArr.include? params[:bed_id]
+				invId = params[:bed_id]
+			end
+		end
+		
+		if !invId.blank?
+			invItemObj = WkInventoryItem.where(:product_type => "RA", :id => invId.to_i).includes(:asset_property).where(:wk_asset_properties => {:matterial_entry_id => nil} )
+		end	
+		if invItemObj.blank?
+			if !params[:apartment_id].blank?
+				invItemObj = WkInventoryItem.where(:product_type => "RA", :id => params[:apartment_id].to_i).includes(:asset_property)#.where(:wk_asset_properties => {:matterial_entry_id => nil} )
+			end
+		end
+		unless invItemObj.blank?
+			wkasset_helper = Object.new.extend(WkassetHelper)
+			rateHash = wkasset_helper.getRatePerHash(false)
+			invItemObj.each do |item|
+				bedArr << (item.asset_property.blank? ? "" : rateHash[item.asset_property.rate_per].to_s)  + ',' +  (item.asset_property.blank? ? "" : item.asset_property.rate.to_s) 
+			end
+		end
+		respond_to do |format|
+			format.text  { render :plain => bedArr }
+		end
 	end
 end

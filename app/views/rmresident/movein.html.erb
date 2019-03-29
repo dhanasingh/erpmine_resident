@@ -3,33 +3,38 @@
 	<% controllerName = "wklead" %>
 	<% actionName = "convert" %>
 	<% lblDate = l(:field_spent_on) %>
+	<% isLoadDD = true %>
 <% elsif @resAction == "T" %>
 	<% pageLbl =  l(:label_transfer) %>
-	<% controllerName = "rmapartment" %>
+	<% controllerName = "rmresident" %>
 	<% actionName = "residentTransfer" %>
 	<% lblDate = l(:field_spent_on) %>
+	<% isLoadDD = true %>
+	<% isLoadDDT = false %>
 <% else %>
 	<% pageLbl =  l(:label_move_out) %>
-	<% controllerName = "rmapartment" %>
+	<% controllerName = "rmresident" %>
 	<% actionName = "moveOut" %>
 	<% lblDate = l(:label_move_out_date) %>
+	<% isLoadDD = false %>
 <% end %>
+
 <h2><%= pageLbl %></h2>
 <%= javascript_include_tag 'index', :plugin => "redmine_wktime" %>
 <%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
  <%= javascript_include_tag 'accountproject', :plugin => "redmine_wktime" %>
 <script type="text/javascript"> 
-	locationUrl="<%= "#{url_for(:controller => 'rmapartment', :action => 'locationApartments')}" %>";
-	bedUrl = "<%= "#{url_for(:controller => 'rmapartment', :action => 'apartmentBeds')}" %>";
-	bedRateUrl = "<%= "#{url_for(:controller => 'rmapartment', :action => 'bedRate')}" %>";
+	locationUrl="<%= "#{url_for(:controller => 'rmresident', :action => 'locationApartments')}" %>";
+	bedUrl = "<%= "#{url_for(:controller => 'rmresident', :action => 'apartmentBeds')}" %>";
+	bedRateUrl = "<%= "#{url_for(:controller => 'rmresident', :action => 'bedRate')}" %>";
 </script>
 <% if @resAction == "T" %>
-	<%= render partial: "rmapartment/move_in_details", locals: { disable: true, dateLbl: lblDate, loadDD: false, id: 'T'} %>
+	<%= render partial: "rmresident/move_in_details", locals: { disable: true, dateLbl: lblDate, loadDD: isLoadDDT, id: 'T'} %>
 <% end %>
 <%= form_tag({:controller => controllerName, :action => actionName}, :method => :get, :id => 'query_form') do %>
 <fieldset class="box tabular">
-	<%= hidden_field_tag 'resident_id', (@contactObj.blank? ? "" : (@contactObj.residents.current_resident.blank? ? "" : @contactObj.residents.current_resident[0].id)) %>
-	<%= render partial: "rmapartment/move_in_details", locals: { disable: false, dateLbl: lblDate, loadDD: true, id: 'M'} %>	
+	<%= hidden_field_tag 'resident_id', (@contactObj.blank? ? "" : (@contactObj.residents.current_move_out_resident.blank? ? "" : @contactObj.residents.current_move_out_resident[0].id)) %>
+	<%= render partial: "rmresident/move_in_details", locals: { disable: @resAction == "MO" ? true : false, dateLbl: lblDate, loadDD: isLoadDD , id: 'M'} %>	
 </fieldset>
 <%= submit_tag pageLbl ,:id => 'move_in_save'%>
 <% end %>

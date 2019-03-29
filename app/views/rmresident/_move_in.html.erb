@@ -1,0 +1,11 @@
+<% unless leadObj.blank? %>
+	
+	<%#= link_to l(:button_move_in), url_for(:controller => "rmresident", :action => "movein", :tab => "rmresident", :lead_id => leadObj.blank? ? nil : leadObj.id, :res_action => "MI"),  :class=> "buttons" %>
+	<%
+		wktime_helper = Object.new.extend(WktimeHelper)
+		host_with_subdir = wktime_helper.getHostAndDir(request)
+	%>
+	
+	<input type="button" value="<%= l(:button_move_in) %>" onclick="window.location.href='<%= url_for(:controller => "rmresident", :action => "movein", :host => host_with_subdir, :only_path => true, :tab => "rmresident", :lead_id => leadObj.blank? ? nil : leadObj.id, :res_action => "MI") %>'" />
+	
+<% end %>

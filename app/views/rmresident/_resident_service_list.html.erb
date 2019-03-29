@@ -9,8 +9,10 @@
 				<th class="lbl-txt-align"><%= l(:label_service_name) %></th>
 				<th class="lbl-txt-align"><%= l(:field_start_date) %></th>
 				<th class="lbl-txt-align"><%= l(:field_end_date) %></th>
-				<th class="lbl-txt-align"><%= l(:field_frequency) %></th>
-				<th class="lbl-txt-align"><%= l(:field_no_of_occurrence) %></th>
+				<% if residentType == "RS" %>
+					<th class="lbl-txt-align"><%= l(:field_frequency) %></th>
+					<th class="lbl-txt-align"><%= l(:field_no_of_occurrence) %></th>
+				<% end %>
 				<th></th>
 			</tr>
 		</thead>
@@ -21,12 +23,14 @@
 					  <td class="lbl-txt-align"><%=h entry.issue.subject %></td>
 					  <td class="lbl-txt-align"><%=h entry.start_date %></td>
 					  <td class="lbl-txt-align"><%=h entry.end_date %></td>
-					  <td class="lbl-txt-align"><%=h frequencyHash[entry.frequency] %></td>
-					  <td class="lbl-txt-align"><%=h entry.no_of_occurrence %></td>
+					  <% if residentType == "RS" %>
+						<td class="lbl-txt-align"><%=h frequencyHash[entry.frequency] %></td>
+						<td class="lbl-txt-align"><%=h entry.no_of_occurrence %></td>
+					<% end %>
 					  <td align="center">
-						 <%= link_to image_tag('edit.png'), url_for(:controller => 'rmresident', :action => 'newresidentservice', :res_service_id => entry.id,  :resdient_type => residentType), :title => l(:button_edit) %> 
+						 <%= link_to image_tag('edit.png'), url_for(:controller => 'rmresident', :action => 'newresidentservice', :res_service_id => entry.id, :parentId => entry.resident_id,   :resdient_type => residentType), :title => l(:button_edit) %> 
 						  
-						<%= link_to image_tag('delete.png'), {:controller => controller.controller_name, :action => 'destroy', :id => entry.id, :tab => controller.controller_name},  :data => {:confirm => l(:text_are_you_sure)}, :method => :delete, :title => l(:button_delete) %>
+						<%= link_to image_tag('delete.png'), {:controller => 'rmresident', :action => 'residentservicedestroy', :id => entry.id, :tab => controller.controller_name},  :data => {:confirm => l(:text_are_you_sure)}, :method => :delete, :title => l(:button_delete) %>
 						  
 					  </td>
 				</tr>

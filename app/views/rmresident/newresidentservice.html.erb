@@ -14,14 +14,15 @@
 %>
 <%= form_tag({:controller => controller_name, :action => 'updateresidentservice'}, :method => :get, :id => 'query_form') do %>
 <fieldset class="box tabular">	
+	 <%= hidden_field_tag 'service_type', @residentType %>
 	<%= labelled_fields_for :residentService, @residentService do |resident_fields| %>
 		<%= resident_fields.hidden_field :id %>
 		<table>
-			<tr><td style="padding-left:120px;"><%= resident_fields.select :resident_id, resdientArr %></td>
+			<tr><td style="padding-left:120px;"><%= resident_fields.select :resident_id, resdientArr, :selected => @contact.id %></td>
 				<td style="padding-left:440px;"><%= resident_fields.select :issue_id, issueArr, :label => @residentType == "RS" ? l(:label_service_name) : l(:label_amentity)  %></td>
 			</tr>
 			<tr>
-				<td style="padding-left:120px;"><%= resident_fields.date_field :start_date %></td>
+				<td style="padding-left:120px;"><%= resident_fields.date_field :start_date, :required => true %></td>
 					<%= calendar_for('resident_start_date') %>
 				<td style="padding-left:440px;"><%= resident_fields.date_field :end_date %></td>
 					<%= calendar_for('resident_end_date') %>
