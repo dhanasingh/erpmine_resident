@@ -23,6 +23,12 @@ class ResidentHook < Redmine::Hook::ViewListener
 		sectionArr = ["rmresident", "rmamentity"] if context[:curObj].contact_type == "RA"
 		sectionArr
 	end
+
+	def remove_exsisting_accordion_section(context={})
+		removed_sections = Array.new
+		removed_sections = ["wkaccountproject"] if context[:curObj].contact_type == "RA"
+		removed_sections
+	end
 	
 	def controller_convert_contact(context={})
 		type = Array.new		
