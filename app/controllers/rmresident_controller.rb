@@ -22,10 +22,10 @@ class RmresidentController < WkcontactController
 		retrieve_date_range
 		locationId = session[controller_name][:location_id]
 		moveInOutId = session[controller_name][:moveinout_id]
-		residentName = session[controller_name][:resident_name]	
+		residentName = session[controller_name][:resident_name]
+		location = WkLocation.where(:is_default => 'true').first
 		entries = nil
 		entries = RmResident.left_join_contacts
-		
 		if moveInOutId == "MI"
 			entries = entries.where("move_out_date IS NULL")
 		elsif moveInOutId == "MO"
@@ -37,8 +37,9 @@ class RmresidentController < WkcontactController
 			entries = entries.where("LOWER(wk_crm_contacts.first_name) like LOWER('%#{residentName}%') OR LOWER(wk_crm_contacts.last_name) like LOWER('%#{residentName}%')")
 		end
 		
-		unless locationId.blank?
-			entries = entries.where("wk_crm_contacts.location_id = #{locationId.to_i} ")
+		if (!locationId.blank? || !location.blank?) && locationId != "0"
+			location_id = !locationId.blank? ? locationId.to_i : location.id.to_i
+			entries = entries.where("wk_crm_contacts.location_id = #{location_id} ")
 		end
 		
 		if @from.blank? && !@to.blank?
