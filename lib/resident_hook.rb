@@ -165,13 +165,15 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def getSurveyForType(context={})
 		if (!context[:params][:rm_resident_id].blank? || !context[:params][:lead_id].blank?) && !context[:params][:contact_id].blank? || context[:params][:surveyForType] == "RmResident"
 			context[:surveyFor][:surveyForType] = "RmResident"
-			context[:surveyFor][:surveyForID] = context[:params][:surveyForID].blank? ? context[:params][:rm_resident_id] : context[:params][:surveyForID]
+			rm_resident = RmResident.where(resident_id: context[:params][:contact_id], resident_type: 'WkCrmContact').first
+			context[:surveyFor][:surveyForID] = context[:params][:surveyForID].blank? ? (!context[:params][:lead_id].blank? ? rm_resident.id : context[:params][:rm_resident_id]) : context[:params][:surveyForID]
 		end
 	end
 
 	def get_survey_url(context={})
 		if context[:urlHash][:surveyForType] == "RmResident" && context[:urlHash][:surveyForID].blank?
-			context[:urlHash][:surveyForID] = context[:params][:rm_resident_id]
+			rm_resident = RmResident.where(resident_id: context[:params][:contact_id], resident_type: 'WkCrmContact').first
+			context[:urlHash][:surveyForID] = !context[:params][:lead_id].blank? ? rm_resident.id : context[:params][:rm_resident_id]
 		end
 	end
 
