@@ -152,13 +152,13 @@ class ResidentHook < Redmine::Hook::ViewListener
 	  
 	def find_survey_for(context={})
       result = RmResident.left_join_contacts
-      surveyForIDSql = " (wk_crm_contacts.id = #{context[:surveyForID]})"
-      surveyForSql = " (wk_crm_contacts.id = #{context[:surveyForID]} OR LOWER(first_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(last_name) LIKE LOWER('#{context[:surveyFor]}'))" unless context[:surveyFor].blank?
+      surveyForIDSql = " (rm_residents.id = #{context[:surveyForID]})"
+      surveyForSql = " (rm_residents.id = #{context[:surveyForID]} OR LOWER(first_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(last_name) LIKE LOWER('#{context[:surveyFor]}'))" unless context[:surveyFor].blank?
 	  result = result.where(context[:method] == "search" ? surveyForSql : surveyForIDSql)
-	  .select("resident_id, first_name, last_name")
+	  .select("rm_residents.id, first_name, last_name")
       
       result.each do  |r|
-		context[:data] << {id: r.resident_id, label: "Resident #" + r.resident_id.to_s + ": " + r.first_name + " " + r.last_name, value: r.resident_id}
+		context[:data] << {id: r.id, label: "Resident #" + r.id.to_s + ": " + r.first_name + " " + r.last_name, value: r.id}
       end
 	end
 
