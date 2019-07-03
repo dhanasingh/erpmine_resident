@@ -29,22 +29,17 @@ When uninstalling the plugin, be sure to remove the db changes by running
 This plugin uses js and css assets and it will be copied to public/plugin_asset/erpmine_resident
 folder upon server startup, so please make sure public/plugin_asset/erpmine_resident has proper access.
 
-Release Notes for 0.1
+Release Notes for v0.2
 
 Features:
+    - Use Survey for Assessment
 
-  Resident module is introduced.
-    - Create Leads
-    - Move In Resident
-    - Move Out Resident
-    - Transfer Resident
-    - Perform Services
-    - Generate Bills
-    - Receive Payments
+Bug Fixing:  
+    - Cannot edit location dropdown for Apartment / Bed detail page
 
 Dependency:
 
-  This plugin is only compatible with ERPmine 3.5.1
+  This plugin is compatible with ERPmine 3.7 and above versions.
 
 Customization:
 

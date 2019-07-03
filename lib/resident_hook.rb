@@ -23,6 +23,12 @@ class ResidentHook < Redmine::Hook::ViewListener
 		sectionArr = ["rmresident", "rmamentity"] if context[:curObj].contact_type == "RA"
 		sectionArr
 	end
+
+	def remove_existing_accordion_section(context={})
+		removed_sections = Array.new
+		removed_sections = ["wkaccountproject"] if context[:curObj].contact_type == "RA"
+		removed_sections
+	end
 	
 	def controller_convert_contact(context={})
 		type = Array.new		
@@ -139,4 +145,44 @@ class ResidentHook < Redmine::Hook::ViewListener
 	
 	render_on :view_additional_lead_info, :partial => 'rmresident/move_in'	
 	render_on :additional_contact_info, :partial => 'rmresident/additional_resident_info'
+	
+	def add_survey_for(context={})
+		context[:survey_types][l(:label_resident)] = "RmResident"
+	end
+	  
+	def find_survey_for(context={})
+      result = RmResident.left_join_contacts
+      surveyForIDSql = " (rm_residents.id = #{context[:surveyForID]})"
+      surveyForSql = " (rm_residents.id = #{context[:surveyForID]} OR LOWER(first_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(last_name) LIKE LOWER('#{context[:surveyFor]}'))" unless context[:surveyFor].blank?
+	  result = result.where(context[:method] == "search" ? surveyForSql : surveyForIDSql)
+	  .select("rm_residents.id, first_name, last_name")
+      
+      result.each do  |r|
+		context[:data] << {id: r.id, label: "Resident #" + r.id.to_s + ": " + r.first_name + " " + r.last_name, value: r.id}
+      end
+	end
+
+	def getSurveyForType(context={})
+		if (!context[:params][:rm_resident_id].blank? || !context[:params][:lead_id].blank?) && !context[:params][:contact_id].blank? || context[:params][:surveyForType] == "RmResident"
+			context[:surveyFor][:surveyForType] = "RmResident"
+			rm_resident = RmResident.where(resident_id: context[:params][:contact_id], resident_type: 'WkCrmContact').first
+			context[:surveyFor][:surveyForID] = context[:params][:surveyForID].blank? ? (!context[:params][:lead_id].blank? ? rm_resident.id : context[:params][:rm_resident_id]) : context[:params][:surveyForID]
+		end
+	end
+
+	def get_survey_url(context={})
+		if context[:urlHash][:surveyForType] == "RmResident" && context[:urlHash][:surveyForID].blank?
+			rm_resident = RmResident.where(resident_id: context[:params][:contact_id], resident_type: 'WkCrmContact').first
+			context[:urlHash][:surveyForID] = !context[:params][:lead_id].blank? ? rm_resident.id : context[:params][:rm_resident_id]
+		end
+	end
+
+	def get_survey_redirect_url(context={})
+		if context[:urlHash][:surveyForType] == "RmResident" && !context[:urlHash][:surveyForID].blank?
+           context[:urlHash][:controller] = "rmresident"
+          	context[:urlHash][:action] = 'edit'
+			context[:urlHash][:rm_resident_id] = context[:urlHash][:surveyForID]
+			context[:urlHash][:contact_id] = RmResident.find(context[:urlHash][:surveyForID]).resident_id
+		end
+	end
 end

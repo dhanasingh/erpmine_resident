@@ -99,7 +99,7 @@ class RmperformserviceController < WktimeController
 		if !view_projects.blank?
 			@manage_view_spenttime_projects = view_projects[0].blank? ? nil : view_projects[0]
 		else
-			if isAccountUser
+			if validateERPPermission('A_TE_PRVLG')
 				@manage_view_spenttime_projects = getAccountUserProjects
 			else
 				@view_spenttime_projects ||= Project.where(Project.allowed_to_condition(User.current, :view_time_entries)).order('name')
