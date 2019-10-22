@@ -174,7 +174,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def get_survey_url(context={})
 		if context[:urlHash][:surveyForType] == "RmResident" && context[:urlHash][:surveyForID].blank?
 			residentID = context[:params][:rm_resident_id]
-			context[:urlHash][:surveyForID] = residentID.blank? ? getResident(context[:params][:contact_id]) : residentID
+			context[:urlHash][:surveyForID] = context[:params][:lead_id].present? ? getResident(context[:params][:contact_id]) : residentID
 		end
 	end
 
