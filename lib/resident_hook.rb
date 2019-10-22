@@ -173,8 +173,8 @@ class ResidentHook < Redmine::Hook::ViewListener
 
 	def get_survey_url(context={})
 		if context[:urlHash][:surveyForType] == "RmResident" && context[:urlHash][:surveyForID].blank?
-			rm_resident = RmResident.where(resident_id: context[:params][:contact_id], resident_type: 'WkCrmContact').first
-			context[:urlHash][:surveyForID] = !context[:params][:lead_id].blank? ? rm_resident.id : context[:params][:rm_resident_id]
+			residentID = context[:params][:rm_resident_id]
+			context[:urlHash][:surveyForID] = residentID.blank? ? getResident(context[:params][:contact_id]) : residentID
 		end
 	end
 
@@ -183,7 +183,33 @@ class ResidentHook < Redmine::Hook::ViewListener
            context[:urlHash][:controller] = "rmresident"
           	context[:urlHash][:action] = 'edit'
 			context[:urlHash][:rm_resident_id] = context[:urlHash][:surveyForID]
-			context[:urlHash][:contact_id] = RmResident.find(context[:urlHash][:surveyForID]).resident_id
+			context[:urlHash][:contact_id] = getContactID(context[:urlHash][:surveyForID])
 		end
+	end
+
+	def getDocAccordionSection(context={})
+		if context[:controller_name] == "rmresident"
+			context[:url][:container_type] = 'RmResident'
+			residentID = context[:params][:rm_resident_id]
+            context[:url][:container_id] = residentID.blank? ? getResident(context[:params][:contact_id]) : residentID
+		end
+	end
+
+	def getDocRedirectUrl(context={})
+		if context[:container_type] == 'RmResident'
+			context[:url][:controller] = 'rmresident'
+			context[:url][:action] = 'edit'
+			context[:url][:rm_resident_id] = context[:container_id]
+			context[:url][:contact_id] = getContactID(context[:container_id])
+		end
+	end
+
+	def getResident(contact_id)
+		resident = RmResident.where(resident_id: contact_id, resident_type: 'WkCrmContact').first
+		resident.id
+	end
+
+	def getContactID(residentID)
+		RmResident.find(residentID).resident_id
 	end
 end
