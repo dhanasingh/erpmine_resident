@@ -47,7 +47,7 @@
 				<td align="left" >
 					<%= moveInDate.strftime('%F') %>
 				</td>
-				<td style="float:right;">
+				<td>
 					<%= link_to l(:label_transfer), url_for(:controller => "rmresident", :action => "movein", :tab => "rmresident", :lead_id => nil, :contact_id => contactObj.id, :resident_id => contactObj.residents.current_move_out_resident[0].id, :res_action => "T"),  :class=> "buttons", :style=> "padding-left:40px;  margin-top:220px;" %>
 				</td>
 				<td>
@@ -80,7 +80,7 @@
 		wktime_helper = Object.new.extend(WktimeHelper)
 		host_with_subdir = wktime_helper.getHostAndDir(request)
 	%>
-	<div style="float:left;">
+	<div style="float:left;padding-right: 5px;">
 	<input type="button"  value="<%= l(:button_move_in) %>" onclick="window.location.href='<%= url_for(:controller => "rmresident", :action => "movein", :host => host_with_subdir, :only_path => true, :tab => "rmresident", :lead_id => nil, :contact_id =>contactObj.id, :res_action => "MI")  %>'" />
 	</div>
 <% end %>

@@ -69,13 +69,16 @@ class RmapartmentController < WkproductitemController
 	end
 
 	def set_filter_session
-		if params[:searchlist].blank? && session[controller_name].nil?
-			session[controller_name] = {:product_id => params[:product_id], :brand_id => params[:brand_id], :location_id => params[:location_id], :availability => params[:availability] }
-		elsif params[:searchlist] == controller_name
-			session[controller_name][:product_id] = params[:product_id]
-			session[controller_name][:brand_id] = params[:brand_id]
-			session[controller_name][:location_id] = params[:location_id]
-			session[controller_name][:availability] = params[:availability]
+		if params[:searchlist] == controller_name
+			session[controller_name] = Hash.new if session[controller_name].nil?
+			filters = [:location_id, :availability, :project_id]
+			filters.each do |param|
+				if params[param].blank? && session[controller_name].try(:[], param).present?
+					session[controller_name].delete(param)
+				elsif params[param].present?
+					session[controller_name][param] = params[param]
+				end
+			end
 		end
 	end
 end
