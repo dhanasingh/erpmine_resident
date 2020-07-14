@@ -276,7 +276,7 @@ class RmresidentController < WkcontactController
 				currentResident = getCurrentResident(params[:res_contact_id], entryDate)
 				invoice_count =  getMaterialEntries(entryDate, rentalIssue, currentResident, invItemId)
 				
-				if invoice_count = 0
+				if invoice_count == 0
 					save_material_entry_and_asset_properties(nil, projectId, User.current.id, rentalIssue.id, params[:rateM], entryDate, invItemId, params[:res_contact_id], 'WkCrmContact', params[:move_in_hr], params[:move_in_min])
 					assetObj = getMaterialEntryObj(invItemId)
 					materialObj = assetObj.material_entry
