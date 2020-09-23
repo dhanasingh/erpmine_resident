@@ -4,14 +4,7 @@ class RmperformserviceController < WktimeController
 
 
 	def index
-		new
-	end
-	
-	def new
-		set_user_projects
-		@selected_project = getSelectedProject(@manage_projects, true)
-		# get the startday for current week
-		@startday = Date.today
+		redirect_to action: :edit, user_id: User.current.id, sheet_view: getSheetView()
 	end
 
 	def getSheetView
