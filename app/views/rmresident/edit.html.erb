@@ -1,0 +1,52 @@
+<%= javascript_include_tag 'index', plugin: "erpmine_resident" %>
+<h2><%= controller.contactLbl %></h2>
+<% crm_helper = Object.new.extend(WkcrmHelper)
+	relHash = crm_helper.relatedHash
+	relHash.delete("WkOpportunity")
+	relHash.delete("WkLead")
+%>
+<%= form_tag({controller: controller_name, action: 'update'}, :method => :post, id: 'query_form') do %>
+	<div id="account_form">
+		<%= hidden_field_tag('resident_id', @resObj.blank? ? "" : @resObj.id) %>
+		<%= hidden_field_tag 'contact_id', @conEditEntry.blank? ? "" : @conEditEntry.id %>
+		<%= hidden_field_tag('account_id', @accountEntry.blank? ? "" : @accountEntry.id) %>
+		<%= hidden_field_tag('address_id', @resObj.blank? ? "" : @resObj.resident.address_id) %>
+		<% addressObj = @resObj.blank? ? "" : @resObj.resident.address %>
+		<% if @resObj.blank? %>
+			<p><%= l(:label_type) %><span style=padding-left:40px;><%=h select_tag("resident_type", options_for_select(relHash.invert), onchange: "residentType()") %></span></p>
+			<div class="splitcontent">
+				<div class="splitcontentleft" id='res_account'>
+					<%= render partial: "wklead/lead_info", locals: { contactObj: nil, leadObj: nil, accountObj: @accountEntry, isAccount: true, isContact: false }%>
+				</div>
+				<div class="splitcontentleft" id='res_contact'>
+					<%= render partial: "wklead/lead_info", locals: { contactObj: @conEditEntry.blank? ? nil : @conEditEntry, leadObj: nil, accountObj: nil, isAccount: false, isContact: true }%>
+				</div>
+		<% else %>
+		<div class="splitcontent">
+			<% if @resObj.resident_type == "WkAccount" %>
+				<div class="splitcontentleft">
+					<%= render partial: "wklead/lead_info", locals: { contactObj: nil, leadObj: nil, accountObj: @accountEntry, isAccount: true, isContact: false }%>
+				</div>
+			<% else %>
+				<div class="splitcontentleft">
+					<%= render partial: "wklead/lead_info", locals: { contactObj: @conEditEntry.blank? ? nil : @conEditEntry, leadObj: nil, accountObj: nil, isAccount: false, isContact: true }%>
+				</div>
+			<% end %>
+		<% end %>
+			<div class="splitcontentright">
+				<%= render partial: "wklead/contact_info", locals: { address: addressObj, :disable => false, showMap: true  }%>
+			</div>
+		</div>
+	</div>
+	<div style="clear:both;"></div>
+	<%= call_hook(:additional_contact_info) %>
+	<div>
+		<%= submit_tag l(:button_save) ,:id => 'wkaccount_save'%>
+	</div>
+<% end %>
+<% unless @resObj.blank? %>
+	</br>
+	<div>
+		<%= render partial: "wkcrm/accordion_section", locals: { currentObj: @resObj.resident }%>
+	</div>
+<% end %>

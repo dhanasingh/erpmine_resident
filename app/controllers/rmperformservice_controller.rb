@@ -1,3 +1,20 @@
+# ERPmine - ERP for service industry
+# Copyright (C) 2011-2020  Adhi software pvt ltd
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 class RmperformserviceController < WktimeController
   unloadable
 	menu_item	:apartment
@@ -18,7 +35,7 @@ class RmperformserviceController < WktimeController
 	def getCondition(date_field, user_id, start_date, end_date=nil)
 		trackerId = Setting.plugin_erpmine_resident['rm_service_tracker']
 		@renderer.issue_join_cond = " and i.tracker_id = #{trackerId}"
-		@renderer.spent_for_join = " left join rm_resident_services rs on (i.id = rs.issue_id and ap.parent_type = rs.resident_type and ap.parent_id = rs.resident_id )"
+		@renderer.spent_for_join = " left join rm_residents rm on ( ap.parent_type = rm.resident_type and ap.parent_id = rm.resident_id ) inner join rm_resident_services rs on (i.id = rs.issue_id and rs.rm_resident_id = rm.id)"
 		@renderer.spent_for_cond = " and (rs.end_date is null or rs.end_date >= '#{start_date}')"
 		# cond = " and i.tracker_id = #{trackerId}"
 		super

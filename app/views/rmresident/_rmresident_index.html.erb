@@ -1,21 +1,23 @@
-<%	locationId = session[controller_name][:location_id]	
-    residentName = session[controller_name][:resident_name]	
-	#isFarmerResident = session[controller_name][:farmer_resident]
-	moveInOutId = session[controller_name][:moveinout_id]
+<%	locationId = session[controller_name][:location_id]
+		moveInOutId = session[controller_name][:moveinout_id]
+		contactId =session[controller_name].try(:[], :contact_id)
+		accountId =session[controller_name].try(:[], :account_id)
+		filterSession =session[controller_name].try(:[], :polymorphic_filter)
 %>
+<div class="wk-contextual">
+	<%= link_to controller.lblNewContact, url_for(controller: controller_name, action: 'edit'), class: 'icon icon-time-add' %>
+</div>
 <%= form_tag({:controller => controller_name, :action => 'index'}, :method => :get, :id => 'query_form') do %>
 <%= hidden_field_tag "searchlist", controller_name %>
 <%= hidden_field_tag "tab", controller_name %>
 <div>
 <fieldset>
+	<%= render partial: "wkbilling/index_filters", locals: { contact_id: contactId, account_id: accountId, filter_session: filterSession, isapply: false, isproject: false, isAll: true, blankForActDD: true, blankForContactDD: true, isFilter: true, pjtChanged: false, loadSIDD: false, blankOptionForPjt: false } %>
 	<table>
 		<tr>
 			<th align="left"><%= l(:label_location) %></th>
 			<td align="left">
 				<%=h select_tag("location_id", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', locationId, true)) %>
-			</td>
-			<th align="left"><%= l(:field_name)  %></th>
-			<td align="left""><%= text_field_tag 'resident_name', residentName.blank? ? "" : residentName, :size => 30, :style=> "float: left;" %>
 			</td>
 			<th align="left"><%= l(:field_status) %></th>
 			<td align="left">

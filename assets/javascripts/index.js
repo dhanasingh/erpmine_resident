@@ -9,8 +9,10 @@ $(document).ready(function()
 	var url_string = window.location.href;
 	var url = new URL(url_string);
 	var res_action = url.searchParams.get("res_action");
-	if(res_action != 'MO')
+	if(res_action && res_action != 'MO'){
 		apartmentBasedBeds('apartment_idM', 'bed_idM', 1, 'rateM', 'lblBedM', true );
+	}
+	$('#res_contact').hide();
 	});
 
 function changeProp(tab,indexUrl)
@@ -114,4 +116,16 @@ function dateRangeValidation(fromId, toId)
 		alert(" End date should be greater then start date ");
 	}
 	
+}
+
+function residentType(){
+	var residentType = $('#resident_type').val();
+	if(residentType == 'WkAccount'){
+		$('#res_contact').hide();
+		$('#res_account').show();
+	}
+	else{
+		$('#res_contact').show();
+		$('#res_account').hide();
+	}
 }

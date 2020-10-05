@@ -5,7 +5,6 @@
 		wktime_helper = Object.new.extend(WktimeHelper)
 		host_with_subdir = wktime_helper.getHostAndDir(request)
 	%>
-	
-	<input type="button" value="<%= l(:button_move_in) %>" onclick="window.location.href='<%= url_for(:controller => "rmresident", :action => "movein", :host => host_with_subdir, :only_path => true, :tab => "rmresident", :lead_id => leadObj.blank? ? nil : leadObj.id, :res_action => "MI") %>'" />
+	<%= button_tag(l(:button_move_in), type: 'button', onclick: "window.location.href='#{url_for(controller: "rmresident", action: "movein", host: host_with_subdir, only_path: true, tab: "rmresident", lead_id: leadObj.blank? ? nil : leadObj.id, res_action: "MI", model_name: leadObj.class.name)}'") %>
 	
 <% end %>

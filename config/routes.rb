@@ -65,3 +65,5 @@ get 'rmresident/residentTransfer', :to => 'rmresident#residentTransfer'
 get 'rmresident/moveOut', :to => 'rmresident#moveOut'
 
 delete 'rmresident/residentservicedestroy', :to => 'rmresident#residentservicedestroy' 
+
+get 'rmresident/moveInResident', :to => 'rmresident#moveInResident' 

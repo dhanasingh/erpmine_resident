@@ -20,13 +20,13 @@ class ResidentHook < Redmine::Hook::ViewListener
 	
 	def view_accordion_section(context={})
 		sectionArr = Array.new(3)
-		sectionArr = ["rmresident", "rmamentity"] if context[:curObj].contact_type == "RA"
+		sectionArr = ["rmresident", "rmamentity"] if getResidentType(context) == "RA"
 		sectionArr
 	end
 
 	def remove_existing_accordion_section(context={})
 		removed_sections = Array.new
-		removed_sections = ["wkaccountproject"] if context[:curObj].contact_type == "RA"
+		removed_sections = ["wkaccountproject"] if getResidentType(context) == "RA"
 		removed_sections
 	end
 	
@@ -34,6 +34,11 @@ class ResidentHook < Redmine::Hook::ViewListener
 		type = Array.new		
 		type << 'C'
 		type << 'wkcrmcontact'
+		if !context[:accountObj].blank?
+			type.clear		
+			type << 'A'
+			type << 'wkcrmaccount'
+		end
 		unless context[:params].blank?
 			unless context[:params][:apartment_idM].blank?
 				type.clear
@@ -65,8 +70,9 @@ class ResidentHook < Redmine::Hook::ViewListener
 		resident_helper = Object.new.extend(RmresidentHelper)
 		invEndDt = context[:attributes]["end_date"]
 		parentId = context[:attributes]["parent_id"]
+		parentType = context[:attributes]["parent_type"]
 		nextBillStart = invEndDt.to_date + 1.day
-		resident_helper.addUnbilledEntries(parentId.to_i, nextBillStart, 1)
+		resident_helper.addUnbilledEntries(parentId.to_i, nextBillStart, 1, parentType)
 	end
 	
 	def additional_product_type(context={})
@@ -89,7 +95,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 		period
 	end
 	
-	def additional_contact_type(context={})
+	def additional_type(context={})
 		"RA"
 	end
 	
@@ -153,18 +159,22 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def find_survey_for(context={})
       result = RmResident.left_join_contacts
       surveyForIDSql = " (rm_residents.id = #{context[:surveyForID]})"
-      surveyForSql = " (rm_residents.id = #{context[:surveyForID]} OR LOWER(first_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(last_name) LIKE LOWER('#{context[:surveyFor]}'))" unless context[:surveyFor].blank?
+      surveyForSql = " (rm_residents.id = #{context[:surveyForID]} OR LOWER(first_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(last_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(name) LIKE LOWER('#{context[:surveyFor]}'))" unless context[:surveyFor].blank?
 	  result = result.where(context[:method] == "search" ? surveyForSql : surveyForIDSql)
-	  .select("rm_residents.id, first_name, last_name")
+	  .select("rm_residents.id, wk_accounts.name as account_name, first_name, last_name, resident_type")
       
       result.each do  |r|
-		context[:data] << {id: r.id, label: "Resident #" + r.id.to_s + ": " + r.first_name + " " + r.last_name, value: r.id}
+				residentName = r.resident_type == "WkAccount" ? r.account_name : r.first_name + " " + r.last_name
+		context[:data] << {id: r.id, label: "Resident #" + r.id.to_s + ": " + residentName, value: r.id}
       end
 	end
 
 	def getSurveyForType(context={})
-		rm_resident = RmResident.where("(resident_id = ? or id = ?) and resident_type = 'WkCrmContact'", context[:params][:contact_id],
-		 context[:params][:rm_resident_id]).first
+		residentID = context[:params][:rm_resident_id]
+		unless residentID.blank?
+			resObj = RmResident.find(residentID)
+			rm_resident = RmResident.where(" id = ? and resident_type = ?", residentID, resObj.resident_type).first
+		end
 		if !rm_resident.blank? || context[:params][:surveyForType] == "RmResident"
 			context[:surveyFor][:surveyForType] = "RmResident"
 			context[:surveyFor][:surveyForID] = context[:params][:surveyForID].blank? ? (!context[:params][:lead_id].blank? ? rm_resident.id : context[:params][:rm_resident_id]) : context[:params][:surveyForID]
@@ -183,7 +193,6 @@ class ResidentHook < Redmine::Hook::ViewListener
            context[:urlHash][:controller] = "rmresident"
           	context[:urlHash][:action] = 'edit'
 			context[:urlHash][:rm_resident_id] = context[:urlHash][:surveyForID]
-			context[:urlHash][:contact_id] = getContactID(context[:urlHash][:surveyForID])
 		end
 	end
 
@@ -200,7 +209,6 @@ class ResidentHook < Redmine::Hook::ViewListener
 			context[:url][:controller] = 'rmresident'
 			context[:url][:action] = 'edit'
 			context[:url][:rm_resident_id] = context[:container_id]
-			context[:url][:contact_id] = getContactID(context[:container_id])
 		end
 	end
 
@@ -209,7 +217,12 @@ class ResidentHook < Redmine::Hook::ViewListener
 		resident.id
 	end
 
-	def getContactID(residentID)
-		RmResident.find(residentID).resident_id
+	def getResidentType(context)
+		if context[:entity] == "WkCrmContact"
+			type = context[:curObj].contact_type
+		else
+			type = context[:curObj].account_type
+		end
+		type
 	end
 end
