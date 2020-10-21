@@ -34,7 +34,7 @@
 <%= form_tag({:controller => controllerName, :action => actionName}, :method => :get, :id => 'query_form') do %>
 <fieldset class="box tabular">
 	<%= hidden_field_tag 'resident_id', (@residentObj.blank? ? "" : (@residentObj.getCurrentResidentStatus.blank? ? "" : @residentObj.getCurrentResidentStatus[0].id)) %>
-	<%= hidden_field_tag 'resTypeID', @residentType.blank? ? "" : @residentType.id %>
+	<%= hidden_field_tag 'resTypeID', params[:resident_type_id] %>
 	<%= hidden_field_tag 'resType', params[:resident_type] %>
 	<%= hidden_field_tag 'model_name', params[:model_name] %>
 	<%= render partial: "rmresident/move_in_details", locals: { disable: @resAction == "MO" ? true : false, dateLbl: lblDate, loadDD: isLoadDD , id: 'M'} %>	

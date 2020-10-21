@@ -41,9 +41,11 @@ class ResidentHook < Redmine::Hook::ViewListener
 		end
 		unless context[:params].blank?
 			unless context[:params][:apartment_idM].blank?
+				id = !context[:accountObj].blank? ? getResident(context[:accountObj].id, 'WkAccount') : getResident(context[:contactObj].id, 'WkCrmContact') 
 				type.clear
 				type << 'RA'
 				type << 'rmresident'
+				type << id
 			end			
 		end
 		type
@@ -149,8 +151,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 		"RA"
 	end
 	
-	render_on :view_additional_lead_info, :partial => 'rmresident/move_in'	
-	render_on :additional_contact_info, :partial => 'rmresident/additional_resident_info'
+	render_on :view_additional_lead_info, :partial => 'rmresident/move_in'
 	
 	def add_survey_for(context={})
 		context[:survey_types][l(:label_resident)] = "RmResident"
@@ -184,7 +185,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def get_survey_url(context={})
 		if context[:urlHash][:surveyForType] == "RmResident" && context[:urlHash][:surveyForID].blank?
 			residentID = context[:params][:rm_resident_id]
-			context[:urlHash][:surveyForID] = context[:params][:lead_id].present? ? getResident(context[:params][:contact_id]) : residentID
+			context[:urlHash][:surveyForID] = context[:params][:lead_id].present? ? getResident(context[:params][:contact_id], 'WkCrmContact') : residentID
 		end
 	end
 
@@ -200,7 +201,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 		if context[:controller_name] == "rmresident"
 			context[:url][:container_type] = 'RmResident'
 			residentID = context[:params][:rm_resident_id]
-            context[:url][:container_id] = residentID.blank? ? getResident(context[:params][:contact_id]) : residentID
+            context[:url][:container_id] = residentID.blank? ? getResident(context[:params][:contact_id], 'WkCrmContact') : residentID
 		end
 	end
 
@@ -212,8 +213,8 @@ class ResidentHook < Redmine::Hook::ViewListener
 		end
 	end
 
-	def getResident(contact_id)
-		resident = RmResident.where(resident_id: contact_id, resident_type: 'WkCrmContact').first
+	def getResident(id, type)
+		resident = RmResident.where(resident_id: id, resident_type: type).first
 		resident.id
 	end
 

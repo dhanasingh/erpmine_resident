@@ -101,7 +101,6 @@ class RmresidentController < WkcrmController
 		@resObj = nil
 		unless params[:rm_resident_id].blank?
 			@resObj = RmResident.find(params[:rm_resident_id].to_i)
-			@resObj.resident_type == "WkAccount" ? @accountEntry = @resObj.resident : @conEditEntry = @resObj.resident
 		end		
 	end
 
@@ -280,7 +279,7 @@ class RmresidentController < WkcrmController
 			@leadObj = WkLead.find(params[:lead_id].to_i)
 		end
 		unless params[:resident_type_id].blank?
-			@residentType =  params[:resident_type] == "WkAccount" ?  WkAccount.find(params[:resident_type_id].to_i) :WkCrmContact.find(params[:resident_type_id].to_i)
+			@resident_name =  params[:resident_type] == "WkAccount" ?  WkAccount.find(params[:resident_type_id].to_i).name : WkCrmContact.find(params[:resident_type_id].to_i).name
 		end
 		unless params[:resident_id].blank?
 			@residentObj = RmResident.find(params[:resident_id].to_i)
@@ -473,6 +472,8 @@ class RmresidentController < WkcrmController
 		if errorMsg[0].blank?
 			if params[:model_name] == "WkLead"
 				convert
+			elsif params[:model_name] == "WkAccount" || params[:model_name] == "WkCrmContact"
+				convertResident(resType, resTypeID)
 			else
 				flash[:notice] = l(:notice_successful_convert)
 				redirect_to controller: 'rmresident', action: 'edit', rm_resident_id: @rmResidentObj.id
@@ -480,6 +481,16 @@ class RmresidentController < WkcrmController
 		else
 			flash[:error] = errorMsg[0]
 		end
+	end
+
+	def convertResident(resType, resTypeID)
+		model = resType == "WkAccount" ? WkAccount : WkCrmContact
+		modelObj = model.find(resTypeID.to_i)
+		resType == "WkAccount" ? modelObj.account_type = 'RA' : modelObj.contact_type = 'RA'
+		modelObj.updated_by_user_id = User.current.id
+		modelObj.save
+		flash[:notice] = l(:notice_successful_convert)
+		redirect_to controller: 'rmresident', action: 'edit', rm_resident_id: @rmResidentObj.id
 	end
 	
 	def destroy

@@ -4,6 +4,13 @@
 	relHash = crm_helper.relatedHash
 	relHash.delete("WkOpportunity")
 	relHash.delete("WkLead")
+	unless @resObj.blank?
+		if @resObj.resident_type == "WkAccount"
+			@accountEntry = @resObj.resident
+		else
+			@conEditEntry = @resObj.resident
+		end
+	end
 %>
 <%= form_tag({controller: controller_name, action: 'update'}, :method => :post, id: 'query_form') do %>
 	<div id="account_form">
@@ -19,7 +26,7 @@
 					<%= render partial: "wklead/lead_info", locals: { contactObj: nil, leadObj: nil, accountObj: @accountEntry, isAccount: true, isContact: false }%>
 				</div>
 				<div class="splitcontentleft" id='res_contact'>
-					<%= render partial: "wklead/lead_info", locals: { contactObj: @conEditEntry.blank? ? nil : @conEditEntry, leadObj: nil, accountObj: nil, isAccount: false, isContact: true }%>
+					<%= render partial: "wklead/lead_info", locals: { contactObj: @conEditEntry, leadObj: nil, accountObj: nil, isAccount: false, isContact: true }%>
 				</div>
 		<% else %>
 		<div class="splitcontent">
@@ -29,7 +36,7 @@
 				</div>
 			<% else %>
 				<div class="splitcontentleft">
-					<%= render partial: "wklead/lead_info", locals: { contactObj: @conEditEntry.blank? ? nil : @conEditEntry, leadObj: nil, accountObj: nil, isAccount: false, isContact: true }%>
+					<%= render partial: "wklead/lead_info", locals: { contactObj: @conEditEntry, leadObj: nil, accountObj: nil, isAccount: false, isContact: true }%>
 				</div>
 			<% end %>
 		<% end %>
@@ -39,7 +46,7 @@
 		</div>
 	</div>
 	<div style="clear:both;"></div>
-	<%= call_hook(:additional_contact_info) %>
+	<%= render partial: "rmresident/additional_resident_info" %>
 	<div>
 		<%= submit_tag l(:button_save) ,:id => 'wkaccount_save'%>
 	</div>

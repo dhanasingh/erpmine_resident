@@ -28,7 +28,7 @@
 <table>
 	<tr>
 		<th align="left"><%= l(:field_name) %></th>
-		<td align="left" style="padding-left:40px;"><%= @leadObj.blank? ? (@residentObj.blank? ? @residentType.name : @residentObj.resident.name) : (@leadObj.account ? @leadObj.account.name : @leadObj.contact.name) %></td>
+		<td align="left" style="padding-left:40px;"><%= @leadObj.blank? ? @resident_name : (@leadObj.account ? @leadObj.account.name : @leadObj.contact.name) %></td>
 		<%= hidden_field_tag 'lead_id', @leadObj.blank? ? "" : @leadObj.id %>
 	</tr>
 	<tr>
