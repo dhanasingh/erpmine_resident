@@ -151,4 +151,8 @@ class RmperformserviceController < WktimeController
 	def getLblSpentOn
 		l(:field_spent_on)
 	end
+  
+  def showAttachments
+    false
+  end
 end
