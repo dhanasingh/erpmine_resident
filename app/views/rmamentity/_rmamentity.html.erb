@@ -1,9 +1,7 @@
 <label><%= l(:label_resdient_amentity) %></label>
 <div>
 	<div class="wk-contextual">
-			<%= link_to l(:label_new_res_amentity), url_for(:controller => 'rmresident', :action => 'newresidentservice', :parentType => currentObj.class.name, :parentId => currentObj.id, :resdient_type => 'RA'), :class => 'icon icon-time-add' %>
-	</div>
-	
-	<%= render partial: "rmresident/resident_service_list", locals: { resservices: currentObj.blank? ? nil : currentObj.resident_services.includes(:issue).where(issues: { :tracker_id => [Setting.plugin_erpmine_resident['rm_amenity_tracker']] }), residentType: "RA"  } %>
-	
+			<%= link_to l(:label_new_res_amentity), url_for(controller: 'rmresident', action: 'newresidentservice', rm_resident_id: params[:rm_resident_id], service_type: 'RA'), :class => 'icon icon-time-add' %>
+	</div>	
+	<%= render partial: "rmresident/resident_service_list", locals: { resservices: @resObj.blank? ? nil : @resObj.resident_services.includes(:issue).where(issues: { :tracker_id => [Setting.plugin_erpmine_resident['rm_amenity_tracker']] }), serviceType: "RA" } %>	
 </div>

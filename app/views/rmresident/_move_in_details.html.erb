@@ -28,9 +28,8 @@
 <table>
 	<tr>
 		<th align="left"><%= l(:field_name) %></th>
-		<td align="left" style="padding-left:40px;"><%= @leadObj.blank? ? (@contactObj.blank? ? "" : @contactObj.last_name) : @leadObj.contact.last_name %></td>
-		<%= hidden_field_tag 'lead_id', @leadObj.blank? ? (@contactObj.blank? ? "" : @contactObj.lead.id) : @leadObj.id %>
-		<%= hidden_field_tag 'res_contact_id', @residentObj.blank? ? nil : @residentObj.resident_id %>
+		<td align="left" style="padding-left:40px;"><%= @leadObj.blank? ? @resident_name : (@leadObj.account ? @leadObj.account.name : @leadObj.contact.name) %></td>
+		<%= hidden_field_tag 'lead_id', @leadObj.blank? ? "" : @leadObj.id %>
 	</tr>
 	<tr>
 	

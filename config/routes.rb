@@ -7,8 +7,6 @@ get 'rmresident/index', :to => 'rmresident#index'
 
 get 'rmperformservice/index', :to => 'rmperformservice#index'
 
-get 'rmperformservice/new', :to => 'rmperformservice#new'
-
 get 'rmperformservice/getissues', :to => 'rmperformservice#getissues'
 
 get 'rmperformservice/getactivities', :to => 'rmperformservice#getactivities'
@@ -67,3 +65,5 @@ get 'rmresident/residentTransfer', :to => 'rmresident#residentTransfer'
 get 'rmresident/moveOut', :to => 'rmresident#moveOut'
 
 delete 'rmresident/residentservicedestroy', :to => 'rmresident#residentservicedestroy' 
+
+get 'rmresident/moveInResident', :to => 'rmresident#moveInResident' 

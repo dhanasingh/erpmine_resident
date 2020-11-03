@@ -1,25 +1,26 @@
-<h2><%= @residentType == "RS" ? l(:label_new_res_service) : l(:label_new_res_amentity) %></h2>
+<h2><%= @serviceType == "RS" ? l(:label_new_res_service) : l(:label_new_res_amentity) %></h2>
 <%  projectId = Setting.plugin_erpmine_resident['rm_project']
 	issueArr = Array.new
 	issueObj = nil
-	if @residentType == "RS"		
+	if @serviceType == "RS"		
 		trackerID = Setting.plugin_erpmine_resident['rm_service_tracker']
 	else
 		trackerID = Setting.plugin_erpmine_resident['rm_amenity_tracker']		
 	end
 	issueObj = Issue.where(:tracker_id => trackerID, :project_id => projectId ) unless trackerID.blank? || projectId.blank?
 	issueArr = issueObj.pluck(:subject, :id)  unless issueObj.blank?
-    resdientArr = residentArray(false)
+    resdientArr = residentArray(false, @resObj.resident_type)
 	frequencyHash = getRatePerHash(false)
 %>
 <%= form_tag({:controller => controller_name, :action => 'updateresidentservice'}, :method => :get, :id => 'query_form') do %>
 <fieldset class="box tabular">	
-	 <%= hidden_field_tag 'service_type', @residentType %>
+	 <%= hidden_field_tag 'service_type', @serviceType %>
+	 <%= hidden_field_tag 'rm_resident_id', @resObj.id %>
 	<%= labelled_fields_for :residentService, @residentService do |resident_fields| %>
 		<%= resident_fields.hidden_field :id %>
 		<table>
-			<tr><td style="padding-left:120px;"><%= resident_fields.select :resident_id, resdientArr, :selected => @contact.id %></td>
-				<td style="padding-left:440px;"><%= resident_fields.select :issue_id, issueArr, :label => @residentType == "RS" ? l(:label_service_name) : l(:label_amentity)  %></td>
+			<tr><td style="padding-left:120px;"><%= resident_fields.label :resident_id %><%= @resObj.resident.name %></td>
+				<td style="padding-left:440px;"><%= resident_fields.select :issue_id, issueArr, :label => @serviceType == "RS" ? l(:label_service_name) : l(:label_amentity)  %></td>
 			</tr>
 			<tr>
 				<td style="padding-left:120px;"><%= resident_fields.date_field :start_date, :required => true %></td>
@@ -27,7 +28,7 @@
 				<td style="padding-left:440px;"><%= resident_fields.date_field :end_date %></td>
 					<%= calendar_for('resident_end_date') %>
 			</tr>
-			<% if @residentType == "RS" %>
+			<% if @serviceType == "RS" %>
 				<tr>
 					<td style="padding-left:120px;"><%= resident_fields.select :frequency, frequencyHash.invert %></td>
 					<td style="padding-left:440px;"><%= resident_fields.text_field :no_of_occurrence %></td>

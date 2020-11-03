@@ -1,4 +1,21 @@
-class RmresidentController < WkcontactController
+# ERPmine - ERP for service industry
+# Copyright (C) 2011-2020  Adhi software pvt ltd
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+class RmresidentController < WkcrmController
   unloadable
 	menu_item	:apartment
 	require "active_support"
@@ -14,6 +31,7 @@ class RmresidentController < WkcontactController
 	include QueriesHelper
 	include RmapartmentHelper
 	include WkleadHelper
+	include WkcrmHelper
 	
 	def index
 		
@@ -22,24 +40,49 @@ class RmresidentController < WkcontactController
 		retrieve_date_range
 		locationId = session[controller_name][:location_id]
 		moveInOutId = session[controller_name][:moveinout_id]
-		residentName = session[controller_name][:resident_name]
+		filter_type = session[controller_name].try(:[], :polymorphic_filter)
+		contact_id = session[controller_name].try(:[], :contact_id)
+		account_id = session[controller_name].try(:[], :account_id)
+		parentType = ""
+		parentId = ""
 		location = WkLocation.where(:is_default => 'true').first
 		entries = nil
 		entries = RmResident.left_join_contacts
 		if moveInOutId == "MI"
-			entries = entries.where("move_out_date IS NULL")
+			entries = entries.where("rm_residents.move_out_date IS NULL")
 		elsif moveInOutId == "MO"
 			entries = entries.joins("LEFT JOIN rm_residents AS R2 ON rm_residents.resident_id = R2.resident_id 
 				AND R2.Move_out_date IS NULL").where("rm_residents.Move_out_date IS NOT NULL AND R2.resident_id IS NULL")
 		end
 		
-		unless residentName.blank?
-			entries = entries.where("LOWER(wk_crm_contacts.first_name) like LOWER('%#{residentName}%') OR LOWER(wk_crm_contacts.last_name) like LOWER('%#{residentName}%')")
+		# unless residentName.blank?
+		# 	entries = entries.where("LOWER(wk_crm_contacts.first_name) like LOWER('%#{residentName}%') OR LOWER(wk_crm_contacts.last_name) like LOWER('%#{residentName}%') OR LOWER(wk_accounts.name) like LOWER('%#{residentName}%')")
+		# end
+		if filter_type == '2' && !contact_id.blank?
+			parentType = 'WkCrmContact'
+			parentId = 	contact_id
+		elsif filter_type == '2' && contact_id.blank?
+			parentType = 'WkCrmContact'
+		end
+		
+		if filter_type == '3' && !account_id.blank?
+			parentType =  'WkAccount'
+			parentId = 	account_id
+		elsif filter_type == '3' && account_id.blank?
+			parentType =  'WkAccount'
+		end
+		
+		unless parentId.blank?
+			entries = entries.where("rm_residents.resident_id = ?", parentId)
+		end
+		
+		unless parentType.blank?
+			entries = entries.where("rm_residents.resident_type = ?", parentType)
 		end
 		
 		if (!locationId.blank? || !location.blank?) && locationId != "0"
 			location_id = !locationId.blank? ? locationId.to_i : location.id.to_i
-			entries = entries.where("wk_crm_contacts.location_id = #{location_id} ")
+			entries = entries.where("wk_crm_contacts.location_id = ? OR wk_accounts.location_id = ? ", location_id, location_id)
 		end
 		
 		if @from.blank? && !@to.blank?
@@ -55,27 +98,22 @@ class RmresidentController < WkcontactController
 	end
 	
 	def edit
-		super
 		@resObj = nil
 		unless params[:rm_resident_id].blank?
 			@resObj = RmResident.find(params[:rm_resident_id].to_i)
-		end
-		
+		end		
 	end
 
 	def update
-
-		if params[:contact_id].blank?
-			wkLead = update_without_redirect
-			if @wkContact.valid?
-				redirect_to :controller => "rmresident", :action => "movein", :tab => "rmresident", :res_action => "MI", :lead_id => wkLead.id
-				flash[:notice] = l(:notice_successful_update)
-			else
-				flash[:error] = @wkContact.errors.full_messages.join("<br>")
-				redirect_to :controller => controller_name,:action => 'edit'
-			end
+		resident_type = !params[:resident_id].blank? ? getResidentobj(params[:resident_id]).resident_type : params[:resident_type]
+		action_name = !params[:resident_id].blank? ? 'index' : 'movein'
+		resObj = resident_type == "WkAccount" ? accountSave : contactSave
+		if resObj.valid?
+			redirect_to controller: controller_name, action: action_name, tab: "rmresident", res_action: "MI", resident_type_id: resObj.id, resident_type: resident_type
+			flash[:notice] = l(:notice_successful_update)
 		else
-			super
+			flash[:error] = resObj.errors.full_messages.join("<br>")
+			redirect_to controller: controller_name, action: 'edit'
 		end
 	end
 	
@@ -129,10 +167,10 @@ class RmresidentController < WkcontactController
 		else
 			@residentService = RmResidentService.find(params[:res_service_id].to_i)
 		end
-		unless params[:parentId].blank?
-			@contact  = WkCrmContact.find(params[:parentId].to_i)
+		unless params[:rm_resident_id].blank?
+			@resObj = RmResident.find(params[:rm_resident_id].to_i)
 		end
-		@residentType = params[:resdient_type]	
+		@serviceType = params[:service_type]	
 			
 	end
 	
@@ -140,7 +178,7 @@ class RmresidentController < WkcontactController
 		resService = RmResidentService.find(params[:id].to_i)
 		resService.destroy
 		flash[:notice] = l(:notice_successful_delete)
-		redirect_back_or_default :controller => 'rmresident', :action => 'edit', :contact_id => resService.resident_id
+		redirect_back_or_default controller: 'rmresident', action: 'edit', rm_resident_id: resService.rm_resident_id
 	end
 	
 	def updateresidentservice
@@ -150,7 +188,7 @@ class RmresidentController < WkcontactController
 			@residentService = RmResidentService.find(params[:residentService][:id].to_i)
 		end
 		@residentService.safe_attributes = params[:residentService]
-		@residentService.resident_type = "WkCrmContact"
+		@residentService.rm_resident_id = params[:rm_resident_id]
 		if @residentService.new_record?
 			@residentService.created_by_user_id = User.current.id
 		end
@@ -162,26 +200,25 @@ class RmresidentController < WkcontactController
 				# addNewAmenityEntry(@residentService, invInterval[0], 1)
 				# delAutoGenAmenityEntries(@residentService)
 			# end
-			redirect_to :controller_name => 'rmresident', :action => 'edit' , :contact_id => @residentService.resident_id, :tab => controller_name
+			redirect_to controller_name: 'rmresident', action: 'edit' , rm_resident_id: @residentService.rm_resident_id, tab: controller_name
 			flash[:notice] = l(:notice_successful_update)
 	   else
-			@contact  = WkCrmContact.find(params[:residentService][:resident_id].to_i)		
 			flash[:error] = @residentService.errors.full_messages.join("<br>")
-			redirect_to :action => 'newresidentservice', :resdient_type => params[:service_type], :parentId => params[:residentService][:resident_id], :res_service_id => @residentService.id
+			redirect_to action: 'newresidentservice', service_type: params[:service_type], rm_resident_id: params[:rm_resident_id], res_service_id: @residentService.id
 	   end
 	end
 	
 	def set_filter_session
-		if params[:searchlist].blank? && session[controller_name].nil?
-			session[controller_name] = {:period_type => params[:period_type], :period => params[:period],:location_id => params[:location_id], :resident_name => params[:resident_name], :from => @from, :to => @to, :moveinout_id => params[:moveinout_id]}
-		elsif params[:searchlist] == controller_name
-			session[controller_name][:period_type] = params[:period_type]
-			session[controller_name][:period] = params[:period]
-			session[controller_name][:location_id] = params[:location_id]
-			session[controller_name][:resident_name] = params[:resident_name]
-			session[controller_name][:from] = params[:from]
-			session[controller_name][:to] = params[:to]
-			session[controller_name][:moveinout_id] = params[:moveinout_id]
+		session[controller_name] = {:from => @from, :to => @to} if session[controller_name].nil?
+		if params[:searchlist] == controller_name || api_request?
+			filters = [:period_type, :period, :from, :to, :contact_id, :account_id, :polymorphic_filter, :location_id, :moveinout_id]
+			filters.each do |param|
+				if params[param].blank? && session[controller_name].try(:[], param).present?
+					session[controller_name].delete(param)
+				elsif params[param].present?
+					session[controller_name][param] = params[param]
+				end
+			end
 		end
 	end
 	
@@ -237,13 +274,12 @@ class RmresidentController < WkcontactController
 	
 	def movein
 		@leadObj = nil
-		@contactObj = nil
 		@residentObj = nil
 		unless params[:lead_id].blank?
 			@leadObj = WkLead.find(params[:lead_id].to_i)
 		end
-		unless params[:contact_id].blank?
-			@contactObj = WkCrmContact.find(params[:contact_id].to_i)
+		unless params[:resident_type_id].blank?
+			@resident_name =  params[:resident_type] == "WkAccount" ?  WkAccount.find(params[:resident_type_id].to_i).name : WkCrmContact.find(params[:resident_type_id].to_i).name
 		end
 		unless params[:resident_id].blank?
 			@residentObj = RmResident.find(params[:resident_id].to_i)
@@ -268,16 +304,16 @@ class RmresidentController < WkcontactController
 				updateMaterialEntries(resident_id, moveOutDate, assetEntryObj.rate_per, materialEntryObj, materialEntryObj.spent_on.to_date, true)
 			end
 
-			errorMsg = residentMoveIn(params[:res_contact_id], 'WkCrmContact', params[:move_in_date], nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
+			errorMsg = residentMoveIn(params[:resTypeID], params[:resType], params[:move_in_date], nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
 			if errorMsg.blank?
 				projectId = getResidentPluginSetting('rm_project')
 				rentalIssue = getRentalIssue
 				entryDate = (params[:move_in_date].to_date).at_beginning_of_month.next_month
-				currentResident = getCurrentResident(params[:res_contact_id], entryDate)
+				currentResident = getCurrentResident(params[:resTypeID], entryDate, params[:resType])
 				invoice_count =  getMaterialEntries(entryDate, rentalIssue, currentResident, invItemId)
 				
 				if invoice_count == 0
-					save_material_entry_and_asset_properties(nil, projectId, User.current.id, rentalIssue.id, params[:rateM], entryDate, invItemId, params[:res_contact_id], 'WkCrmContact', params[:move_in_hr], params[:move_in_min])
+					save_material_entry_and_asset_properties(nil, projectId, User.current.id, rentalIssue.id, params[:rateM], entryDate, invItemId, params[:resTypeID], params[:resType], params[:move_in_hr], params[:move_in_min])
 					assetObj = getMaterialEntryObj(invItemId)
 					materialObj = assetObj.material_entry
 					updateMaterialEntries(resident_id, nil, assetObj.rate_per, materialObj, entryDate, false)
@@ -290,7 +326,7 @@ class RmresidentController < WkcontactController
 				flash[:error] = errorMsg
 			end
 		end
-		redirect_to :controller => 'rmresident', :action => 'edit', :contact_id => params[:res_contact_id]
+		redirect_to controller: 'rmresident', action: 'edit', rm_resident_id: params[:resident_id]
 	end
 	
 	def moveOut
@@ -395,5 +431,78 @@ class RmresidentController < WkcontactController
 		respond_to do |format|
 			format.text  { render :plain => bedArr }
 		end
+	end
+
+	def getAccountType
+		'RA'
+	end
+	
+	def getOrderAccountType
+		'RA'
+	end
+	
+	def getOrderContactType
+		'RA'
+	end
+	
+	def getAccountDDLbl
+		l(:label_account)
+	end
+	
+	def getAdditionalDD
+	end
+	
+	def getAccountLbl
+		l(:label_account)
+	end
+
+	def moveInResident
+		resTypeID = params[:resTypeID]
+		resType = params[:resType]
+		unless params[:lead_id].blank?
+			@lead = WkLead.find(params[:lead_id])
+			resTypeID = @lead.account.blank? ? @lead.contact_id : @lead.account_id
+			resType = @lead.account.blank? ? "WkCrmContact" : "WkAccount"
+		end
+		moveInDate = params[:move_in_date]
+		moveInHr = params[:move_in_hr]
+		moveInMm = params[:move_in_min]
+		invItemId = params[:bed_idM].blank? ? params[:apartment_idM] : params[:bed_idM]	
+		errorMsg = residentMoveIn(resTypeID, resType, moveInDate, nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], moveInHr, moveInMm)
+		if errorMsg[0].blank?
+			if params[:model_name] == "WkLead"
+				convert
+			elsif params[:model_name] == "WkAccount" || params[:model_name] == "WkCrmContact"
+				convertResident(resType, resTypeID)
+			else
+				flash[:notice] = l(:notice_successful_convert)
+				redirect_to controller: 'rmresident', action: 'edit', rm_resident_id: @rmResidentObj.id
+			end
+		else
+			flash[:error] = errorMsg[0]
+		end
+	end
+
+	def convertResident(resType, resTypeID)
+		model = resType == "WkAccount" ? WkAccount : WkCrmContact
+		modelObj = model.find(resTypeID.to_i)
+		resType == "WkAccount" ? modelObj.account_type = 'RA' : modelObj.contact_type = 'RA'
+		modelObj.updated_by_user_id = User.current.id
+		modelObj.save
+		flash[:notice] = l(:notice_successful_convert)
+		redirect_to controller: 'rmresident', action: 'edit', rm_resident_id: @rmResidentObj.id
+	end
+	
+	def destroy
+		resObj = RmResident.find(params[:rm_resident_id].to_i)
+		model = resObj.resident_type == "WkAccount" ? WkAccount : WkCrmContact
+		resident = model.find(resObj.resident_id.to_i)
+		if resident.destroy
+			flash[:notice] = l(:notice_successful_delete)
+			delete_documents(params[:rm_resident_id])
+		else
+			flash[:error] = resident.errors.full_messages.join("<br>")
+		end
+		redirect_back_or_default :action => 'index', :tab => params[:tab]
 	end
 end

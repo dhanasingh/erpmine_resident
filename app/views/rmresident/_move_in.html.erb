@@ -1,11 +1,8 @@
-<% unless leadObj.blank? %>
-	
-	<%#= link_to l(:button_move_in), url_for(:controller => "rmresident", :action => "movein", :tab => "rmresident", :lead_id => leadObj.blank? ? nil : leadObj.id, :res_action => "MI"),  :class=> "buttons" %>
 	<%
 		wktime_helper = Object.new.extend(WktimeHelper)
 		host_with_subdir = wktime_helper.getHostAndDir(request)
+		lead_id = moveInObj.id if moveInObj.class.name == 'WkLead'
+		resident_type_id = moveInObj.id if moveInObj.class.name != 'WkLead'
+		resident_type = moveInObj.class.name if moveInObj.class.name != 'WkLead'
 	%>
-	
-	<input type="button" value="<%= l(:button_move_in) %>" onclick="window.location.href='<%= url_for(:controller => "rmresident", :action => "movein", :host => host_with_subdir, :only_path => true, :tab => "rmresident", :lead_id => leadObj.blank? ? nil : leadObj.id, :res_action => "MI") %>'" />
-	
-<% end %>
+	<%= button_tag(l(:button_move_in), type: 'button', onclick: "window.location.href='#{url_for(controller: "rmresident", action: "movein", host: host_with_subdir, only_path: true, tab: "rmresident", lead_id: lead_id, res_action: "MI", model_name: moveInObj.class.name, resident_type: resident_type, resident_type_id: resident_type_id)}'") %>

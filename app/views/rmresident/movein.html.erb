@@ -1,7 +1,7 @@
 <% if @resAction == "MI" %>
 	<% pageLbl =  l(:button_move_in)  %>
-	<% controllerName = "wklead" %>
-	<% actionName = "convert" %>
+	<% controllerName = "rmresident" %>
+	<% actionName = "moveInResident" %>
 	<% lblDate = l(:field_spent_on) %>
 	<% isLoadDD = true %>
 <% elsif @resAction == "T" %>
@@ -33,7 +33,10 @@
 <% end %>
 <%= form_tag({:controller => controllerName, :action => actionName}, :method => :get, :id => 'query_form') do %>
 <fieldset class="box tabular">
-	<%= hidden_field_tag 'resident_id', (@contactObj.blank? ? "" : (@contactObj.residents.current_move_out_resident.blank? ? "" : @contactObj.residents.current_move_out_resident[0].id)) %>
+	<%= hidden_field_tag 'resident_id', (@residentObj.blank? ? "" : (@residentObj.getCurrentResidentStatus.blank? ? "" : @residentObj.getCurrentResidentStatus[0].id)) %>
+	<%= hidden_field_tag 'resTypeID', params[:resident_type_id] %>
+	<%= hidden_field_tag 'resType', params[:resident_type] %>
+	<%= hidden_field_tag 'model_name', params[:model_name] %>
 	<%= render partial: "rmresident/move_in_details", locals: { disable: @resAction == "MO" ? true : false, dateLbl: lblDate, loadDD: isLoadDD , id: 'M'} %>	
 </fieldset>
 <%= submit_tag pageLbl ,:id => 'move_in_save'%>
