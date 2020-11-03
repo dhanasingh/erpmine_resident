@@ -4,7 +4,7 @@ Redmine::Plugin.register :erpmine_resident do
   name 'ERPmine Resident Management plugin'
   author 'Adhi Software Pvt Ltd'
   description 'This is a plugin for Resident Management'
-  version '0.2.4'
+  version '0.3'
   url 'http://www.redmine.org/plugins/wk-time'
   author_url 'http://www.adhisoftware.co.in/'
   
