@@ -1,0 +1,20 @@
+api.array :rm_apartment, api_meta(:total_count => @entry_count, :offset => @offset, :limit => @limit, unseen_count: @unseen_count) do
+  ratePerHash = getRatePerHash(false)
+  @productInventory.each do |entry|
+    api.entry do
+      api.apartment entry["parent_name"].blank? ? entry["asset_name"] : entry["parent_name"]
+      api.bed entry["parent_name"].blank? ? '' : entry["asset_name"]
+      api.attribute entry.id.blank? ? entry["product_attribute_name"] : (entry.product_attribute.blank? ? "" : entry.product_attribute.name)
+      api.serial_number entry["serial_number"]
+      api.rate entry.id.blank? ? ratePerHash[entry["rate_per"]] : ratePerHash[entry.asset_property["rate_per"]]
+      api.loggable_asset checked_image entry.is_loggable?
+      api.location entry.id.blank? ? entry["location_name"] : (entry.location.blank? ? "" : entry.location.name)
+    end
+  end
+end
+
+api.headers do
+  api.location getAllLocations
+  api.available availabilityHash.invert
+  api.project getProjectArr
+end

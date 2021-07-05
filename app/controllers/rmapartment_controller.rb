@@ -20,6 +20,7 @@ class RmapartmentController < WkproductitemController
   menu_item	:apartment
   include RmapartmentHelper
   include RmresidentHelper
+	accept_api_auth :index
 
     def newAsset
 		true

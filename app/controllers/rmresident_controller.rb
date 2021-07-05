@@ -19,7 +19,7 @@ class RmresidentController < WkcrmController
   unloadable
 	menu_item	:apartment
 	require "active_support"
-	accept_api_auth :updateresidentservice
+	accept_api_auth :updateresidentservice, :index
 	
  
 
@@ -32,6 +32,7 @@ class RmresidentController < WkcrmController
 	include RmapartmentHelper
 	include WkleadHelper
 	include WkcrmHelper
+	include WkassetHelper
 	
 	def index
 		
@@ -93,8 +94,15 @@ class RmresidentController < WkcrmController
 			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date BETWEEN ? AND ?", @from, @to) : 
 			(moveInOutId == "MO" ? entries.where("rm_residents.move_out_date BETWEEN ? AND ?", @from, @to) : entries)
 		end
-		
-		formPagination(entries)
+		respond_to do |format|
+			format.html do
+				formPagination(entries)
+				render :layout => !request.xhr?
+			end
+			format.api do
+				@resident_entries = entries
+			end
+		end
 	end
 	
 	def edit
@@ -446,14 +454,14 @@ class RmresidentController < WkcrmController
 	end
 	
 	def getAccountDDLbl
-		l(:label_account)
+		l(:field_account)
 	end
 	
 	def getAdditionalDD
 	end
 	
 	def getAccountLbl
-		l(:label_account)
+		l(:field_account)
 	end
 
 	def moveInResident
