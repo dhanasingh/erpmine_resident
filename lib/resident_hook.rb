@@ -226,4 +226,10 @@ class ResidentHook < Redmine::Hook::ViewListener
 		end
 		type
 	end
+
+	def get_resident_settings(context={})
+		settings = context[:configs][:settings] || {}
+		settings[:resident_module] = true
+		Setting.plugin_erpmine_resident.each{ |key, val| settings[key] = val if val != "" }
+	end
 end
