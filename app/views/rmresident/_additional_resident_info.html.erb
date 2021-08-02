@@ -18,12 +18,12 @@
 				%>
 				<table>
 					<tr>
-						<th align="left"><%= l(:label_apartment) %></th>
-						<td align="left" style="padding-left:40px;">
+						<th style="text-align:left;"><%= l(:label_apartment) %></th>
+						<td style="text-align:left;" style="padding-left:40px;">
 							<%= apartmentName %>
 						</td>
-						<th align="left"><%= l(:label_move_in_date) %></th>
-						<td align="left" >
+						<th style="text-align:left;"><%= l(:label_move_in_date) %></th>
+						<td style="text-align:left;" >
 							<%= moveInDate.strftime('%F') %>
 						</td>
 						<td>
@@ -36,15 +36,15 @@
 					<tr>
 					<% unless @resObj.getCurrentResidentStatus[0].bed.blank? %>
 					
-						<th align="left"><%= l(:label_bed) %></th>
-						<td align="left" style="padding-left:40px;"><%= bedName  %></td>
+						<th style="text-align:left;"><%= l(:label_bed) %></th>
+						<td style="text-align:left;" style="padding-left:40px;"><%= bedName  %></td>
 					<% else %>
-						<th align="left"></th>
-						<td align="left" style="padding-left:40px;"></td>
+						<th style="text-align:left;"></th>
+						<td style="text-align:left;" style="padding-left:40px;"></td>
 					<% end %>
 					<% unless moveOutDate.blank?  %>
-						<th align="left"><%= l(:field_move_out_date) %></th>
-						<td align="left"><%= moveOutDate.strftime('%F')  %></td>
+						<th style="text-align:left;"><%= l(:field_move_out_date) %></th>
+						<td style="text-align:left;"><%= moveOutDate.strftime('%F')  %></td>
 					<% end %>
 					</tr>
 				</table>

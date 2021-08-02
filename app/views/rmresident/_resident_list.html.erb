@@ -20,9 +20,11 @@
 					  <td class="lbl-txt-align"><%=h entry.bed.blank? ? "" : entry.bed.asset_property.name %></td>
 					  <td class="lbl-txt-align"><%=h entry.move_in_date.strftime("%Y-%m-%d") unless entry.move_in_date.blank? %></td>
 					  <td class="lbl-txt-align"><%=h entry.move_out_date.strftime("%Y-%m-%d") unless entry.move_out_date.blank? %></td>
-					  <td align="center">
+					  <td style="text-align:center;">
 						  <%= link_to image_tag('edit.png'), {controller: controller.controller_name, action: 'edit', rm_resident_id: entry.id}, title: l(:button_edit) %> 
+						<% if controller.deletePermission %>  
 							<%= link_to image_tag('delete.png'), {controller: controller.controller_name, action: 'destroy', rm_resident_id: entry.id, tab: controller.controller_name},  :data => {:confirm => l(:text_are_you_sure)}, :method => :delete, title: l(:button_delete) %>
+						<% end %>
 					  </td>
 				</tr>
 			<% end %>

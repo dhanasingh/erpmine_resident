@@ -229,6 +229,15 @@ class ResidentHook < Redmine::Hook::ViewListener
 
 	def get_resident_settings(context={})
 		settings = context[:configs][:settings] || {}
+		userlanguage = User.current.language
+		if userlanguage != 'en'
+			languageSet = context[:configs][:languageSet] || {}
+			path = "plugins/erpmine_resident/config/locales/en.yml"
+			File.open(path).each do |line|
+				key, value = line.chomp.split(":")
+				languageSet[key.strip] = value.strip if value.present?
+			end
+		end
 		settings[:resident_module] = true
 		Setting.plugin_erpmine_resident.each{ |key, val| settings[key] = val if val != "" }
 	end

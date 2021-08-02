@@ -1,0 +1,86 @@
+api.rm_resident do
+	rateHash = getRatePerHash(false)
+	if @resObj.present?
+    services = @resObj.resident_services.includes(:issue).where(issues: { tracker_id: [Setting.plugin_erpmine_resident['rm_service_tracker']] })
+    amenities = @resObj.resident_services.includes(:issue).where(issues: { tracker_id: [Setting.plugin_erpmine_resident['rm_amenity_tracker']] })
+    api.resident_id @resObj.id
+    api.resident_type @resObj.resident_type
+    api.resident_type_id @resObj.resident_id
+    entry = @resObj.resident
+    if @resObj.resident_type == "WkAccount"
+      api.account_id entry&.id
+      api.account_name entry&.name
+      api.account_category entry&.account_category
+    else
+      api.contact_id entry&.id
+      api.salutation entry&.salutation
+      api.first_name entry&.first_name
+      api.last_name entry&.last_name
+      api.related_to entry&.account_id ? 'WkAccount' : 'WkCrmContact'
+      api.related_parent entry&.account_id ? entry&.account_id : entry&.contact_id
+      api.relationship_id entry&.relationship_id
+      api.contact_title entry&.title
+      api.assigned_user_id entry&.assigned_user_id
+      api.department entry&.department
+      api.contact_type entry&.contact_type
+    end
+		api.location_id entry&.location_id
+		api.description entry&.description
+		api.address(
+			address_id: entry&.address&.id, address1: entry&.address&.address1, address2: entry&.address&.address2,
+			work_phone: entry&.address&.work_phone, mobile: entry&.address&.mobile, email: entry&.address&.email,
+			fax: entry&.address&.fax, city: entry&.address&.city, country: entry&.address&.country,
+			state: entry&.address&.state, pin: entry&.address&.pin, website: entry&.address&.website
+		) if entry&.address.present?
+
+    api.apartment_name @resObj&.apartment&.asset_property&.name
+    api.bed_name @resObj&.bed&.asset_property&.name
+    api.move_in_date @resObj&.move_in_date&.strftime('%F')
+    api.move_out_date @resObj&.move_out_date&.strftime('%F')
+    api.current_status @resObj.getCurrentResidentStatus
+    
+		if services.present?
+      api.array :services do
+        services.each do |service|
+          api.service do
+            api.id service.id
+            api.issue_id service.issue_id
+            api.rm_resident_id service.rm_resident_id
+            api.type 'RS'
+            api.service_name service.issue.subject
+            api.start_date service.start_date
+            api.end_date service.end_date
+            api.frequency service.frequency
+            api.no_of_occurrence service.no_of_occurrence
+          end
+        end
+      end
+    end
+
+    if amenities.present?
+      api.array :amenities do
+        amenities.each do |amenity|
+          api.amenity do
+            api.id amenity.id
+            api.issue_id amenity.issue_id
+            api.rm_resident_id amenity.rm_resident_id
+            api.type 'RA'
+            api.service_name amenity.issue.subject
+            api.start_date amenity.start_date
+            api.end_date amenity.end_date
+          end
+        end
+      end
+    end
+	end
+end
+
+api.headers do
+  api.categories getEnumerations('AC')
+  api.locations getAllLocations
+  api.assignees get_crm_Users
+  api.move_out_reason getEnumerations('MOR')
+  api.frequencies getRatePerHash(false).invert
+  api.resident_services getServices('RS')
+  api.resident_amenities getServices('RA')
+end
