@@ -17,4 +17,14 @@
 
 module RmperformserviceHelper
 include RmapartmentHelper
+  def getResIssues
+    issues = Array.new
+    allIssues = Issue.where(:project_id => controller.getDefultProject)
+    issues << [ "", ""] if !Setting.plugin_redmine_wktime['wktime_allow_blank_issue'].blank? &&
+    Setting.plugin_redmine_wktime['wktime_allow_blank_issue'].to_i == 1
+    allIssues.each do |i|
+      issues << [ i.to_s , i.id ]
+    end
+    issues
+  end
 end
