@@ -42,9 +42,10 @@ api.rm_apartment do
 end
 
 api.headers do
+  inventory_item_id = @inventoryItem&.id.present? ? @inventoryItem&.id : nil
   api.product getProductArr(controller.getItemType)
   api.rate_per getRatePerHash(false).invert
   api.owner_type getAssetTypeHash(false).invert
-  api.parent parentArray(controller.getItemType, true, false, nil, nil)
+  api.parent parentArray(controller.getItemType, true, false, nil, inventory_item_id)
   api.attribute getAttributeArr(controller.getItemType)
 end
