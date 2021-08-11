@@ -12,7 +12,7 @@ api.rm_apartment do
   api.asset_name asset_property&.name || ''
   api.is_loggable @inventoryItem&.is_loggable || false
   api.currency Setting.plugin_redmine_wktime['wktime_currency'] || ''
-  api.rate asset_property&.rate || ''
+  api.rate asset_property&.rate.to_s || ''
   api.rate_per asset_property&.rate_per || ''
   api.owner_type asset_property&.owner_type || ''
   api.parent_id parent_id || ''
