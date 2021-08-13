@@ -545,10 +545,11 @@ class RmresidentController < WkcrmController
 					else
 						convertResident(resType, resTypeID) if params[:model_name] == "WkAccount" || params[:model_name] == "WkCrmContact"
 						flash[:notice] = l(:notice_successful_convert)
-						redirect_to controller: 'rmresident', action: 'edit', rm_resident_id: @rmResidentObj.id
+						redirect_to controller: 'rmresident', action: 'edit', rm_resident_id: @rmResident.id
 					end
 				else
 					flash[:error] = errorMsg
+					redirect_to controller: 'rmresident', action: 'index', tab: 'rmresident'
 				end
 			}
 			format.api{

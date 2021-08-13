@@ -200,7 +200,7 @@ include WklogmaterialHelper
 		errorMsg = ""
 		projectId = getResidentPluginSetting('rm_project')
 		rentalIssue = getRentalIssue		
-		errorMsg = l(:label_movein_error_msg) if projectId.blank? && rentalIssue.blank?
+		errorMsg = l(:label_movein_error_msg) if projectId.blank? || rentalIssue.blank?
 		if errorMsg.blank?
 			# save Resident
 			errorMsg +=  saveResident(nil, resId, resType, moveInDate,nil, apartmentId, bedId)
