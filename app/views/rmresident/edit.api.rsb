@@ -83,4 +83,5 @@ api.headers do
   api.frequencies getRatePerHash(false).invert
   api.resident_services getServices('RS')
   api.resident_amenities getServices('RA')
+  api.defaultLocation WkLocation.default_id
 end

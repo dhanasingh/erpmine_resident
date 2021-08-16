@@ -42,10 +42,13 @@ api.rm_apartment do
 end
 
 api.headers do
+  parent_id = @inventoryItem.blank? ? (@parentEntry.blank? ? nil : @parentEntry.id) : @inventoryItem.parent_id
   inventory_item_id = @inventoryItem&.id.present? ? @inventoryItem&.id : nil
   api.product getProductArr(controller.getItemType)
   api.rate_per getRatePerHash(false).invert
   api.owner_type getAssetTypeHash(false).invert
   api.parent parentArray(controller.getItemType, true, false, nil, inventory_item_id)
   api.attribute getAttributeArr(controller.getItemType)
+  api.defaultLocation WkLocation.default_id
+  api.parent_id parent_id
 end
