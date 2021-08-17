@@ -48,7 +48,7 @@
 			<%=h select_tag("apartment_id#{id}", options_for_select(parentArr, :selected=> @residentObj.blank? ? parentArr : @residentObj.apartment_id), :onchange => "apartmentBasedBeds(this.id, 'bed_id#{id}', #{User.current.id}, 'rate#{id}', 'lblBed#{id}', #{loadDD} )", :disabled => disable, :required => true) %>
 		</td>
 		<th style="text-align:left;" style="padding-left:40px;">
-			<label id="lblBed<%= id %>"  style='display:<%= showBed %>;'"><%= l(:label_beds) %></label>
+			<span id="lblBed<%= id %>"  style='display:<%= showBed %>;'><%= l(:label_beds) %></span>
 		</th>
 		<td style="text-align:left;" style="padding-left:40px;">
 			<%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? bedArr : @residentObj.bed_id), :style=>"display:#{ showBed 
