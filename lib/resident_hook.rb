@@ -241,4 +241,9 @@ class ResidentHook < Redmine::Hook::ViewListener
 		settings[:resident_module] = true
 		Setting.plugin_erpmine_resident.each{ |key, val| settings[key] = val if val != "" }
 	end
+
+	def additional_type_label(context={})
+		typeHash = context[:typeHash] || {}
+		typeHash['RA'] = l(:label_resident)
+	end
 end
