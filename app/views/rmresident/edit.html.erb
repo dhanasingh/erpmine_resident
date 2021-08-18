@@ -20,7 +20,7 @@
 		<%= hidden_field_tag('address_id', @resObj.blank? ? "" : @resObj.resident.address_id) %>
 		<% addressObj = @resObj.blank? ? "" : @resObj.resident.address %>
 		<% if @resObj.blank? %>
-			<p><%= l(:label_type) %><span style=padding-left:40px;><%=h select_tag("resident_type", options_for_select(relHash.invert), onchange: "residentType()") %></span></p>
+			<p><%= l(:field_type) %><span style=padding-left:40px;><%=h select_tag("resident_type", options_for_select(relHash.invert), onchange: "residentType()") %></span></p>
 			<div class="splitcontent">
 				<div class="splitcontentleft" id='res_account'>
 					<%= render partial: "wklead/lead_info", locals: { contactObj: nil, leadObj: nil, accountObj: @accountEntry, isAccount: true, isContact: false }%>

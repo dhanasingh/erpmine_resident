@@ -24,6 +24,7 @@ class RmResident < ActiveRecord::Base
   belongs_to :wk_crm_contact, -> { where(rm_residents: {resident_type: 'WkCrmContact'}) }, foreign_key: 'resident_id'
   scope :current_move_out_resident,  -> { where(:move_out_date => nil) }
   has_many :resident_services, foreign_key: "rm_resident_id", :class_name => 'RmResidentService', :dependent => :restrict_with_error
+  validates_presence_of :apartment_id, :resident_id
   
 	# Ensure resident.resident (contact Object) returns nil unless resident.resident_type == "WkCrmContact"
 	def resident
@@ -52,7 +53,7 @@ class RmResident < ActiveRecord::Base
     if self.resident_type == "WkAccount"
       self.resident.name 
     else
-      self.resident.first_name + "  " + self.resident.last_name
+      (self.resident&.first_name || '') + "  " + self.resident&.last_name
     end
   end
   

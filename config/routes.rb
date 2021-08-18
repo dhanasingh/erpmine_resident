@@ -48,7 +48,7 @@ post 'rmresident/update', :to => 'rmresident#update'
 
 get 'rmresident/newresidentservice', :to => 'rmresident#newresidentservice'
 
-get 'rmresident/updateresidentservice', :to => 'rmresident#updateresidentservice'
+post 'rmresident/updateresidentservice', :to => 'rmresident#updateresidentservice'
 
 delete 'rmresident/destroy', :to => 'rmresident#destroy'
 
@@ -60,10 +60,10 @@ get 'rmresident/apartmentBeds', :to => 'rmresident#apartmentBeds'
 
 get 'rmresident/bedRate', :to => 'rmresident#bedRate'
 
-get 'rmresident/residentTransfer', :to => 'rmresident#residentTransfer'
+post 'rmresident/residentTransfer', :to => 'rmresident#residentTransfer'
 
-get 'rmresident/moveOut', :to => 'rmresident#moveOut'
+post 'rmresident/moveOut', :to => 'rmresident#moveOut'
 
 delete 'rmresident/residentservicedestroy', :to => 'rmresident#residentservicedestroy' 
 
-get 'rmresident/moveInResident', :to => 'rmresident#moveInResident' 
+post 'rmresident/moveInResident', :to => 'rmresident#moveInResident' 

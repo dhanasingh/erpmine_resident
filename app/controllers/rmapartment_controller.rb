@@ -20,6 +20,8 @@ class RmapartmentController < WkproductitemController
   menu_item	:apartment
   include RmapartmentHelper
   include RmresidentHelper
+	include WkassetHelper
+	accept_api_auth :index, :edit, :update
 
     def newAsset
 		true
@@ -74,11 +76,11 @@ class RmapartmentController < WkproductitemController
 	end				
 	
 	def lblInventory
-		l(:label_attributes)
+		l(:label_attribute_plural)
 	end
 	
 	def lblAsset
-		l(:field_rate)
+		l(:label_rate)
 	end
 	
 	def editcomponentLbl
@@ -86,16 +88,7 @@ class RmapartmentController < WkproductitemController
 	end
 
 	def set_filter_session
-		if params[:searchlist] == controller_name
-			session[controller_name] = Hash.new if session[controller_name].nil?
-			filters = [:location_id, :availability, :project_id]
-			filters.each do |param|
-				if params[param].blank? && session[controller_name].try(:[], param).present?
-					session[controller_name].delete(param)
-				elsif params[param].present?
-					session[controller_name][param] = params[param]
-				end
-			end
-		end
+		filters = [:location_id, :availability, :project_id]
+		super(filters)
 	end
 end

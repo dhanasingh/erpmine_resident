@@ -27,14 +27,14 @@
 
 <table>
 	<tr>
-		<th align="left"><%= l(:field_name) %></th>
-		<td align="left" style="padding-left:40px;"><%= @leadObj.blank? ? @resident_name : (@leadObj.account ? @leadObj.account.name : @leadObj.contact.name) %></td>
+		<th style="text-align:left;"><%= l(:field_name) %></th>
+		<td style="text-align:left;" style="padding-left:40px;"><%= @leadObj.blank? ? @resident_name : (@leadObj.account ? @leadObj.account.name : @leadObj.contact.name) %></td>
 		<%= hidden_field_tag 'lead_id', @leadObj.blank? ? "" : @leadObj.id %>
 	</tr>
 	<tr>
 	
-		<th align="left"><%= l(:label_location) %></th>
-		<td align="left" style="padding-left:40px;"><%=h select_tag("location_id#{id}", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', (@residentObj.blank? ? nil : @residentObj.apartment.location_id), false), :onchange => "locationbasedApartment(this.id, 'apartment_id#{id}', #{User.current.id}, 'bed_id#{id}', 'lblBed#{id}', 'rate#{id}', #{loadDD} )", :disabled => disable) %></td>	
+		<th style="text-align:left;"><%= l(:label_location) %></th>
+		<td style="text-align:left;" style="padding-left:40px;"><%=h select_tag("location_id#{id}", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', (@residentObj.blank? ? nil : @residentObj.apartment.location_id), false), :onchange => "locationbasedApartment(this.id, 'apartment_id#{id}', #{User.current.id}, 'bed_id#{id}', 'lblBed#{id}', 'rate#{id}', #{loadDD} )", :disabled => disable) %></td>	
 		<%# if @resAction == "T" %>
 			<!-- <th align="left"><label><%#= l(:label_is_transfer) %></label></th>
 			<td style="padding-left:40px;"><%#= check_box_tag("is_transfer#{id}", 1, false) %></td> -->
@@ -43,14 +43,14 @@
 	</tr>
 	
 	<tr>
-		<th align="left"><%= l(:label_apartment) %></th>
-		<td align="left" style="padding-left:40px;">
+		<th style="text-align:left;"><%= l(:label_apartment) %></th>
+		<td style="text-align:left;" style="padding-left:40px;">
 			<%=h select_tag("apartment_id#{id}", options_for_select(parentArr, :selected=> @residentObj.blank? ? parentArr : @residentObj.apartment_id), :onchange => "apartmentBasedBeds(this.id, 'bed_id#{id}', #{User.current.id}, 'rate#{id}', 'lblBed#{id}', #{loadDD} )", :disabled => disable, :required => true) %>
 		</td>
-		<th align="left" style="padding-left:40px;">
-			<label id="lblBed<%= id %>"  style='display:<%= showBed %>;'"><%= l(:label_beds) %></label>
+		<th style="text-align:left;" style="padding-left:40px;">
+			<span id="lblBed<%= id %>"  style='display:<%= showBed %>;'><%= l(:label_beds) %></span>
 		</th>
-		<td align="left" style="padding-left:40px;">
+		<td style="text-align:left;" style="padding-left:40px;">
 			<%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? bedArr : @residentObj.bed_id), :style=>"display:#{ showBed 
 			};", :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per#{id}', 'apartment_id#{id}'  )", :disabled => disable ) %>
 		</td>
@@ -71,15 +71,15 @@
 			end
 			rentalRatePer = rateHash[rentalRatePer]
 		%>
-		<th align="left"><%= l(:label_rental_rate)  %></th>
-		<td align="left" style="padding-left:40px;">
+		<th style="text-align:left;"><%= l(:label_rental_rate)  %></th>
+		<td style="text-align:left;" style="padding-left:40px;">
 				<%= text_field_tag "rate#{id}",  rentalRate, :disabled => disable %>
 		</td>
 		<td><span id="move_in_rate_per<%=id%>"><%=rentalRatePer%></span></td>
 	</tr>
 	<tr>
-		<th align="left"><%= dateLbl  %></th>
-		<td align="left" style="padding-left:40px;" ><%= date_field_tag('move_in_date',  moveInDateLbl.blank? ? Date.today : moveInDateLbl, {:id => 'move_in_date', :size => 12, :style => "width:160px;", :required => true}) + calendar_for('move_in_date') %><%#=h select_tag("move_in_hr", options_for_number_select(0, 23, 1, Time.now.strftime("%H") ), :disabled => disable) %>
+		<th style="text-align:left;"><%= dateLbl  %></th>
+		<td style="text-align:left;" style="padding-left:40px;" ><%= date_field_tag('move_in_date',  moveInDateLbl.blank? ? Date.today : moveInDateLbl, {:id => 'move_in_date', :size => 12, :style => "width:160px;", :required => true}) + calendar_for('move_in_date') %><%#=h select_tag("move_in_hr", options_for_number_select(0, 23, 1, Time.now.strftime("%H") ), :disabled => disable) %>
 		<%#=h select_tag("move_in_min", options_for_number_select(0, 59, 1, Time.now.strftime("%M") ), :disabled => disable) %></td>
 		<% if @resAction == "MO" %>
 			<th style="padding-left:130px;"><label><%= l(:label_move_out_reason) %></label></th>

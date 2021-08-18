@@ -31,7 +31,7 @@
 <% if @resAction == "T" %>
 	<%= render partial: "rmresident/move_in_details", locals: { disable: true, dateLbl: lblDate, loadDD: isLoadDDT, id: 'T'} %>
 <% end %>
-<%= form_tag({:controller => controllerName, :action => actionName}, :method => :get, :id => 'query_form') do %>
+<%= form_tag({controller: controllerName, action: actionName}, method: :post, id: 'query_form') do %>
 <fieldset class="box tabular">
 	<%= hidden_field_tag 'resident_id', (@residentObj.blank? ? "" : (@residentObj.getCurrentResidentStatus.blank? ? "" : @residentObj.getCurrentResidentStatus[0].id)) %>
 	<%= hidden_field_tag 'resTypeID', params[:resident_type_id] %>

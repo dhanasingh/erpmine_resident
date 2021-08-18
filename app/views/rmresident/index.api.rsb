@@ -1,0 +1,20 @@
+api.array :rm_residents, api_meta(:total_count => @entry_count, :offset => @offset, :limit => @limit, unseen_count: @unseen_count) do
+  @resident_entries.each do |entry|
+    api.entry do
+      api.id entry.id
+      api.resident_type entry.resident_type
+      api.name entry&.name
+      api.location entry&.resident&.location&.name 
+      api.apartment entry&.apartment&.asset_property&.name
+      api.bed entry&.bed&.asset_property&.name
+      api.move_in_date entry&.move_in_date&.strftime("%Y-%m-%d")
+      api.move_out_date entry&.move_out_date&.strftime("%Y-%m-%d")
+    end
+  end
+end
+api.headers do
+  api.contact relatedValues('WkCrmContact', nil, controller.getOrderContactType, true, controller.additionalContactType, controller.additionalAccountType)
+  api.account options_for_wktime_account(true, controller.getOrderAccountType, controller.additionalAccountType)
+  api.location getAllLocations
+  api.status moveInOutHash.invert
+end
