@@ -5,13 +5,13 @@ This Plugin has the following module:
 === 1) Resident
   Create Leads
   Move In Resident
-  Move Out Resident	
+  Move Out Resident
   Transfer Resident
   Perform Services
   Generate Bills
   Receive Payments
 
-For more information on features, please refer to the user guide 
+For more information on features, please refer to the user guide
 
 	http://www.erpmine.org/attachments/download/24/ERPmine-User-Guide.pdf
 
@@ -30,15 +30,14 @@ When uninstalling the plugin, be sure to remove the db changes by running
 This plugin uses js and css assets and it will be copied to public/plugin_asset/erpmine_resident
 folder upon server startup, so please make sure public/plugin_asset/erpmine_resident has proper access.
 
-=== Release Notes for v0.3
+=== Release Notes for v0.3.1
 
   Feature:
-    - Allow Rental for Accounts
-    - Remove intermediate page for perform service
+    - Add Rest API
 
 === Dependency:
 
-  This plugin is compatible with ERPmine 4.1 and above versions.
+  This plugin is compatible with ERPmine 4.3.1 and above versions.
 
 === Customization:
 
