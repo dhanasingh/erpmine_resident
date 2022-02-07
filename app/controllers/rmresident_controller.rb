@@ -20,11 +20,11 @@ class RmresidentController < WkcrmController
 	menu_item	:apartment
 	require "active_support"
 	accept_api_auth :updateresidentservice, :index, :edit, :update, :movein, :moveInResident, :residentTransfer, :moveOut, :locationApartments, :apartmentBeds, :bedRate
-	
- 
+
+
 
 	require_sudo_mode :updateresidentservice
-	
+
 	rescue_from Query::StatementInvalid, :with => :query_statement_invalid
 
 	helper :queries
@@ -33,9 +33,9 @@ class RmresidentController < WkcrmController
 	include WkleadHelper
 	include WkcrmHelper
 	include WkassetHelper
-	
+
 	def index
-		
+
 		entries = nil
 		set_filter_session
 		retrieve_date_range
@@ -52,10 +52,10 @@ class RmresidentController < WkcrmController
 		if moveInOutId == "MI"
 			entries = entries.where("rm_residents.move_out_date IS NULL")
 		elsif moveInOutId == "MO"
-			entries = entries.joins("LEFT JOIN rm_residents AS R2 ON rm_residents.resident_id = R2.resident_id 
+			entries = entries.joins("LEFT JOIN rm_residents AS R2 ON rm_residents.resident_id = R2.resident_id
 				AND R2.Move_out_date IS NULL").where("rm_residents.Move_out_date IS NOT NULL AND R2.resident_id IS NULL")
 		end
-		
+
 		# unless residentName.blank?
 		# 	entries = entries.where("LOWER(wk_crm_contacts.first_name) like LOWER('%#{residentName}%') OR LOWER(wk_crm_contacts.last_name) like LOWER('%#{residentName}%') OR LOWER(wk_accounts.name) like LOWER('%#{residentName}%')")
 		# end
@@ -65,33 +65,33 @@ class RmresidentController < WkcrmController
 		elsif filter_type == '2' && contact_id.blank?
 			parentType = 'WkCrmContact'
 		end
-		
+
 		if filter_type == '3' && !account_id.blank?
 			parentType =  'WkAccount'
 			parentId = 	account_id
 		elsif filter_type == '3' && account_id.blank?
 			parentType =  'WkAccount'
 		end
-		
+
 		unless parentId.blank?
 			entries = entries.where("rm_residents.resident_id = ?", parentId)
 		end
-		
+
 		unless parentType.blank?
 			entries = entries.where("rm_residents.resident_type = ?", parentType)
 		end
-		
+
 		if (!locationId.blank? || !location.blank?) && locationId != "0"
 			location_id = !locationId.blank? ? locationId.to_i : location.id.to_i
 			entries = entries.where("wk_crm_contacts.location_id = ? OR wk_accounts.location_id = ? ", location_id, location_id)
 		end
-		
+
 		if @from.blank? && !@to.blank?
 			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date <= ?", @to) : (moveInOutId == "MO" ? entries.where("rm_residents.move_out_date <= ?", @to) : entries)
 		elsif !@from.blank? && @to.blank?
 			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date >= ?", @from) : (moveInOutId == "MO" ? entries.where("rm_residents.move_out_date >= ?", @from) : entries)
 		elsif !@from.blank? && !@to.blank?
-			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date BETWEEN ? AND ?", @from, @to) : 
+			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date BETWEEN ? AND ?", @from, @to) :
 			(moveInOutId == "MO" ? entries.where("rm_residents.move_out_date BETWEEN ? AND ?", @from, @to) : entries)
 		end
 		entries = entries.order("COALESCE(rm_residents.move_out_date, CURRENT_TIMESTAMP) desc, rm_residents.move_in_date desc ")
@@ -105,12 +105,12 @@ class RmresidentController < WkcrmController
 			end
 		end
 	end
-	
+
 	def edit
 		@resObj = nil
 		unless params[:rm_resident_id].blank?
 			@resObj = RmResident.find(params[:rm_resident_id].to_i)
-		end		
+		end
 	end
 
 	def update
@@ -136,21 +136,21 @@ class RmresidentController < WkcrmController
 					else
 						render plain: resObj.id
 					end
-				else			
-					@error_messages = errorMsg.split('\n')	
+				else
+					@error_messages = errorMsg.split('\n')
 					render :template => 'common/error_messages.api', :status => :unprocessable_entity, :layout => nil
 				end
 			}
 		end
 	end
-	
+
 	def formPagination(entries)
 		@entry_count = entries.count
     setLimitAndOffset()
 		@resident_entries = entries.limit(@limit).offset(@offset)
 	end
-  
-  def setLimitAndOffset		
+
+  def setLimitAndOffset
 		if api_request?
 			@offset, @limit = api_offset_and_limit
 			if !params[:limit].blank?
@@ -163,9 +163,9 @@ class RmresidentController < WkcrmController
 			@entry_pages = Paginator.new @entry_count, per_page_option, params['page']
 			@limit = @entry_pages.per_page
 			@offset = @entry_pages.offset
-		end	
+		end
   end
-	
+
 	def resident_entry_scope(options={})
 		@query.results_scope(options)
   end
@@ -173,19 +173,19 @@ class RmresidentController < WkcrmController
 	def getContactType
 		'RA'
 	end
-	
+
 	def lblNewContact
 		l(:label_new_item, l(:label_resident))
 	end
-	
+
 	def contactLbl
 		l(:label_resident)
 	end
-	
+
 	def getContactController
 		'wkcrmcontact'
 	end
-	
+
 	def newresidentservice
 		@residentService = nil
 		@contact = nil
@@ -197,17 +197,17 @@ class RmresidentController < WkcrmController
 		unless params[:rm_resident_id].blank?
 			@resObj = RmResident.find(params[:rm_resident_id].to_i)
 		end
-		@serviceType = params[:service_type]	
-			
+		@serviceType = params[:service_type]
+
 	end
-	
+
 	def residentservicedestroy
 		resService = RmResidentService.find(params[:id].to_i)
 		resService.destroy
 		flash[:notice] = l(:notice_successful_delete)
 		redirect_back_or_default controller: 'rmresident', action: 'edit', rm_resident_id: resService.rm_resident_id
 	end
-	
+
 	def updateresidentservice
 		errorMsg = ""
 		if params[:residentService][:id].blank?
@@ -239,19 +239,19 @@ class RmresidentController < WkcrmController
 			format.api{
 				if errorMsg.blank?
 					render plain: errorMsg, layout: nil
-				else			
+				else
 					@error_messages = errorMsg.split('\n')
 					render template: 'common/error_messages.api', status: :unprocessable_entity, layout: nil
 				end
 			}
 		end
 	end
-	
+
 	def set_filter_session
 		filters = [:period_type, :period, :from, :to, :contact_id, :account_id, :polymorphic_filter, :location_id, :moveinout_id]
 		super(filters, {:from => @from, :to => @to})
 	end
-	
+
 	# Retrieves the date range based on predefined ranges or specific from/to param dates
 	def retrieve_date_range
 		@free_period = false
@@ -260,7 +260,7 @@ class RmresidentController < WkcrmController
 		period = session[controller_name][:period]
 		fromdate = session[controller_name][:from]
 		todate = session[controller_name][:to]
-		if (period_type == '1' || (period_type.nil? && !period.nil?)) 
+		if (period_type == '1' || (period_type.nil? && !period.nil?))
 		  case period.to_s
 		  when 'today'
 			@from = @to = Date.today
@@ -286,22 +286,22 @@ class RmresidentController < WkcrmController
 			@to = Date.today
 		  when 'current_year'
 			@from = Date.civil(Date.today.year, 1, 1)
-			@to = Date.today 
+			@to = Date.today
 		  end
-		
+
 		elsif period_type == '2' || (period_type.nil? && (!fromdate.nil? || !todate.nil?))
 		  begin; @from = fromdate.to_s.to_date unless fromdate.blank?; rescue; end
 		  begin; @to = todate.to_s.to_date unless todate.blank?; rescue; end
 		  @free_period = true
-		else				
+		else
 			@from = Date.civil(Date.today.year, Date.today.month, 1)
 			@to = Date.today #(@from >> 1) - 1
-		end    
+		end
 
 		@from, @to = @to, @from if @from && @to && @from > @to
 
 	end
-	
+
 	def movein
 		@leadObj = nil
 		@residentObj = nil
@@ -316,7 +316,7 @@ class RmresidentController < WkcrmController
 		end
 		@resAction = params[:res_action]
 	end
-	
+
 	def residentTransfer
 		errorMsg = ""
 		errorMsg = moveOutValidation
@@ -328,10 +328,10 @@ class RmresidentController < WkcrmController
 			invItemId = params[:bed_idM].blank? ? params[:apartment_idM] : params[:bed_idM]
 			oldInvItemId = resObj.bed_id.blank? ? resObj.apartment_id : resObj.bed_id
 			assetEntryObj = getMaterialEntryObj(oldInvItemId)
-			materialEntryObj = assetEntryObj.material_entry
+			materialEntryObj = assetEntryObj.material_entry || WkMaterialEntry.new
 			residentMoveOut(resident_id, move_out_date, params[:move_in_hr],  params[:move_in_min], nil)
-			if materialEntryObj.spent_on.to_date == moveOutDate
-				updateMaterialEntries(resident_id, moveOutDate, assetEntryObj.rate_per, materialEntryObj, materialEntryObj.spent_on.to_date, true)
+			if materialEntryObj.spent_on&.to_date == moveOutDate
+				updateMaterialEntries(resident_id, moveOutDate, assetEntryObj.rate_per, materialEntryObj, materialEntryObj.spent_on&.to_date, true)
 			end
 
 			errorMsg = residentMoveIn(params[:resTypeID], params[:resType], params[:move_in_date].to_date, nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
@@ -341,7 +341,7 @@ class RmresidentController < WkcrmController
 				entryDate = (params[:move_in_date].to_date).at_beginning_of_month.next_month
 				currentResident = getCurrentResident(params[:resTypeID], entryDate, params[:resType])
 				invoice_count =  getMaterialEntries(entryDate, rentalIssue, currentResident, invItemId)
-				
+
 				if invoice_count == 0
 					save_material_entry_and_asset_properties(nil, projectId, User.current.id, rentalIssue.id, params[:rateM], entryDate, invItemId, params[:resTypeID], params[:resType], params[:move_in_hr], params[:move_in_min])
 					assetObj = getMaterialEntryObj(invItemId)
@@ -363,14 +363,14 @@ class RmresidentController < WkcrmController
 			format.api{
 				if errorMsg.blank?
 					render plain: errorMsg, layout: nil
-				else			
-					@error_messages = errorMsg.split('\n')	
+				else
+					@error_messages = errorMsg.split('\n')
 					render template: 'common/error_messages.api', status: :unprocessable_entity, layout: nil
 				end
 			}
 		end
 	end
-	
+
 	def moveOut
 		errorMsg = ""
 		errorMsg = moveOutValidation
@@ -393,30 +393,30 @@ class RmresidentController < WkcrmController
 			format.api{
 				if errorMsg.blank?
 					render plain: errorMsg, layout: nil
-				else			
-					@error_messages = errorMsg.split('\n')	
+				else
+					@error_messages = errorMsg.split('\n')
 					render template: 'common/error_messages.api', status: :unprocessable_entity, layout: nil
 				end
 			}
 		end
 	end
-	
+
 	def moveOutValidation
 		errorMsg = ""
 		resObj = nil
 		unless params[:resident_id].blank?
-			resObj = RmResident.find(params[:resident_id].to_i)			
+			resObj = RmResident.find(params[:resident_id].to_i)
 		end
 		if Date.parse(params[:move_in_date]) < Date.parse(resObj.move_in_date.strftime('%F') )
 			errorMsg = l(:label_move_out_validate_msg)
 		end
 		errorMsg
 	end
-	
+
 	def getItemType
 		'RA'
 	end
-	
+
 	def locationApartments
 		invItemObj = []
 		if !params[:location_id].blank?
@@ -425,20 +425,20 @@ class RmresidentController < WkcrmController
 			invItemObj = WkInventoryItem.where(:product_type => "RA", :parent_id => nil).includes(:asset_property).where.not(:wk_asset_properties => {:matterial_entry_id => nil} )
 		end
 		respond_to do |format|
-			format.text  { 
+			format.text  {
 				apartmentArr = ""
 				invItemObj.each{|item| apartmentArr << item.id.to_s() + ',' +  (item.asset_property.blank? ? "" : item.asset_property.name.to_s) + "\n" }
 				render :plain => apartmentArr
 			}
-			format.json  { 
+			format.json  {
 				apartmentArr = []
 				invItemObj.each{|item| apartmentArr << { value: item.id, label: item.asset_property.blank? ? "" : item.asset_property.name.to_s }}
 				render(json: apartmentArr)
 			}
 		end
-	
+
 	end
-	
+
 	def apartmentBeds
 		invItemObj = []
 		if !params[:apartment_id].blank?
@@ -450,35 +450,35 @@ class RmresidentController < WkcrmController
 			# invItemObj = WkInventoryItem.where(:product_type => "RA").includes(:asset_property)
 		end
 		respond_to do |format|
-			format.text  { 
+			format.text  {
 				bedArr = ""
 				invItemObj.each{|item| bedArr << item.id.to_s() + ',' +  (item.asset_property.blank? ? "" : item.asset_property.name.to_s) + "\n" }
 				render :plain => bedArr
 			}
-			format.json  { 
+			format.json  {
 				bedArr = []
 				invItemObj.each{|item| bedArr << { value: item.id, label: item.asset_property.blank? ? "" : item.asset_property.name.to_s }}
 				render(json: bedArr)
 			}
 		end
 	end
-	
+
 	def bedRate
 		invItemObj = []
 		bedArr = ""
 		invId = params[:bed_id]
 		if !params[:apartment_id].blank?
-			itemArr = WkInventoryItem.where(:parent_id => params[:apartment_id].to_i).pluck(:id)		
+			itemArr = WkInventoryItem.where(:parent_id => params[:apartment_id].to_i).pluck(:id)
 			if itemArr.blank?
 				invId = params[:apartment_id]
 			elsif itemArr.include? params[:bed_id]
 				invId = params[:bed_id]
 			end
 		end
-		
+
 		if !invId.blank?
 			invItemObj = WkInventoryItem.where(:product_type => "RA", :id => invId.to_i).includes(:asset_property).where(:wk_asset_properties => {:matterial_entry_id => nil} )
-		end	
+		end
 		if invItemObj.blank?
 			if !params[:apartment_id].blank?
 				invItemObj = WkInventoryItem.where(:product_type => "RA", :id => params[:apartment_id].to_i).includes(:asset_property)#.where(:wk_asset_properties => {:matterial_entry_id => nil} )
@@ -487,12 +487,12 @@ class RmresidentController < WkcrmController
 		wkasset_helper = Object.new.extend(WkassetHelper)
 		rateHash = wkasset_helper.getRatePerHash(false)
 		respond_to do |format|
-			format.text  { 
+			format.text  {
 				bedArr = ""
 				invItemObj.each{|item| bedArr << (item.asset_property.blank? ? "" : rateHash[item.asset_property.rate_per].to_s)  + ',' +  (item.asset_property.blank? ? "" : item.asset_property.rate.to_s) }
 				render :plain => bedArr
 			}
-			format.json  { 
+			format.json  {
 				bedArr = []
 				invItemObj.each{|item| bedArr << { rate: item.asset_property.blank? ? "" : item.asset_property.rate.to_s, rate_per: item.asset_property.blank? ? "" : rateHash[item.asset_property.rate_per].to_s }}
 				render(json: bedArr)
@@ -503,22 +503,22 @@ class RmresidentController < WkcrmController
 	def getAccountType
 		'RA'
 	end
-	
+
 	def getOrderAccountType
 		'RA'
 	end
-	
+
 	def getOrderContactType
 		'RA'
 	end
-	
+
 	def getAccountDDLbl
 		l(:field_account)
 	end
-	
+
 	def getAdditionalDD
 	end
-	
+
 	def getAccountLbl
 		l(:field_account)
 	end
@@ -560,8 +560,8 @@ class RmresidentController < WkcrmController
 						convertResident(resType, resTypeID)
 					end
 					render plain: errorMsg, layout: nil
-				else			
-					@error_messages = errorMsg.split('\n')	
+				else
+					@error_messages = errorMsg.split('\n')
 					render template: 'common/error_messages.api', status: :unprocessable_entity, layout: nil
 				end
 			}
@@ -575,7 +575,7 @@ class RmresidentController < WkcrmController
 		modelObj.updated_by_user_id = User.current.id
 		modelObj.save
 	end
-	
+
 	def destroy
 		resObj = RmResident.find(params[:rm_resident_id].to_i)
 		model = resObj.resident_type == "WkAccount" ? WkAccount : WkCrmContact
