@@ -30,14 +30,13 @@ When uninstalling the plugin, be sure to remove the db changes by running
 This plugin uses js and css assets and it will be copied to public/plugin_asset/erpmine_resident
 folder upon server startup, so please make sure public/plugin_asset/erpmine_resident has proper access.
 
-=== Release Notes for v0.3.1
+=== Release Notes for v0.3.2
 
-  Feature:
-    - Add Rest API
+  - Minor code changes.
 
 === Dependency:
 
-  This plugin is compatible with ERPmine 4.3.1 and above versions.
+  This plugin is compatible with ERPmine 4.5 and above versions.
 
 === Customization:
 
