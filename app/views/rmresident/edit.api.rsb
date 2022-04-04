@@ -11,6 +11,7 @@ api.rm_resident do
       api.account_id entry&.id
       api.account_name entry&.name
       api.account_category entry&.account_category
+      api.account_number entry&.account_number
     else
       api.contact_id entry&.id
       api.salutation entry&.salutation
@@ -38,7 +39,7 @@ api.rm_resident do
     api.move_in_date @resObj&.move_in_date&.strftime('%F')
     api.move_out_date @resObj&.move_out_date&.strftime('%F')
     api.current_status @resObj.getCurrentResidentStatus
-    
+
 		if services.present?
       api.array :services do
         services.each do |service|
