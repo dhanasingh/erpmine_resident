@@ -94,7 +94,7 @@ class RmresidentController < WkcrmController
 			entries = moveInOutId == "MI" ? entries.where("rm_residents.move_in_date BETWEEN ? AND ?", @from, @to) :
 			(moveInOutId == "MO" ? entries.where("rm_residents.move_out_date BETWEEN ? AND ?", @from, @to) : entries)
 		end
-		entries = entries.order("COALESCE(rm_residents.move_out_date, CURRENT_TIMESTAMP) desc, rm_residents.move_in_date desc ")
+		entries = entries.order((Arel.sql "COALESCE(rm_residents.move_out_date, CURRENT_TIMESTAMP) desc, rm_residents.move_in_date desc "))
 		respond_to do |format|
 			format.html do
 				formPagination(entries)
