@@ -1,23 +1,23 @@
 class ResidentHook < Redmine::Hook::ViewListener
 	def external_erpmine_menus(context={})
 		menuArr = Array.new(3)
-		# define resident menu controller name		
-		menuArr = ["rmapartment", "rmresident", "rmperformservice"] 
+		# define resident menu controller name
+		menuArr = ["rmapartment", "rmresident", "rmperformservice"]
 		menuArr
 	end
-	
+
 	def view_asset_inventory(context={})
 		"<input type='hidden' value='1' name='available_quantity' id='available_quantity' > "
 	end
-	
+
 	def view_asset_fields(context={})
 		false
 	end
-	
+
 	def view_product_item(context={})
 		"<input type='hidden' value='1' name='available_quantity' id='available_quantity' >"
 	end
-	
+
 	def view_accordion_section(context={})
 		sectionArr = Array.new(3)
 		sectionArr = ["rmresident", "rmamentity"] if getResidentType(context) == "RA"
@@ -29,28 +29,28 @@ class ResidentHook < Redmine::Hook::ViewListener
 		removed_sections = ["wkaccountproject"] if getResidentType(context) == "RA"
 		removed_sections
 	end
-	
+
 	def controller_convert_contact(context={})
-		type = Array.new		
+		type = Array.new
 		type << 'C'
 		type << 'wkcrmcontact'
 		if !context[:accountObj].blank?
-			type.clear		
+			type.clear
 			type << 'A'
 			type << 'wkcrmaccount'
 		end
 		unless context[:params].blank?
 			unless context[:params][:apartment_idM].blank?
-				id = !context[:accountObj].blank? ? getResident(context[:accountObj].id, 'WkAccount') : getResident(context[:contactObj].id, 'WkCrmContact') 
+				id = !context[:accountObj].blank? ? getResident(context[:accountObj].id, 'WkAccount') : getResident(context[:contactObj].id, 'WkCrmContact')
 				type.clear
 				type << 'RA'
 				type << 'rmresident'
 				type << id
-			end			
+			end
 		end
 		type
 	end
-	
+
 	#After the lead conversion update the resident, billable projects, asset properties and log asset (material entry, spent for)
 	def controller_updated_contact(context={})
 		errorMsg = ""
@@ -62,12 +62,12 @@ class ResidentHook < Redmine::Hook::ViewListener
 			moveInHr = context[:params][:move_in_hr]
 			moveInMm = context[:params][:move_in_min]
 			invItemId = context[:params][:bed_idM].blank? ? context[:params][:apartment_idM] : context[:params][:bed_idM]
-			
+
 			errorMsg = rmresident_helper.residentMoveIn(contactId, contactType, moveInDate, nil, invItemId, context[:params][:apartment_idM], context[:params][:bed_idM], context[:params][:rateM], moveInHr, moveInMm)
-		end	
-		errorMsg	
+		end
+		errorMsg
 	end
-	
+
 	def controller_after_save_invoice(context={})
 		resident_helper = Object.new.extend(RmresidentHelper)
 		invEndDt = context[:attributes]["end_date"]
@@ -76,17 +76,17 @@ class ResidentHook < Redmine::Hook::ViewListener
 		nextBillStart = invEndDt.to_date + 1.day
 		resident_helper.addUnbilledEntries(parentId.to_i, nextBillStart, 1, parentType)
 	end
-	
+
 	def additional_product_type(context={})
 		productTypeHash
 	end
-	
+
 	def external_enum_type(context={})
 		enumHash = Hash.new()
 		enumHash["MOR"] = l(:label_move_out_reason)
 		enumHash
 	end
-	
+
 	def get_invoice_issue_period(context={})
 		resident_helper = Object.new.extend(RmresidentHelper)
 		invStartDt = context[:attributes]["start_date"]
@@ -96,25 +96,25 @@ class ResidentHook < Redmine::Hook::ViewListener
 		period = resident_helper.getResidentServicePeriod(invStartDt, invEndDt, parentId, parentType, context[:issue])
 		period
 	end
-	
+
 	def additional_type(context={})
 		"RA"
 	end
-	
+
 	def payment_additional_where_query(context={})
 		" OR CASE WHEN p.parent_type = 'WkAccount'  THEN a.account_type ELSE c.contact_type END = 'RA'"
 	end
-	
+
 	def additional_spent_type(context={})
 		productTypeHash
 	end
-	
+
 	def productTypeHash
 		productHash = Hash.new()
 		productHash["RA"] = l(:label_resident) + " " + l(:label_asset)
 		productHash
 	end
-	
+
 	def retrieve_time_entry_query_model(context={})
 		model = nil
 		if !context[:params][:spent_type].blank? && context[:params][:spent_type] == "RA"
@@ -122,15 +122,15 @@ class ResidentHook < Redmine::Hook::ViewListener
 		end
 		model
 	end
-	
+
 	def time_entry_detail_where_query(context={})
 		time_entry_where_query(context[:params][:spent_type])
 	end
-	
+
 	def time_entry_report_where_query(context={})
 		time_entry_where_query(context[:params][:spent_type])
 	end
-	
+
 	def time_entry_where_query(spentType)
 		strQuery = ""
 		if !spentType.blank? && spentType == "RA"
@@ -138,32 +138,32 @@ class ResidentHook < Redmine::Hook::ViewListener
 		end
 		strQuery
 	end
-	
+
 	def create_time_entry_log_type(context={})
 		"RA"
 	end
-	
+
 	def update_time_entry_log_type(context={})
 		"RA"
 	end
-	
+
 	def modify_product_log_type(context={})
 		"RA"
 	end
-	
+
 	render_on :view_additional_lead_info, :partial => 'rmresident/move_in'
-	
+
 	def add_survey_for(context={})
 		context[:survey_types][l(:label_resident)] = "RmResident"
 	end
-	  
+
 	def find_survey_for(context={})
       result = RmResident.left_join_contacts
       surveyForIDSql = " (rm_residents.id = #{context[:surveyForID]})"
       surveyForSql = " (rm_residents.id = #{context[:surveyForID]} OR LOWER(first_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(last_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(name) LIKE LOWER('#{context[:surveyFor]}'))" unless context[:surveyFor].blank?
 	  result = result.where(context[:method] == "search" ? surveyForSql : surveyForIDSql)
 	  .select("rm_residents.id, wk_accounts.name as account_name, first_name, last_name, resident_type")
-      
+
       result.each do  |r|
 				residentName = r.resident_type == "WkAccount" ? r.account_name : r.first_name + " " + r.last_name
 		context[:data] << {id: r.id, label: "Resident #" + r.id.to_s + ": " + residentName, value: r.id}
@@ -245,5 +245,11 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def additional_type_label(context={})
 		typeHash = context[:typeHash] || {}
 		typeHash['RA'] = l(:label_resident)
+	end
+
+	def get_inventory_url(context={})
+		if context[:spentType] == 'RA'
+			context[:url][:controller] = 'rmapartment'
+		end
 	end
 end
