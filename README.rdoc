@@ -30,13 +30,13 @@ When uninstalling the plugin, be sure to remove the db changes by running
 This plugin uses js and css assets and it will be copied to public/plugin_asset/erpmine_resident
 folder upon server startup, so please make sure public/plugin_asset/erpmine_resident has proper access.
 
-=== Release Notes for v0.3.4
+=== Release Notes for v0.3.5
 
-  - Redmine 5.0 compatibility
+   - Minor code changes
 
 === Dependency:
 
-  This plugin is compatible with ERPmine v4.5.2 and above versions.
+  This plugin is compatible with ERPmine v4.6 and above versions.
 
 === Customization:
 
