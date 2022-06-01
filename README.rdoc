@@ -36,7 +36,7 @@ folder upon server startup, so please make sure public/plugin_asset/erpmine_resi
 
 === Dependency:
 
-  This plugin is compatible with ERPmine v4.5.2 and above versions.
+  This plugin is compatible with ERPmine v4.6 and above versions.
 
 === Customization:
 
