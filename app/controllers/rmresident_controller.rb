@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class RmresidentController < WkcrmController
-  unloadable
+
 	menu_item	:apartment
 	require "active_support"
 	accept_api_auth :updateresidentservice, :index, :edit, :update, :movein, :moveInResident, :residentTransfer, :moveOut, :locationApartments, :apartmentBeds, :bedRate
