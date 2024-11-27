@@ -1,15 +1,15 @@
 <% 	parentArr = Array.new
 	bedArr = Array.new
 	locationId = nil
-	locationObj = WkLocation.order(:name)	
+	locationObj = WkLocation.order(:name)
 	unless locationObj.blank?
 		locationId = locationObj[0].id
 		locationObj.each do | entry |
 			if entry.is_default?
-				locationId = entry.id			
+				locationId = entry.id
 			end
-		end		
-	end 
+		end
+	end
 	locationId = @residentObj.blank? ? locationId : @residentObj.apartment.location_id
 	currentParent = nil
 	parentArr = parentArray(controller.getItemType, false, loadDD, locationId, currentParent)
@@ -32,16 +32,16 @@
 		<%= hidden_field_tag 'lead_id', @leadObj.blank? ? "" : @leadObj.id %>
 	</tr>
 	<tr>
-	
-		<th style="text-align:left;"><%= l(:label_location) %></th>
-		<td style="text-align:left;" style="padding-left:40px;"><%=h select_tag("location_id#{id}", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', (@residentObj.blank? ? nil : @residentObj.apartment.location_id), false), :onchange => "locationbasedApartment(this.id, 'apartment_id#{id}', #{User.current.id}, 'bed_id#{id}', 'lblBed#{id}', 'rate#{id}', #{loadDD} )", :disabled => disable) %></td>	
+
+		<th style="text-align:left;"><%= l(:field_location) %></th>
+		<td style="text-align:left;" style="padding-left:40px;"><%=h select_tag("location_id#{id}", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', (@residentObj.blank? ? nil : @residentObj.apartment.location_id), false), :onchange => "locationbasedApartment(this.id, 'apartment_id#{id}', #{User.current.id}, 'bed_id#{id}', 'lblBed#{id}', 'rate#{id}', #{loadDD} )", :disabled => disable) %></td>
 		<%# if @resAction == "T" %>
 			<!-- <th align="left"><label><%#= l(:label_is_transfer) %></label></th>
 			<td style="padding-left:40px;"><%#= check_box_tag("is_transfer#{id}", 1, false) %></td> -->
 		<%# end %>
-		
+
 	</tr>
-	
+
 	<tr>
 		<th style="text-align:left;"><%= l(:label_apartment) %></th>
 		<td style="text-align:left;" style="padding-left:40px;">
@@ -51,15 +51,15 @@
 			<span id="lblBed<%= id %>"  style='display:<%= showBed %>;'><%= l(:label_beds) %></span>
 		</th>
 		<td style="text-align:left;" style="padding-left:40px;">
-			<%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? bedArr : @residentObj.bed_id), :style=>"display:#{ showBed 
+			<%=h select_tag("bed_id#{id}", options_for_select(bedArr, :selected => @residentObj.blank? ? bedArr : @residentObj.bed_id), :style=>"display:#{ showBed
 			};", :onchange=>"bedsLogRate(this.id, 'rate#{id}', 'move_in_rate_per#{id}', 'apartment_id#{id}'  )", :disabled => disable ) %>
 		</td>
-		<%  
+		<%
 			rateHash = getRatePerHash(false)
-			rentalRate = 0 			
+			rentalRate = 0
 			rentalRate =  getRentalRate(invId) unless invId.blank?
 			moveInDateLbl = nil
-			unless @residentObj.blank? 
+			unless @residentObj.blank?
 				moveInDateLbl = @residentObj.move_in_date.strftime('%F') if id == 'T'
 				unless @residentObj.bed_id.blank?
 					rentalRate = @residentObj.bed.asset_property.rate
@@ -86,6 +86,6 @@
 			<td style="padding-left:40px;"><%=h select_tag('move_out_reason', options_for_select(options_for_enum_select('MOR', nil, true)), :style => "float:left; width:120px;") %></td>
 		<% end %>
 	</tr>
-	
+
 </table>
 

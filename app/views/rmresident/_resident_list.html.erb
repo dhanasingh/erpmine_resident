@@ -3,11 +3,11 @@
 		<thead>
 			<tr>
 				<th class="lbl-txt-align"><%=  l(:field_name) %></th>
-				<th class="lbl-txt-align"><%= l(:label_location) %></th>
+				<th class="lbl-txt-align"><%= l(:field_location) %></th>
 				<th class="lbl-txt-align"><%= l(:label_apartment) %></th>
 				<th class="lbl-txt-align"><%= l(:label_bed) %></th>
 				<th class="lbl-txt-align"><%= l(:label_move_in_date) %></th>
-				<th class="lbl-txt-align"><%= l(:label_move_out_date) %></th>				
+				<th class="lbl-txt-align"><%= l(:label_move_out_date) %></th>
 				<th></th>
 			</tr>
 		</thead>
@@ -21,9 +21,9 @@
 					  <td class="lbl-txt-align"><%=h entry.move_in_date.strftime("%Y-%m-%d") unless entry.move_in_date.blank? %></td>
 					  <td class="lbl-txt-align"><%=h entry.move_out_date.strftime("%Y-%m-%d") unless entry.move_out_date.blank? %></td>
 					  <td style="text-align:center;">
-						  <%= link_to image_tag('edit.png'), {controller: controller.controller_name, action: 'edit', rm_resident_id: entry.id}, title: l(:button_edit) %> 
-						<% if controller.deletePermission %>  
-							<%= link_to image_tag('delete.png'), {controller: controller.controller_name, action: 'destroy', rm_resident_id: entry.id, tab: controller.controller_name},  :data => {:confirm => l(:text_are_you_sure)}, :method => :delete, title: l(:button_delete) %>
+						  <%= link_to sprite_icon('edit'), {controller: controller.controller_name, action: 'edit', rm_resident_id: entry.id}, title: l(:button_edit) %>
+						<% if controller.deletePermission %>
+							<%= link_to sprite_icon('del'), {controller: controller.controller_name, action: 'destroy', rm_resident_id: entry.id, tab: controller.controller_name},  :data => {:confirm => l(:text_are_you_sure)}, :method => :delete, title: l(:button_delete) %>
 						<% end %>
 					  </td>
 				</tr>

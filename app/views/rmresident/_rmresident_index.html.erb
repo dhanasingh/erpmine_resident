@@ -5,7 +5,7 @@
 		filterSession =session[controller_name].try(:[], :polymorphic_filter)
 %>
 <div class="wk-contextual">
-	<%= link_to controller.lblNewContact, url_for(controller: controller_name, action: 'edit'), class: 'icon icon-time-add' %>
+	<%= link_to sprite_icon('add', controller.lblNewContact), url_for(controller: controller_name, action: 'edit'), class: 'icon icon-add' %>
 </div>
 <%= form_tag({:controller => controller_name, :action => 'index'}, :method => :get, :id => 'query_form') do %>
 <%= hidden_field_tag "searchlist", controller_name %>
@@ -15,7 +15,7 @@
 	<%= render partial: "wkbilling/index_filters", locals: { contact_id: contactId, account_id: accountId, filter_session: filterSession, isapply: false, isproject: false, isAll: true, blankForActDD: true, blankForContactDD: true, isFilter: true, pjtChanged: false, loadSIDD: false, blankOptionForPjt: false } %>
 	<table>
 		<tr>
-			<th style="text-align:left;"><%= l(:label_location) %></th>
+			<th style="text-align:left;"><%= l(:field_location) %></th>
 			<td style="text-align:left;">
 				<%=h select_tag("location_id", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', locationId, true)) %>
 			</td>
@@ -24,18 +24,18 @@
 				<%=h select_tag("moveinout_id",options_for_select(moveInOutHash.invert, :selected => moveInOutId)) %>
 			</td>
 		</tr>
-		
+
 	</table>
 	<%= render :partial => 'rmresident/date_range' %>
 
 	<p class="buttons">
-		<%= link_to_function l(:button_apply), '$("#query_form").submit(); return false;', :class => 'icon icon-checked' %>
+		<%= link_to_function sprite_icon('checked', l(:button_apply)), '$("#query_form").submit(); return false;', :class => 'icon icon-checked' %>
 		<%#= link_to l(:button_apply), {:controller => controller_name, :action => action_name}, :class => 'icon icon-checked' %>
-	  <%= link_to l(:button_clear), {:controller => controller_name, :action => action_name, :tab => 'clock'}, :class => 'icon icon-reload' %>
-	 
+	  <%= link_to sprite_icon('reload', l(:button_clear)), {:controller => controller_name, :action => action_name, :tab => 'clock'}, :class => 'icon icon-reload' %>
+
 	</p>
 </fieldset>
 </div>
 <% end %>
- 
+
 

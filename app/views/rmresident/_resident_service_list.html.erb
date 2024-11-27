@@ -28,9 +28,9 @@
 						<td class="lbl-txt-align"><%=h entry.no_of_occurrence %></td>
 					<% end %>
 					  <td style="text-align:center;">
-						 <%= link_to image_tag('edit.png'), url_for(controller: 'rmresident', action: 'newresidentservice', res_service_id: entry.id, rm_resident_id: entry.rm_resident_id, service_type: serviceType), title: l(:button_edit) %> 
+						 <%= link_to sprite_icon('edit'), url_for(controller: 'rmresident', action: 'newresidentservice', res_service_id: entry.id, rm_resident_id: entry.rm_resident_id, service_type: serviceType), title: l(:button_edit) %>
 						<% if controller.deletePermission %>
-							<%= link_to image_tag('delete.png'), {controller: 'rmresident', action: 'residentservicedestroy', id: entry.id, tab: controller.controller_name},  data: {confirm: l(:text_are_you_sure)}, :method => :delete, :title => l(:button_delete) %>
+							<%= link_to sprite_icon('del'), {controller: 'rmresident', action: 'residentservicedestroy', id: entry.id, tab: controller.controller_name},  data: {confirm: l(:text_are_you_sure)}, :method => :delete, :title => l(:button_delete) %>
 						<% end %>
 					  </td>
 				</tr>

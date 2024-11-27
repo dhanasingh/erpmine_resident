@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class RmapartmentController < WkproductitemController
-  unloadable
+
   menu_item	:apartment
   include RmapartmentHelper
   include RmresidentHelper
@@ -26,63 +26,63 @@ class RmapartmentController < WkproductitemController
     def newAsset
 		true
 	end
-	
+
 	def getItemType
 		'RA'
 	end
-	
+
 	def showAssetProperties
 		true
 	end
-	
+
 	def newItemLabel
 		l(:label_new_apartment)
 	end
-	
+
 	def editItemLabel
 		l(:label_edit_apartment)
 	end
-  
+
     def getIventoryListHeader
-		headerHash = { 'parent_name' => l(:label_apartment), 'asset_name' => l(:label_bed),   'product_attribute_name' => l(:label_attribute), 'serial_number' => l(:label_serial_number), 'rate' => l(:label_rate), "is_loggable" => l(:label_loggable_asset),  'location_name' => l(:label_location) }
+		headerHash = { 'parent_name' => l(:label_apartment), 'asset_name' => l(:label_bed),   'product_attribute_name' => l(:label_attribute), 'serial_number' => l(:label_serial_number), 'rate' => l(:label_rate), "is_loggable" => l(:label_loggable_asset),  'location_name' => l(:field_location) }
 	end
-	
+
 	def newcomponentLbl
 		l(:label_new_bed)
 	end
-	
+
 	def showAdditionalInfo
 		true
 	end
-	
+
 	def showInventoryFields
 		false
 	end
-	
+
 	def sectionHeader
 		l(:label_beds)
 	end
-	
+
 	def showProductItem
 		false
 	end
-	
+
 	def loggableAssetLbl
 		l(:label_rental_asset)
 	end
-	
+
 	def loggableRateLbl
-		l(:label_rental_rate) 
-	end				
-	
+		l(:label_rental_rate)
+	end
+
 	def lblInventory
 		l(:label_attribute_plural)
 	end
-	
+
 	def lblAsset
 		l(:label_rate)
 	end
-	
+
 	def editcomponentLbl
 		l(:label_edit_bed)
 	end
