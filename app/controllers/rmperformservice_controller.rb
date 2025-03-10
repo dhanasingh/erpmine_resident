@@ -35,7 +35,7 @@ class RmperformserviceController < WktimeController
 	def getCondition(date_field, user_id, start_date, end_date=nil)
 		trackerId = Setting.plugin_erpmine_resident['rm_service_tracker']
 		@renderer.issue_join_cond = " and i.tracker_id = #{trackerId}" if trackerId.present?
-		@renderer.spent_for_join = " left join rm_residents rm on ( ap.parent_type = rm.resident_type and ap.parent_id = rm.resident_id ) inner join rm_resident_services rs on (i.id = rs.issue_id and rs.rm_resident_id = rm.id)"
+		@renderer.spent_for_join = " left join rm_residents rm on ( ap.parent_type = rm.resident_type and ap.parent_id = rm.resident_id ) " + get_comp_condition('rm') + " inner join rm_resident_services rs on (i.id = rs.issue_id and rs.rm_resident_id = rm.id) " + get_comp_condition('rs')
 		@renderer.spent_for_cond = " and (rs.end_date is null or rs.end_date >= '#{start_date}')"
 		# cond = " and i.tracker_id = #{trackerId}"
 		super

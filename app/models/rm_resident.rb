@@ -33,12 +33,12 @@ class RmResident < ApplicationRecord
 	end
 
   scope :left_join_contacts, lambda {
-    joins("LEFT OUTER JOIN #{WkCrmContact.table_name} ON #{WkCrmContact.table_name}.id = #{RmResident.table_name}.resident_id and resident_type = 'WkCrmContact' ")
-    .joins("LEFT OUTER JOIN #{WkAccount.table_name} ON #{WkAccount.table_name}.id = #{RmResident.table_name}.resident_id and resident_type = 'WkAccount' ")
+    joins("LEFT OUTER JOIN #{WkCrmContact.table_name} ON #{WkCrmContact.table_name}.id = #{RmResident.table_name}.resident_id and resident_type = 'WkCrmContact' " + get_comp_con(WkCrmContact.table_name))
+    .joins("LEFT OUTER JOIN #{WkAccount.table_name} ON #{WkAccount.table_name}.id = #{RmResident.table_name}.resident_id and resident_type = 'WkAccount' " + get_comp_con(WkAccount.table_name))
   }
 
   scope :left_join_inventory, lambda {
-    joins("LEFT OUTER JOIN #{WkInventoryItem.table_name} ON #{WkInventoryItem.table_name}.id = #{RmResident.table_name}.resident_id")
+    joins("LEFT OUTER JOIN #{WkInventoryItem.table_name} ON #{WkInventoryItem.table_name}.id = #{RmResident.table_name}.resident_id" + get_comp_con(WkInventoryItem.table_name))
   }
 
   def type
