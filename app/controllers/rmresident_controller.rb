@@ -53,7 +53,7 @@ class RmresidentController < WkcrmController
 			entries = entries.where("rm_residents.move_out_date IS NULL")
 		elsif moveInOutId == "MO"
 			entries = entries.joins("LEFT JOIN rm_residents AS R2 ON rm_residents.resident_id = R2.resident_id
-				AND R2.Move_out_date IS NULL").where("rm_residents.Move_out_date IS NOT NULL AND R2.resident_id IS NULL")
+				AND R2.Move_out_date IS NULL" + get_comp_condition('R2')).where("rm_residents.Move_out_date IS NOT NULL AND R2.resident_id IS NULL")
 		end
 
 		# unless residentName.blank?
