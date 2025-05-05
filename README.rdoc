@@ -30,13 +30,13 @@ When uninstalling the plugin, be sure to remove the db changes by running
 This plugin uses js and css assets and it will be copied to public/plugin_asset/erpmine_resident
 folder upon server startup, so please make sure public/plugin_asset/erpmine_resident has proper access.
 
-=== Release Notes for v1.0
+=== Release Notes for v1.1
 
-  - Multi tenant Resident Management compatibility
+  - Added REST API compatibility
 
 === Dependency:
 
-  This plugin is compatible with ERPmine v4.8.3 and above versions.
+  This plugin is compatible with ERPmine v4.8.4 and above versions.
 
 === Customization:
 
