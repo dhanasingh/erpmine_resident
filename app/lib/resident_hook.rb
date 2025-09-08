@@ -2,7 +2,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def external_erpmine_menus(context={})
 		menuArr = Array.new(3)
 		# define resident menu controller name
-		menuArr = ["rmapartment", "rmresident", "rmperformservice"]
+		menuArr = ["rmapartment", "rmresident", "rmperformservice", "wksurvey"]
 		menuArr
 	end
 
@@ -252,4 +252,22 @@ class ResidentHook < Redmine::Hook::ViewListener
 			context[:url][:controller] = 'rmapartment'
 		end
 	end
+
+	def wktime_menu_hook(context = {})
+		menu = context[:menu]
+		return unless menu.present?
+
+		options = { caption: :label_resident }
+		anchor_order = [:wkcrmdashboard, :wkattendance, :wktime, :wkdashboard]
+		anchor = anchor_order.find { |name| menu.exists?(name) }
+
+		if anchor
+			options[:after] = anchor
+		else
+			options[:first] = true
+		end
+
+		menu.push :apartment, { controller: 'rmapartment', action: 'index' }, options
+	end
+
 end
