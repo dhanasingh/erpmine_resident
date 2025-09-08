@@ -256,18 +256,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def wktime_menu_hook(context = {})
 		menu = context[:menu]
 		return unless menu.present?
-
-		options = { caption: :label_resident }
-		anchor_order = [:wkcrmdashboard, :wkattendance, :wktime, :wkdashboard]
-		anchor = anchor_order.find { |name| menu.exists?(name) }
-
-		if anchor
-			options[:after] = anchor
-		else
-			options[:first] = true
-		end
-
-		menu.push :apartment, { controller: 'rmapartment', action: 'index' }, options
+		menu.push :apartment, { controller: 'rmapartment', action: 'index' }, caption: :label_resident
 	end
 
 end
