@@ -1,4 +1,4 @@
-require_relative './app/lib/resident_hook'
+require_relative './lib/resident_hook'
 
 Redmine::Plugin.register :erpmine_resident do
   name 'ERPmine Resident Management plugin'
@@ -8,5 +8,5 @@ Redmine::Plugin.register :erpmine_resident do
   url 'https://www.erpmine.org/projects/resident/wiki/Resident'
   author_url 'http://www.adhisoftware.co.in/'
 
-  settings(:partial => 'resident_settings')
+  settings(partial: 'resident_settings', default: {})
 end
