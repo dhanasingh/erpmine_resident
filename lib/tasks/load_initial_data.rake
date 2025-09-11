@@ -86,11 +86,16 @@ namespace :resident do
 
   def apartment_setup
     # --- Apartment and beds setup ---
-    category = WkProductCategory.find_or_create_by(name: 'Resident')
-    uom = WkMesureUnit.find_or_create_by(name: 'Numbers', short_desc: 'No')
-    attr = WkAttributeGroup.find_or_create_by(name: '	Care level')
-    apartment = WkProduct.find_or_create_by(name: 'Apartment', category_id: category.id, product_type: 'RA', uom_id: uom.id, attribute_group_id: attr.id)
-    bed = WkProduct.find_or_create_by(name: 'Bed', category_id: category.id, product_type: 'RA', uom_id: uom.id, attribute_group_id: attr.id)
+    category = WkProductCategory.find_or_create_by!(name: 'Resident')
+    uom = WkMesureUnit.find_or_create_by!(name: 'Numbers', short_desc: 'No')
+    attr = WkAttributeGroup.find_or_create_by!(name: '	Care level')
+    apartment = WkProduct.find_or_create_by!(name: 'Apartment', category_id: category.id, product_type: 'RA', uom_id: uom.id, attribute_group_id: attr.id)
+    bed = WkProduct.find_or_create_by!(name: 'Bed', category_id: category.id, product_type: 'RA', uom_id: uom.id, attribute_group_id: attr.id)
+
+    # --- Move out reason setup ---
+    ['Relocation', 'Deceased', 'Financial reasons', 'Other'].each do |reason|
+      WkCrmEnumeration.find_or_create_by!(name: reason, enum_type: 'MOR', active: true)
+    end 
   end
 
   def mlog(message)
