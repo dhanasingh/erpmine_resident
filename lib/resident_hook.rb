@@ -46,6 +46,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 				type << 'RA'
 				type << 'rmresident'
 				type << id
+				type << "rm_resident_id"
 			end
 		end
 		type
