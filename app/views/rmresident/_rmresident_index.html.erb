@@ -13,7 +13,7 @@
 	<div style="float:right">
 		<%= link_to sprite_icon('add', controller.lblNewContact), url_for(controller: controller_name, action: 'edit'), class: 'icon icon-add' %>
 	</div>
-	<div style="display: flex; gap: 10px;">
+	<div style="display: flex; gap: 10px;flex-wrap:wrap;">
 		<%= render partial: "wkbilling/index_filters", locals: { contact_id: contactId, account_id: accountId, filter_session: filterSession, isapply: false, isproject: false, isAll: true, blankForActDD: true, blankForContactDD: true, isFilter: true, pjtChanged: false, loadSIDD: false, blankOptionForPjt: false } %>
 		<table>
 			<tr>
@@ -27,8 +27,8 @@
 				</td>
 			</tr>
 		</table>
-	</div>
 	<%= render :partial => 'wktime/date_range' %>
+	</div>
 
 	<p class="buttons">
 		<%= link_to_function sprite_icon('checked', l(:button_apply)), '$("#query_form").submit(); return false;', :class => 'icon icon-checked' %>
