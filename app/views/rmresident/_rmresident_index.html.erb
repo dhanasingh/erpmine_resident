@@ -4,29 +4,31 @@
 		accountId =session[controller_name].try(:[], :account_id)
 		filterSession =session[controller_name].try(:[], :polymorphic_filter)
 %>
-<div class="wk-contextual">
-	<%= link_to sprite_icon('add', controller.lblNewContact), url_for(controller: controller_name, action: 'edit'), class: 'icon icon-add' %>
-</div>
+
 <%= form_tag({:controller => controller_name, :action => 'index'}, :method => :get, :id => 'query_form') do %>
 <%= hidden_field_tag "searchlist", controller_name %>
 <%= hidden_field_tag "tab", controller_name %>
 <div>
 <fieldset>
-	<%= render partial: "wkbilling/index_filters", locals: { contact_id: contactId, account_id: accountId, filter_session: filterSession, isapply: false, isproject: false, isAll: true, blankForActDD: true, blankForContactDD: true, isFilter: true, pjtChanged: false, loadSIDD: false, blankOptionForPjt: false } %>
-	<table>
-		<tr>
-			<th style="text-align:left;"><%= l(:field_location) %></th>
-			<td style="text-align:left;">
-				<%=h select_tag("location_id", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', locationId, true)) %>
-			</td>
-			<th style="text-align:left;"><%= l(:field_status) %></th>
-			<td style="text-align:left;">
-				<%=h select_tag("moveinout_id",options_for_select(moveInOutHash.invert, :selected => moveInOutId)) %>
-			</td>
-		</tr>
-
-	</table>
-	<%= render :partial => 'rmresident/date_range' %>
+	<div style="float:right">
+		<%= link_to sprite_icon('add', controller.lblNewContact), url_for(controller: controller_name, action: 'edit'), class: 'icon icon-add' %>
+	</div>
+	<div style="display: flex; gap: 10px;flex-wrap:wrap;">
+		<%= render partial: "wkbilling/index_filters", locals: { contact_id: contactId, account_id: accountId, filter_session: filterSession, isapply: false, isproject: false, isAll: true, blankForActDD: true, blankForContactDD: true, isFilter: true, pjtChanged: false, loadSIDD: false, blankOptionForPjt: false } %>
+		<table>
+			<tr>
+				<th style="text-align:left;"><%= l(:field_location) %></th>
+				<td style="text-align:left;">
+					<%=h select_tag("location_id", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', locationId, true)) %>
+				</td>
+				<th style="text-align:left;"><%= l(:field_status) %></th>
+				<td style="text-align:left;">
+					<%=h select_tag("moveinout_id",options_for_select(moveInOutHash.invert, :selected => moveInOutId)) %>
+				</td>
+			</tr>
+		</table>
+	<%= render :partial => 'wktime/date_range' %>
+	</div>
 
 	<p class="buttons">
 		<%= link_to_function sprite_icon('checked', l(:button_apply)), '$("#query_form").submit(); return false;', :class => 'icon icon-checked' %>

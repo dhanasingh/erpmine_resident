@@ -46,6 +46,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 				type << 'RA'
 				type << 'rmresident'
 				type << id
+				type << "rm_resident_id"
 			end
 		end
 		type
@@ -252,4 +253,11 @@ class ResidentHook < Redmine::Hook::ViewListener
 			context[:url][:controller] = 'rmapartment'
 		end
 	end
+
+	def wktime_menu_hook(context = {})
+		menu = context[:menu]
+		return unless menu.present?
+		menu.push :apartment, { controller: 'rmapartment', action: 'index' }, caption: :label_resident
+	end
+
 end
