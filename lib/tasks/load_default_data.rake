@@ -2,7 +2,7 @@
 namespace :resident do
   desc "Load init Resident data"
 
-  task load_initial_data: :environment do
+  task load_default_data: :environment do
 
     # --- Skip if already present ---
     if (Setting.plugin_erpmine_resident || {})['rm_project'].present? || WkProduct.where("name LIKE ?", "%Apartment%").exists? || WkProduct.where("name LIKE ?", "%Bed%").exists?
@@ -14,7 +14,7 @@ namespace :resident do
       begin
         config_setup
         apartment_setup
-        mlog "Successfully Resident init data loaded ."
+        mlog "Successfully Resident default data loaded."
       rescue => e
         mlog "Failed to load, error: #{e.message}"
         raise ActiveRecord::Rollback

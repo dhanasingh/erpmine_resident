@@ -15,17 +15,26 @@ For more information on features, please refer to the user guide
 
 	http://www.erpmine.org/attachments/download/24/ERPmine-User-Guide.pdf
 
-=== Installation:
+## Installation
 
 Unpack the zip file to the plugins folder of Redmine. It requires db migration.
 
-So run the following command for db migration
-
+- Run the following command for db migration
+  ```sh
   rake redmine:plugins:migrate NAME=erpmine_resident RAILS_ENV=production
+  ```
 
-When uninstalling the plugin, be sure to remove the db changes by running
+- Run the following command to load default data
+  ```sh
+  bundle exec rake erpmine:load_default_data RAILS_ENV=production
+  ```
 
+## Uninstallation
+
+- When uninstalling the plugin, be sure to remove the db changes by running
+  ```sh
   rake redmine:plugins:migrate NAME=erpmine_resident VERSION=0 RAILS_ENV=production
+  ```
 
 This plugin uses js and css assets and it will be copied to public/plugin_asset/erpmine_resident
 folder upon server startup, so please make sure public/plugin_asset/erpmine_resident has proper access.
