@@ -2,7 +2,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def external_erpmine_menus(context={})
 		menuArr = Array.new(3)
 		# define resident menu controller name
-		menuArr = ["rmapartment", "rmresident", "rmperformservice", "wksurvey"]
+		menuArr = ["rmapartment", "rmresident", "rmperformservice"]
 		menuArr
 	end
 
