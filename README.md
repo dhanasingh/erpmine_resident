@@ -11,10 +11,6 @@ This Plugin has the following module:
 - Generate Bills
 - Receive Payments
 
-For more information on features, please refer to the user guide
-
-	http://www.erpmine.org/attachments/download/24/ERPmine-User-Guide.pdf
-
 ## Installation
 
 - Unpack the zip file to the plugins folder of Redmine. It requires db migration.
@@ -27,7 +23,7 @@ For more information on features, please refer to the user guide
 - Run the following command to load default data
 
   ```sh
-  bundle exec rake erpmine:load_default_data RAILS_ENV=production
+  bundle exec rake resident:load_default_data RAILS_ENV=production
   ```
 ## Uninstallation
 
@@ -41,11 +37,14 @@ For more information on features, please refer to the user guide
 
 ## Release Notes for v1.2
 
-  - Added task script to load the Resident default dataset
+**Features**
+```text
+	- Added task script to load the Resident default dataset
+```
 
 ## Dependency:
 
-  This plugin is compatible with ERPmine v4.9 and above versions.
+  This plugin is compatible with ERPmine v4.9
 
 ## Customization:
 
@@ -63,14 +62,6 @@ For more information on features, please refer to the user guide
   Phone: +91 44 27470401
 
 ## Resources:
-
-**User guide**:
-
-- http://www.erpmine.org/attachments/download/24/ERPmine-User-Guide.pdf
-
-**Overview presentation in open office format**:
-
-- http://www.erpmine.org/attachments/download/23/erpmine-overview.odp
 
 **Training Videos**:
 
