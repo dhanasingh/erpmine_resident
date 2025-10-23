@@ -1,0 +1,11 @@
+<%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
+
+<script type="text/javascript">
+    var apartmentUrl = '<%= url_for(controller: "rmapartment", action: "index", tab: "rmapartment") %>';
+    var residentUrl = '<%= url_for(controller: "rmresident", action: "index", tab: "rmresident") %>';
+    var performserviceUrl = '<%= raw url_for(controller: :rmperformservice, action: :edit, user_id: User.current.id, startday: Date.today, sheet_view: 'I' ) %>';
+    var evaluationUrl = '<%= url_for(controller: "rmevaluation", action: "index", tab: "rmevaluation", surveyForType: 'RmResident').html_safe %>';
+</script>
+
+<%= render_tabs resident_tabs %>
+<%= hidden_field_tag 'back_url', url_for(:controller => params[:controller], :action => params[:action]) %>

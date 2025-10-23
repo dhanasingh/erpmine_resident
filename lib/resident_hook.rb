@@ -2,7 +2,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def external_erpmine_menus(context={})
 		menuArr = Array.new(3)
 		# define resident menu controller name
-		menuArr = ["rmapartment", "rmresident", "rmperformservice"]
+		menuArr = ["rmapartment", "rmresident", "rmperformservice", "rmevaluation"]
 		menuArr
 	end
 
@@ -166,7 +166,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	  .select("rm_residents.id, wk_accounts.name as account_name, first_name, last_name, resident_type")
 
       result.each do  |r|
-				residentName = r.resident_type == "WkAccount" ? r.account_name : r.first_name + " " + r.last_name
+				residentName = r.resident_type == "WkAccount" ? r.account_name : (r&.first_name || '' + " " + r&.last_name || '')
 		context[:data] << {id: r.id, label: "Resident #" + r.id.to_s + ": " + residentName, value: r.id}
       end
 	end
@@ -192,9 +192,13 @@ class ResidentHook < Redmine::Hook::ViewListener
 
 	def get_survey_redirect_url(context={})
 		if context[:urlHash][:surveyForType] == "RmResident" && !context[:urlHash][:surveyForID].blank?
-           context[:urlHash][:controller] = "rmresident"
-          	context[:urlHash][:action] = 'edit'
+      		context[:urlHash][:controller] = "rmresident"
+			context[:urlHash][:action] = 'edit'
 			context[:urlHash][:rm_resident_id] = context[:urlHash][:surveyForID]
+		elsif context[:urlHash][:surveyForType] == "RmResident"
+			context[:urlHash][:controller] = "rmevaluation"
+			context[:urlHash][:action] = 'index'
+			context[:urlHash][:tab] = 'rmevaluation'
 		end
 	end
 
@@ -260,4 +264,13 @@ class ResidentHook < Redmine::Hook::ViewListener
 		menu.push :apartment, { controller: 'rmapartment', action: 'index' }, caption: :label_resident
 	end
 
+	def survey_points(context = {})
+		points = Array.new
+		params = context[:params]
+		if params.present? && params[:rm_resident_id].present?
+			points.clear
+			points << params[:rm_resident_id].to_i
+		end
+		points
+	end
 end

@@ -66,4 +66,6 @@ post 'rmresident/moveOut', :to => 'rmresident#moveOut'
 
 delete 'rmresident/residentservicedestroy', :to => 'rmresident#residentservicedestroy' 
 
-post 'rmresident/moveInResident', :to => 'rmresident#moveInResident' 
+post 'rmresident/moveInResident', :to => 'rmresident#moveInResident'
+
+get 'rmevaluation/index', to: 'rmevaluation#index'
