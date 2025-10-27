@@ -46,4 +46,6 @@ en:
    label_transfer_msg: Resident Transferred.
    label_move_out_validate_msg: Move out date should be greater then move in date
    label_evaluation: Evaluation
-   label_new_evaluation: New Evaluation
+   label_new_evaluation: Evaluation Setup
+   label_edit_evaluation: Edit Evaluation
+   label_select_resident: Select Resident

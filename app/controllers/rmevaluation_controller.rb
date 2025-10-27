@@ -19,4 +19,16 @@ class RmevaluationController < WksurveyController
 
   menu_item	:apartment
 	accept_api_auth :index
+
+	def ItemLabel
+		l(:label_evaluation)
+	end
+
+	def newItemLabel
+		l(:label_new_evaluation)
+	end
+
+	def editItemLabel
+		l(:label_edit_evaluation)
+	end
 end

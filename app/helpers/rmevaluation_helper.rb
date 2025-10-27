@@ -17,4 +17,15 @@
 
 module RmevaluationHelper
 	include RmresidentHelper
+
+	def getResidents
+		resident = Array.new
+		entries = RmResident.left_join_contacts.where("rm_residents.move_out_date IS NULL").order(id: :desc)
+														.select("rm_residents.id, wk_accounts.name as account_name, first_name, last_name, resident_type")
+		(entries || []).each do  |r|
+			residentName = r.resident_type == "WkAccount" ? r.account_name : ((r&.first_name || '') + ' ' + (r&.last_name || ''))
+			resident <<  [residentName, r.id  ]
+		end
+		resident.unshift(["",0])
+	end
 end

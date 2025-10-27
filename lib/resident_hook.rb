@@ -172,7 +172,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	end
 
 	def getSurveyForType(context={})
-		residentID = context[:params][:rm_resident_id]
+		residentID = context[:params][:rm_resident_id] if !context[:params][:rm_resident_id].blank?
 		unless residentID.blank?
 			resObj = RmResident.find(residentID)
 			rm_resident = RmResident.where(" id = ? and resident_type = ?", residentID, resObj.resident_type).first
@@ -273,4 +273,22 @@ class ResidentHook < Redmine::Hook::ViewListener
 		end
 		points
 	end
+
+	def get_survey_label(context = {})
+		label = {}
+		params = context[:params]
+		if params.present? && (params[:rm_resident_id].present? || params[:surveyForType] == "RmResident")
+			label["header"] = l(:label_evaluation)
+			label["newItemLabel"] = l(:label_new_evaluation)
+			label["editItemLabel"] = l(:label_edit_evaluation)
+		end
+		label
+	end
+
+	def show_survey_link(context={})
+		showLink = context[:type][:surveyForType] == "RmResident" ? true : false
+	end
+
+
+	render_on :resident_evaluation, :partial => 'rmevaluation/evaluation'
 end
