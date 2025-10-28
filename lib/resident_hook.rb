@@ -286,7 +286,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	end
 
 	def show_survey_link(context={})
-		showLink = context[:type][:surveyForType] == "RmResident" ? true : false
+		showLink = context[:type][:surveyForType] == "RmResident" && context[:params][:survey_for].blank?  ? true : false
 	end
 
 

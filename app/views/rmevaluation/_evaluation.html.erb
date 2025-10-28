@@ -5,7 +5,7 @@ $(function () {
   const link = <%= raw link.to_json %>;
 	const surveyId = (link.match(/survey_id=(\d+)/) || [])[1];
 	$("#survey_link_"+surveyId).click(function (event) {
-		if(params["surveyForType"] == "RmResident" && !params["surveyForID"]){
+		if(!params["rm_resident_id"] && params["surveyForType"] == "RmResident" && !params["surveyForID"]){
 			event.preventDefault();
 			$('#link_resident_id').val('');
 			$('#survey_rediret_link').val(link);
@@ -18,7 +18,7 @@ $(function () {
 		resizable: false,
 		modal: true,
 		width: 350,
-		height: 160,
+		height: 200,
 		buttons: [
 			{
 				text: 'Ok',
@@ -48,7 +48,8 @@ $(function () {
 </script>
 
 <div id="add_survey_link" title="<%=l(:label_select_resident) %>"style="display: none;">
-	<p> <label><%= l(:label_resident) %></label>
+	<p style=" margin-top: 10px; "> 
+		<label><%= l(:label_resident) %></label>
   	<%= hidden_field_tag('survey_rediret_link', '') %>
 		<%= select_tag('link_resident_id', options_for_select(Object.new.extend(RmevaluationHelper).getResidents, ""), style: "width:120px;", required: true) %>
 	</p>
