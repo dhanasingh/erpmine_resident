@@ -10,6 +10,7 @@ This Plugin has the following module:
 - Perform Services
 - Generate Bills
 - Receive Payments
+- Evaluation
 
 ## Installation
 
@@ -35,16 +36,26 @@ This Plugin has the following module:
 - This plugin uses js and css assets and it will be copied to public/plugin_asset/erpmine_resident
   folder upon server startup, so please make sure public/plugin_asset/erpmine_resident has proper access.
 
-## Release Notes for v1.2
+## Compatibility Matrix
+
+| **Resident** | **ERPmine** |
+|-------------|-------------|
+| 1.3 | 4.9.2 |
+| 1.2 | 4.9, 4.9.1 |
+| 1.1 | 4.8.4, 4.8.5 |
+| 1.0 | 4.8.3 |
+
+## Release Notes for v1.3
 
 **Features**
 ```text
-	- Added task script to load the Resident default dataset
+	- Added “Evaluation” Module 
+	- Added Points, Header and Footer features in Evaluation
 ```
 
 ## Dependency:
 
-  This plugin is compatible with ERPmine v4.9
+  This plugin is compatible with ERPmine v4.9.2
 
 ## Customization:
 
