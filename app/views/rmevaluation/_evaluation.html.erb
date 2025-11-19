@@ -1,0 +1,56 @@
+<script>
+
+$(function () {
+  const params = <%= raw params.to_json %>;
+  const link = <%= raw link.to_json %>;
+	const surveyId = (link.match(/survey_id=(\d+)/) || [])[1];
+	$("#survey_link_"+surveyId).click(function (event) {
+		if(!params["rm_resident_id"] && params["surveyForType"] == "RmResident" && !params["surveyForID"]){
+			event.preventDefault();
+			$('#link_resident_id').val('');
+			$('#survey_rediret_link').val(link);
+			$("#add_survey_link").dialog("open");
+		}
+	});
+
+	$("#add_survey_link").dialog({
+		autoOpen: false,
+		resizable: false,
+		modal: true,
+		width: 350,
+		height: 200,
+		buttons: [
+			{
+				text: 'Ok',
+				id: 'btnOk',
+				click: function () {
+					var isNotValid = false;
+					var link_resident_id = $('#link_resident_id').val();
+
+					if (link_resident_id && link_resident_id != 0) {
+						$(this).dialog("close");
+						new_link = $('#survey_rediret_link').val() + "&surveyForID="+link_resident_id;
+						window.location.href = new_link;
+					}else{
+						alert('Please select Resident to continue!!!');
+					}
+				}
+			},
+			{
+				text: 'Cancel',
+				id: 'btnCancel',
+				click: function () {
+					$(this).dialog("close");
+				}
+			}]
+	});
+});
+</script>
+
+<div id="add_survey_link" title="<%=l(:label_select_resident) %>"style="display: none;">
+	<p style=" margin-top: 10px; "> 
+		<label><%= l(:label_resident) %></label>
+  	<%= hidden_field_tag('survey_rediret_link', '') %>
+		<%= select_tag('link_resident_id', options_for_select(Object.new.extend(RmevaluationHelper).getResidents, ""), style: "width:120px;", required: true) %>
+	</p>
+</div>
