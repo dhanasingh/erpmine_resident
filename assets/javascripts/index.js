@@ -1,4 +1,4 @@
-var apartmentUrl, residentUrl, performserviceUrl, incidentUrl;
+var apartmentUrl, residentUrl, performserviceUrl, incidentUrl, evaluationUrl;
 
 $(document).ready(function()
 {
@@ -6,6 +6,7 @@ $(document).ready(function()
 	changeProp('tab-rmresident',residentUrl);
 	changeProp('tab-rmperformservice',performserviceUrl);
 	changeProp('tab-rmincident',incidentUrl);
+	changeProp('tab-rmevaluation',evaluationUrl);
 	
 	var url_string = window.location.href;
 	var url = new URL(url_string);

@@ -1,0 +1,51 @@
+# Tamil strings go here for Rails i18n
+ta-IN:
+   label_apartment: "அபார்ட்மென்ட்"
+   label_resident: குடியிருப்பவர்
+   label_perform_service: சேவையை செய்யவும்
+   label_new_apartment: அபார்ட்மென்ட் திருத்தம்
+   label_edit_apartment: அபார்ட்மென்ட் திருத்தம்
+   label_new_res_service: புதிய குடியிருப்பவர் சேவை
+   label_new_res_amentity: புதிய குடியிருப்பவர் வசதி
+   label_resident_service: குடியிருப்பவர் சேவை
+   label_resdient_amentity: குடியிருப்பவர் வசதி
+   label_service_name: சேவை பெயர்
+   label_amentity: வசதி
+   field_end_date: முடிவு தேதி
+   field_resident: குடியிருப்பவர் பெயர்
+   field_frequency: அடுக்கம் / நிகழ்திரிவு
+   field_no_of_occurrence: நிகழ்வுகளின் எண்ணிக்கை
+   label_beds: படுக்கைகள்
+   label_new_bed: புதிய படுக்கை
+   button_move_in: குடியேறுக 
+   label_apartment_details: அபார்ட்மென்ட் விவரங்கள்
+   label_bed: படுக்கை
+   label_move_out_date: வெளியேறும் தேதி
+   label_move_out: வெளியேறுக
+   label_move_out_reason: வெளியேறும் காரணம்
+   label_services: சேவைகள்
+   label_amenities: வசதிகள்
+   label_rental: வாடகை
+   label_is_transfer: மாற்றமா?
+   label_exclude_resident: விவசாயி குடியிருப்பவரை நீக்கவும்
+   label_move_in_date: குடியேறும் தேதி
+   field_move_in_date: குடியேறும் தேதி
+   field_move_out_date:  வெளியேறும் தேதி
+   field_resident_id: பெயர்
+   field_resident_type: இடம்
+   field_apartment_id: அபார்ட்மென்ட்
+   field_bed_id: படுக்கை
+   label_service: சேவை
+   label_service_for: யாருக்கான சேவை
+   label_rental_rate: வாடகை விகிதம்
+   label_rental_asset: வாடகை சொத்து
+   label_auto_populated_entry: தானாக நிரம்பிய பதிவு
+   label_edit_bed: படுக்கையை திருத்தவும்
+   label_movein_error_msg: தயவுசெய்து வாடகை திட்டத்தையும் டிராக்கர்களையும் உள்ளமைக்கவும்
+   label_move_out_msg: குடியிருப்பவர் வெளியேறினார்.
+   label_transfer_msg: குடியிருப்பவர் மாற்றப்பட்டார்.
+   label_move_out_validate_msg: வெளியேறும் தேதி, குடியேறும் தேதியைவிட அதிகமாக இருக்க வேண்டும்
+   label_evaluation: மதிப்பீடு
+   label_new_evaluation: புதிய மதிப்பீட்டு அமைப்பு
+   label_edit_evaluation: மதிப்பீட்டை திருத்தவும்
+   label_select_resident: குடியிருப்பவரை தேர்ந்தெடுக்கவும்

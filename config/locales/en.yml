@@ -70,3 +70,7 @@ en:
    button_download_pdf: Download PDF
    label_open: Open
    label_closed: Closed
+   label_evaluation: Evaluation
+   label_new_evaluation: Evaluation Setup
+   label_edit_evaluation: Edit Evaluation
+   label_select_resident: Select Resident
