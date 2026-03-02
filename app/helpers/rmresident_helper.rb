@@ -37,11 +37,12 @@ include WklogmaterialHelper
 	end
 
 	def resident_tabs
-		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice"
+		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice" || params[:controller] == "rmincident"
 			tabs = [
 				{:name => 'rmapartment', :partial => 'wktime/tab_content', :label => :label_apartment},
 				{:name => 'rmresident', :partial => 'wktime/tab_content', :label => :label_resident},
-				{:name => 'rmperformservice', :partial => 'wktime/tab_content', :label => :label_perform_service}
+				{:name => 'rmperformservice', :partial => 'wktime/tab_content', :label => :label_perform_service},
+				{:name => 'rmincident', :partial => 'wktime/tab_content', :label => :label_incident_tracking}
 			   ]
 		end
 		tabs

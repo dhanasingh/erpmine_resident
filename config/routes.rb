@@ -33,6 +33,18 @@ delete 'rmperformservice/deleteEntries', :to => 'rmperformservice#deleteEntries'
 
 get 'rmperformservice/export', :to => 'rmperformservice#export'
 
+get 'rmincident/index', :to => 'rmincident#index'
+
+get 'rmincident/edit', :to => 'rmincident#edit'
+
+post 'rmincident/update', :to => 'rmincident#update'
+
+delete 'rmincident/destroy', :to => 'rmincident#destroy'
+
+get 'rmincident/get_resident_info', :to => 'rmincident#get_resident_info'
+
+get 'rmincident/get_residents_by_location', :to => 'rmincident#get_residents_by_location'
+
 
 get 'rmapartment/edit', :to => 'rmapartment#edit'
 

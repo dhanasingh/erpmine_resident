@@ -2,7 +2,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def external_erpmine_menus(context={})
 		menuArr = Array.new(3)
 		# define resident menu controller name
-		menuArr = ["rmapartment", "rmresident", "rmperformservice"]
+		menuArr = ["rmapartment", "rmresident", "rmperformservice", "rmincident"]
 		menuArr
 	end
 
@@ -85,6 +85,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def external_enum_type(context={})
 		enumHash = Hash.new()
 		enumHash["MOR"] = l(:label_move_out_reason)
+		enumHash[RmIncident::INCIDENT_ENUM_TYPE] = l(:field_incident_type)
 		enumHash
 	end
 

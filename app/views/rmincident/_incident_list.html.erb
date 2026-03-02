@@ -1,0 +1,35 @@
+<%= stylesheet_link_tag 'wk-time', :plugin => "redmine_wktime" %>
+
+<div class="autoscroll">
+	<table class="list time-entries">
+		<thead>
+			<tr>
+				<th class="lbl-txt-align"><%= l(:field_incident_date) %></th>
+				<th class="lbl-txt-align"><%= l(:field_resident) %></th>
+				<th class="lbl-txt-align">Incident Type</th>
+				<th class="lbl-txt-align">Location</th>
+				<th class="lbl-txt-align"><%= l(:field_status) %></th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			<% if incidents.present? %>
+				<% incidents.each do |entry| %>
+					<tr>
+						<td class="lbl-txt-align"><%= h entry.incident_datetime&.strftime('%Y-%m-%d %H:%M') %></td>
+						<td class="lbl-txt-align"><%= h entry.rm_resident&.name %></td>
+						<td class="lbl-txt-align"><%= h incident_type_label(entry.incident_type_id) %></td>
+						<td class="lbl-txt-align"><%= h entry.location %></td>
+						<td class="lbl-txt-align"><%= h(entry.status == RmIncident::STATUS_CLOSED ? l(:label_closed) : l(:label_open)) %></td>
+						<td style="text-align:center;">
+							<%= link_to sprite_icon('edit'), url_for(controller: 'rmincident', action: 'edit', id: entry.id, rm_resident_id: entry.rm_resident_id), title: l(:button_edit) %>
+							<% if controller.deletePermission %>
+								<%= link_to sprite_icon('del'), {controller: 'rmincident', action: 'destroy', id: entry.id, tab: controller.controller_name}, data: {confirm: l(:text_are_you_sure)}, :method => :delete, :title => l(:button_delete) %>
+							<% end %>
+						</td>
+					</tr>
+				<% end %>
+			<% end %>
+		</tbody>
+	</table>
+</div>

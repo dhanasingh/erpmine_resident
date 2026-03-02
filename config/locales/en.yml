@@ -45,3 +45,28 @@ en:
    label_move_out_msg: Resident moved out.
    label_transfer_msg: Resident Transferred.
    label_move_out_validate_msg: Move out date should be greater then move in date
+   label_incident_tracking: Incident Tracking
+   label_new_incident: New Incident
+   label_edit_incident: Edit Incident
+   field_incident_date: Incident Date
+   label_resident_detail: Resident Detail
+   label_incident_details: Incident Details
+   field_incident_datetime: Incident Date/Time
+   field_incident_type: Incident Type
+   field_location: Location
+   label_witnesses: Witnesses
+   field_witnesses: Witnesses
+   label_actions: Actions
+   field_immediate_actions: Immediate Actions
+   field_injuries_or_damages: Injuries or Damages
+   label_follow_up_and_prevention: Follow-up & Prevention
+   field_additional_notes: Additional Notes
+   field_follow_up_actions: Follow-up Actions
+   field_preventive_measures: Preventive Measures
+   label_reporting_signatures: Reporting & Signatures
+   field_reporting_staff_name: Reporting Staff Name
+   field_reporting_staff_signature: Reporting Staff Signature
+   field_approval_staff_signature: Approval Staff Signature
+   button_download_pdf: Download PDF
+   label_open: Open
+   label_closed: Closed
