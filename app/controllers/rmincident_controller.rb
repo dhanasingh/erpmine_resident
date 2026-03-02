@@ -18,6 +18,7 @@
 class RmincidentController < WkcrmController
 
 	menu_item :apartment
+	accept_api_auth :index, :edit, :update, :destroy, :get_resident_info, :get_residents_by_location
 	include RmresidentHelper
 	helper_method :approvePermission
 
@@ -45,9 +46,18 @@ class RmincidentController < WkcrmController
 		entries = entries.where("rm_incidents.incident_datetime <= ?", @to.end_of_day) if @to.present?
 		entries = entries.order(Arel.sql "incident_datetime DESC, id DESC")
 
-		@entry_count = entries.count
-		@entry_pages = Paginator.new @entry_count, per_page_option, params['page']
-		@incident_entries = entries.limit(@entry_pages.per_page).offset(@entry_pages.offset)
+		respond_to do |format|
+			format.html do
+				@entry_count = entries.count
+				@entry_pages = Paginator.new @entry_count, per_page_option, params['page']
+				@incident_entries = entries.limit(@entry_pages.per_page).offset(@entry_pages.offset)
+			end
+			format.api do
+				@entry_count = entries.count
+				set_limit_and_offset
+				@incident_entries = entries.limit(@limit).offset(@offset)
+			end
+		end
 	end
 
 	def edit
@@ -74,6 +84,7 @@ class RmincidentController < WkcrmController
 
 		respond_to do |format|
 			format.html
+			format.api
 			format.pdf do
 				send_data(
 					helpers.incident_to_pdf(@incident, @selected_resident_info || {}),
@@ -94,8 +105,16 @@ class RmincidentController < WkcrmController
 
 		already_submitted = incident_submitted?(@incident)
 		if already_submitted && !approve_requested
-			flash[:error] = 'Submitted incident is read-only.'
-			redirect_to controller: 'rmincident', action: 'edit', id: @incident.id, rm_resident_id: @incident.rm_resident_id
+			respond_to do |format|
+				format.html do
+					flash[:error] = 'Submitted incident is read-only.'
+					redirect_to controller: 'rmincident', action: 'edit', id: @incident.id, rm_resident_id: @incident.rm_resident_id
+				end
+				format.api do
+					@error_messages = ['Submitted incident is read-only.']
+					render template: 'common/error_messages', format: [:api], status: :unprocessable_entity, layout: nil
+				end
+			end
 			return
 		end
 
@@ -108,8 +127,13 @@ class RmincidentController < WkcrmController
 
 		if @incident.save
 			record_incident_status(@incident, approve_requested ? 'A' : 'S') if User.current.logged?
-			flash[:notice] = l(:notice_successful_update)
-			redirect_to controller: 'rmincident', action: 'index', tab: 'rmincident', rm_resident_id: @incident.rm_resident_id
+			respond_to do |format|
+				format.html do
+					flash[:notice] = l(:notice_successful_update)
+					redirect_to controller: 'rmincident', action: 'index', tab: 'rmincident', rm_resident_id: @incident.rm_resident_id
+				end
+				format.api { render plain: @incident.id }
+			end
 		else
 			@selected_resident_location = params[:resident_location].to_s
 			@rm_resident = @incident.rm_resident
@@ -122,8 +146,16 @@ class RmincidentController < WkcrmController
 				@selected_resident_info = resident_info_hash(selected_resident)
 			end
 			load_status_signatures(@incident) if @incident.persisted?
-			flash.now[:error] = @incident.errors.full_messages.join('<br>')
-			render action: 'edit'
+			respond_to do |format|
+				format.html do
+					flash.now[:error] = @incident.errors.full_messages.join('<br>')
+					render action: 'edit'
+				end
+				format.api do
+					@error_messages = @incident.errors.full_messages
+					render template: 'common/error_messages', format: [:api], status: :unprocessable_entity, layout: nil
+				end
+			end
 		end
 	end
 
@@ -131,8 +163,13 @@ class RmincidentController < WkcrmController
 		incident = RmIncident.find(params[:id])
 		rm_resident_id = incident.rm_resident_id
 		incident.destroy
-		flash[:notice] = l(:notice_successful_delete)
-		redirect_to controller: 'rmincident', action: 'index', tab: 'rmincident', rm_resident_id: rm_resident_id
+		respond_to do |format|
+			format.html do
+				flash[:notice] = l(:notice_successful_delete)
+				redirect_to controller: 'rmincident', action: 'index', tab: 'rmincident', rm_resident_id: rm_resident_id
+			end
+			format.api { render plain: '' }
+		end
 	end
 
 	def get_resident_info
@@ -155,6 +192,12 @@ class RmincidentController < WkcrmController
 	end
 
 	private
+
+	def set_limit_and_offset
+		@offset, @limit = api_offset_and_limit
+		@limit = params[:limit] if params[:limit].present?
+		@offset = params[:offset] if params[:offset].present?
+	end
 
 	def ensure_default_period_filter
 		session[controller_name] ||= {}

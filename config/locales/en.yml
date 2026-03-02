@@ -45,6 +45,9 @@ en:
    label_move_out_msg: Resident moved out.
    label_transfer_msg: Resident Transferred.
    label_move_out_validate_msg: Move out date should be greater then move in date
+   label_incident: Incident
+   label_approve_incident: Approve Incident
+   label_submitted_by: Submitted by
    label_incident_tracking: Incident Tracking
    label_new_incident: New Incident
    label_edit_incident: Edit Incident
