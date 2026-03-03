@@ -289,44 +289,40 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def show_survey_link(context={})
 		showLink = context[:type][:surveyForType] == "RmResident" && context[:params][:survey_for].blank?  ? true : false
 	end
-
+	
 	def show_survey_result(context={})
 		showResult = context[:type][:surveyForType] == "RmResident"
 	end
-
+	
 
 	def add_report_type(context={})
 		reports = context[:reports]
 		apiRequest = context[:apiRequest]
-		reportLoc = "plugins/erpmine_resident/app/views/rmreport"
+		reportLoc = Rails.root.join('plugins', 'erpmine_resident', 'app', 'views', 'rmreport')
 		Dir["#{reportLoc}/_report*"].each do |path|
-			fileName = File.basename(path, ".html.erb")
+			fileName = File.basename(path, '.html.erb')
 			fileName.slice!(0)
-			label = fileName.remove("_web")
-			# reports << [I18n.t(:"#{label}"), fileName] unless apiRequest && fileName.end_with?("_web")
-		  reports << [l(:"#{label}"), fileName] if Object.new.extend(RmreportHelper).hasViewPermission(label) && (!apiRequest || !(fileName.end_with?("_web")))
+			label = fileName.remove('_web')
+			reports << [l(:"#{label}"), fileName] if Object.new.extend(RmreportHelper).hasViewPermission(label) && (!apiRequest || !(fileName.end_with?('_web')))
 		end
+		reports.uniq!
 	end
 
 	def load_report_module(context={})
 		report_type = context[:report_type]
 		report_file = Rails.root.join("plugins/erpmine_resident/app/views/rmreport/#{report_type}.rb")
 		if File.exist?(report_file)
-			require report_file.to_s
+			require_dependency report_file.to_s
 			report = Object.new.extend(report_type.camelize.constantize)
 			context[:report_module] << report
 		end
 	end
 
-	def add_location_supported_reports(context={})
-		context[:reports] << 'report_move_in_move_out_by_date'
-	end
-
 	def get_report_view_path(context={})
 		report_type = context[:report_type]
-		partial_path = Rails.root.join("plugins/erpmine_resident/app/views/rmreport", "_#{report_type}.html.erb")
+		partial_path = Rails.root.join('plugins', 'erpmine_resident', 'app', 'views', 'rmreport', "_#{report_type}.html.erb")
 		if File.exist?(partial_path)
-			context[:view_path] << "rmreport/report"
+			context[:view_path] << 'rmreport/report'
 		end
 	end
 

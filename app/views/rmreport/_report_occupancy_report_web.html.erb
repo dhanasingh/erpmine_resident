@@ -1,0 +1,104 @@
+<%
+  require_relative './report_occupancy_report'
+
+  user_id = (session[controller_name].try(:[], :user_id).blank? || session[controller_name].try(:[], :user_id).to_i < 1) ? User.current.id : session[controller_name].try(:[], :user_id)
+  group_id = session[controller_name].try(:[], :group_id)
+  from = session[controller_name].try(:[], :from)
+  to = session[controller_name].try(:[], :to)
+  project_id = session[controller_name].try(:[], :project_id) || 0
+  location_id = session[controller_name].try(:[], :location_id)
+
+  report_helper = Object.new.extend(ReportOccupancyReport)
+  occupancy = report_helper.calcReportData(user_id, group_id, project_id, from, to, location_id)
+  total_capacity = occupancy[:rows].sum { |r| r[:total_capacity].to_i }
+  total_prev_month_occ = occupancy[:rows].sum { |r| r[:prev_month_occ].to_i }
+  total_current_occ = occupancy[:rows].sum { |r| r[:current_occ].to_i }
+  total_vacant = occupancy[:rows].sum { |r| r[:vacant].to_i }
+  total_percent_occ = total_capacity > 0 ? ((total_current_occ.to_f / total_capacity.to_f) * 100.0).round(1) : 0.0
+%>
+
+<style type="text/css">
+	@media print {
+		#attn-rpt-dlg {
+			overflow: visible !important;
+		}
+
+		#attn-rpt-dlg > div {
+			width: 100% !important;
+			margin: 0 !important;
+		}
+
+		#attn-rpt-dlg table {
+			width: 100% !important;
+			table-layout: auto !important;
+		}
+
+		#attn-rpt-dlg colgroup col {
+			width: auto !important;
+			max-width: none !important;
+		}
+
+		#attn-rpt-dlg th,
+		#attn-rpt-dlg td {
+			overflow: visible !important;
+			text-overflow: clip !important;
+			white-space: normal !important;
+		}
+	}
+</style>
+
+<div id="attn-rpt-dlg" style="overflow-x:auto;">
+	<div style="width:1060px; margin: 0 auto;">
+	<div style="float:right"><%= renderReportLogo %></div>
+	<div style="text-align:center;">
+		<p><b><%= l(:report_occupancy_report) %></b><br>
+			<%= occupancy[:as_on_date].strftime('%B %Y') %>
+		</p>
+	</div>
+	<div style="clear:both;"></div>
+	<table style="border-collapse: collapse; table-layout: fixed; width:100%;">
+		<colgroup>
+			<col style="width:440px;">
+			<col style="width:110px;">
+			<col style="width:210px;">
+			<col style="width:140px;">
+			<col style="width:80px;">
+			<col style="width:80px;">
+		</colgroup>
+		<thead style="background-color:#e6e6e6;">
+			<tr>
+				<th class="lbl-txt-align" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= l(:label_facility) %></th>
+				<th style="text-align:center;"><%= l(:label_total_capacity) %></th>
+				<th style="text-align:center;"><%= l(:label_prev_month_occ) %> (<%= occupancy[:prev_month_label] %>)</th>
+				<th style="text-align:center;"><%= l(:label_current_occ) %></th>
+				<th style="text-align:center;"><%= l(:label_percent_occ) %></th>
+				<th style="text-align:center;"><%= l(:label_vacant) %></th>
+			</tr>
+		</thead>
+		<tbody>
+			<% occupancy[:rows].each do |row| %>
+				<tr class="<%= cycle('odd', 'even') %>">
+					<td style="text-align: left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="<%= row[:facility] %>"><%= row[:facility] %></td>
+					<td style="text-align: center"><%= row[:total_capacity] %></td>
+					<td style="text-align: center"><%= row[:prev_month_occ] %></td>
+					<td style="text-align: center"><%= row[:current_occ] %></td>
+					<td style="text-align: center"><%= format('%.1f%%', row[:percent_occ]) %></td>
+					<td style="text-align: center"><%= row[:vacant] %></td>
+				</tr>
+			<% end %>
+		</tbody>
+		<% if occupancy[:rows].any? %>
+		<tfoot>
+			<tr style="background-color:#e6e6e6; border-top: 2px solid #999;">
+				<td style="text-align: right;"><b><%= l(:label_total) %></b></td>
+				<td style="text-align: center"><b><%= total_capacity %></b></td>
+				<td style="text-align: center"><b><%= total_prev_month_occ %></b></td>
+				<td style="text-align: center"><b><%= total_current_occ %></b></td>
+				<td style="text-align: center"><b><%= format('%.1f%%', total_percent_occ) %></b></td>
+				<td style="text-align: center"><b><%= total_vacant %></b></td>
+			</tr>
+		</tfoot>
+		<% end %>
+	</table>
+	</div>
+</div>

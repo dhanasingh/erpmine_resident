@@ -1,4 +1,4 @@
-# Tamil strings go here for Rails i18n
+# Tamil (India) locale strings
 ta-IN:
    label_apartment: "அபார்ட்மென்ட்"
    label_resident: குடியிருப்பவர்
@@ -44,10 +44,35 @@ ta-IN:
    label_movein_error_msg: தயவுசெய்து வாடகை திட்டத்தையும் டிராக்கர்களையும் உள்ளமைக்கவும்
    label_move_out_msg: குடியிருப்பவர் வெளியேறினார்.
    label_transfer_msg: குடியிருப்பவர் மாற்றப்பட்டார்.
+   label_move_out_validate_msg: வெளியேறும் தேதி, குடியேறும் தேதியைவிட அதிகமாக இருக்க வேண்டும்
    label_incident: சம்பவம்
    label_approve_incident: சம்பவத்தை அங்கீகரிக்கவும்
    label_submitted_by: சமர்ப்பித்தவர்
-   label_move_out_validate_msg: வெளியேறும் தேதி, குடியேறும் தேதியைவிட அதிகமாக இருக்க வேண்டும்
+   label_incident_tracking: Incident Tracking
+   label_new_incident: New Incident
+   label_edit_incident: Edit Incident
+   field_incident_date: Incident Date
+   label_resident_detail: Resident Detail
+   label_incident_details: Incident Details
+   field_incident_datetime: Incident Date/Time
+   field_incident_type: Incident Type
+   field_location: Location
+   label_witnesses: Witnesses
+   field_witnesses: Witnesses
+   label_actions: Actions
+   field_immediate_actions: Immediate Actions
+   field_injuries_or_damages: Injuries or Damages
+   label_follow_up_and_prevention: Follow-up & Prevention
+   field_additional_notes: Additional Notes
+   field_follow_up_actions: Follow-up Actions
+   field_preventive_measures: Preventive Measures
+   label_reporting_signatures: Reporting & Signatures
+   field_reporting_staff_name: Reporting Staff Name
+   field_reporting_staff_signature: Reporting Staff Signature
+   field_approval_staff_signature: Approval Staff Signature
+   button_download_pdf: Download PDF
+   label_open: Open
+   label_closed: Closed
    label_evaluation: மதிப்பீடு
    label_new_evaluation: புதிய மதிப்பீட்டு அமைப்பு
    label_edit_evaluation: மதிப்பீட்டை திருத்தவும்
