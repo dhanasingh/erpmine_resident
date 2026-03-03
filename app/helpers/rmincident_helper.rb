@@ -33,9 +33,40 @@ module RmincidentHelper
 
 	def incident_status_options
 		[
-			[l(:label_open), RmIncident::STATUS_OPEN],
-			[l(:label_closed), RmIncident::STATUS_CLOSED]
+			[l(:label_new), RmIncident::STATUS_NEW],
+			[l(:wk_status_submitted), RmIncident::STATUS_SUBMITTED],
+			[l(:wk_status_approved), RmIncident::STATUS_APPROVED]
 		]
+	end
+
+	def incident_status_code(incident)
+		incident.workflow_status_code
+	end
+
+	def incident_status_label(value)
+		status_code = value.is_a?(RmIncident) ? incident_status_code(value) : value.to_s.upcase
+
+		case status_code
+		when RmIncident::STATUS_APPROVED
+			l(:wk_status_approved)
+		when RmIncident::STATUS_SUBMITTED
+			l(:wk_status_submitted)
+		else
+			l(:label_new)
+		end
+	end
+
+	def incident_status_badge_class(value)
+		status_code = value.is_a?(RmIncident) ? incident_status_code(value) : value.to_s.upcase
+
+		case status_code
+		when RmIncident::STATUS_APPROVED
+			'is-approved'
+		when RmIncident::STATUS_SUBMITTED
+			'is-submitted'
+		else
+			'is-new'
+		end
 	end
 
 	# ── PDF colour palette (B&W-print-safe) ────────────────────────────────────
@@ -56,8 +87,7 @@ module RmincidentHelper
 		pdf.set_print_footer(false)
 		pdf.add_page
 
-		status_closed = incident.status == RmIncident::STATUS_CLOSED
-		status_label  = status_closed ? l(:label_closed) : l(:label_open)
+		status_label = incident_status_label(incident)
 
 		# ── Title banner ────────────────────────────────────────────────────────
 		pdf.SetFillColor(*PDF_COLOR_BRAND)

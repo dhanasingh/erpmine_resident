@@ -20,7 +20,7 @@
 						<td class="lbl-txt-align"><%= h entry.rm_resident&.name %></td>
 						<td class="lbl-txt-align"><%= h incident_type_label(entry.incident_type_id) %></td>
 						<td class="lbl-txt-align"><%= h entry.location %></td>
-						<td class="lbl-txt-align"><%= h(entry.status == RmIncident::STATUS_CLOSED ? l(:label_closed) : l(:label_open)) %></td>
+						<td class="lbl-txt-align"><%= h(incident_status_label(entry)) %></td>
 						<td style="text-align:center;">
 							<%= link_to sprite_icon('edit'), url_for(controller: 'rmincident', action: 'edit', id: entry.id, rm_resident_id: entry.rm_resident_id), title: l(:button_edit) %>
 							<% if controller.deletePermission %>

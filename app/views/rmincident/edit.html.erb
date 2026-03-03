@@ -28,9 +28,9 @@
 
 		<div class="box tabular">
 			<% resident_info = (@selected_resident_info || {}) %>
-			<% readonly_mode = @incident.persisted? %>
-			<% resident_locked = @incident.persisted? && @rm_resident.present? %>
 			<% approved_mode = @approved_on.present? %>
+			<% readonly_mode = @incident.persisted? && (approved_mode || !approvePermission) %>
+			<% resident_locked = @incident.persisted? && @rm_resident.present? %>
 			<%# ── Resident Detail & Status ── %>
 			<fieldset <%= 'disabled="disabled"' if readonly_mode %>>
 				<legend><%= l(:label_resident_detail) %></legend>
@@ -83,10 +83,9 @@
 					<div class="splitcontentright">
 						<p>
 							<label><%= l(:field_status) %></label>
-							<% incident_status_value = @incident.status.presence || RmIncident::STATUS_OPEN %>
-							<%= hidden_field_tag 'incident[status]', incident_status_value, id: 'incident_status' %>
-							<% badge_class = incident_status_value == RmIncident::STATUS_CLOSED ? 'is-closed' : 'is-open' %>
-							<span class="incident-status-badge <%= badge_class %>"><%= h(incident_status_value == RmIncident::STATUS_CLOSED ? l(:label_closed) : l(:label_open)) %></span>
+							<% incident_status_value = incident_status_code(@incident) %>
+							<% badge_class = incident_status_badge_class(incident_status_value) %>
+							<span class="incident-status-badge <%= badge_class %>"><%= h(incident_status_label(incident_status_value)) %></span>
 						</p>
 					</div>
 				</div>
@@ -177,7 +176,7 @@
 		</div>
 
 		<p>
-			<% unless readonly_mode %>
+			<% if @incident.new_record? && !readonly_mode %>
 				<%= submit_tag l(:button_submit), :id => 'incident_submit', :onclick => "return confirm('Are you sure you want to submit this incident?');" %>
 			<% end %>
 			<% if @incident.persisted? && approvePermission && !approved_mode %>

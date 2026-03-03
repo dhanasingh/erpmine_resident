@@ -19,8 +19,9 @@ class RmIncident < ApplicationRecord
 	include Redmine::SafeAttributes
 
 	INCIDENT_ENUM_TYPE = 'RIT'.freeze
-	STATUS_OPEN = 'O'.freeze
-	STATUS_CLOSED = 'C'.freeze
+	STATUS_NEW = 'N'.freeze
+	STATUS_SUBMITTED = 'S'.freeze
+	STATUS_APPROVED = 'A'.freeze
 
 	belongs_to :rm_resident, :class_name => 'RmResident', :foreign_key => 'rm_resident_id'
 	belongs_to :created_user, :class_name => 'User', :foreign_key => 'created_by_user_id'
@@ -28,27 +29,25 @@ class RmIncident < ApplicationRecord
 	has_many :wkstatus, -> { where(status_for_type: 'RmIncident') },
 		:foreign_key => 'status_for_id', :class_name => 'WkStatus', :dependent => :destroy
 
-	validates_presence_of :rm_resident_id, :incident_datetime, :status
-	validates_inclusion_of :status, :in => [STATUS_OPEN, STATUS_CLOSED]
+	validates_presence_of :rm_resident_id, :incident_datetime
 	validate :incident_type_enum_link
-	before_validation :normalize_status_value
 
 	safe_attributes 'rm_resident_id', 'incident_datetime', 'incident_type_id', 'desc',
 		'location', 'witnesses', 'imm_action', 'injuries',
 		'notes', 'follow_up', 'prev_action',
 		'rpt_name',
-		'status', 'created_by_user_id', 'updated_by_user_id'
+		'created_by_user_id', 'updated_by_user_id'
+
+	def workflow_status_code
+		return STATUS_NEW if new_record?
+
+		return STATUS_APPROVED if wkstatus.where(status: STATUS_APPROVED).exists?
+		return STATUS_SUBMITTED if wkstatus.where(status: STATUS_SUBMITTED).exists?
+
+		STATUS_NEW
+	end
 
 	private
-
-	def normalize_status_value
-		case status.to_s.strip.downcase
-		when '', 'open', STATUS_OPEN.downcase
-			self.status = STATUS_OPEN
-		when 'closed', STATUS_CLOSED.downcase
-			self.status = STATUS_CLOSED
-		end
-	end
 
 	def incident_type_enum_link
 		return if incident_type_id.blank?

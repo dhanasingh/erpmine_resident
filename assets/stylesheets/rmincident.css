@@ -128,16 +128,22 @@
   vertical-align: middle;
 }
 
-.incident-status-badge.is-open {
-  background: #d4edda;
-  color: #1a6e2e;
-  border: 1px solid #b2dfbb;
+.incident-status-badge.is-new {
+  background: #e8f0fe;
+  color: #0d47a1;
+  border: 1px solid #bbdefb;
 }
 
-.incident-status-badge.is-closed {
-  background: #e8e8e8;
-  color: #555555;
-  border: 1px solid #cccccc;
+.incident-status-badge.is-submitted {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffe0b2;
+}
+
+.incident-status-badge.is-approved {
+  background: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #c8e6c9;
 }
 
 /* Splitcontent label overrides inside incident form */

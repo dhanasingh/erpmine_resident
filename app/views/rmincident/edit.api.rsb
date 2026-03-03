@@ -5,7 +5,7 @@ api.rm_incident do
   api.incident_datetime @incident.incident_datetime&.strftime('%Y-%m-%d %H:%M:%S')
   api.incident_type_id @incident.incident_type_id
   api.incident_type incident_type_label(@incident.incident_type_id)
-  api.status @incident.status
+  api.status incident_status_code(@incident)
   api.location @incident.location
   api.description @incident.desc
   api.witnesses @incident.witnesses

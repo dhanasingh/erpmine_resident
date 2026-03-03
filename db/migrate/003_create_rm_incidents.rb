@@ -16,7 +16,6 @@ class CreateRmIncidents < ActiveRecord::Migration[4.2]
 			t.text :notes
 			t.text :follow_up
 			t.string :rpt_name, :limit => 50
-			t.string :status, :null => false, :limit => 5, :default => 'O'
 			t.references :created_by_user, :class => "User"
 			t.references :updated_by_user, :class => "User"
 			t.timestamps null: false

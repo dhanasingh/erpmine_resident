@@ -41,7 +41,7 @@ class RmincidentController < WkcrmController
 		entries = entries.where(rm_resident_id: @selected_resident_id) if @selected_resident_id.present?
 		entries = entries.where("LOWER(rm_incidents.location) = LOWER(?)", @selected_location) if @selected_location.present?
 		entries = entries.where(incident_type_id: @selected_incident_type) if @selected_incident_type.present?
-		entries = entries.where(status: @selected_incident_status) if @selected_incident_status.present?
+		entries = apply_incident_status_filter(entries, @selected_incident_status) if @selected_incident_status.present?
 		entries = entries.where("rm_incidents.incident_datetime >= ?", @from.beginning_of_day) if @from.present?
 		entries = entries.where("rm_incidents.incident_datetime <= ?", @to.end_of_day) if @to.present?
 		entries = entries.order(Arel.sql "incident_datetime DESC, id DESC")
@@ -103,25 +103,36 @@ class RmincidentController < WkcrmController
 			return false
 		end
 
-		already_submitted = incident_submitted?(@incident)
-		if already_submitted && !approve_requested
+		if incident_approved?(@incident)
 			respond_to do |format|
 				format.html do
-					flash[:error] = 'Submitted incident is read-only.'
+					flash[:error] = 'Approved incident is read-only.'
 					redirect_to controller: 'rmincident', action: 'edit', id: @incident.id, rm_resident_id: @incident.rm_resident_id
 				end
 				format.api do
-					@error_messages = ['Submitted incident is read-only.']
+					@error_messages = ['Approved incident is read-only.']
 					render template: 'common/error_messages', format: [:api], status: :unprocessable_entity, layout: nil
 				end
 			end
 			return
 		end
 
-		@incident.safe_attributes = params[:incident] unless already_submitted
-		if User.current.logged? && approve_requested
-			@incident.status = RmIncident::STATUS_CLOSED
+		already_submitted = incident_submitted?(@incident)
+		if already_submitted && !approve_requested
+			respond_to do |format|
+				format.html do
+					flash[:error] = 'Submitted incident can only be approved.'
+					redirect_to controller: 'rmincident', action: 'edit', id: @incident.id, rm_resident_id: @incident.rm_resident_id
+				end
+				format.api do
+					@error_messages = ['Submitted incident can only be approved.']
+					render template: 'common/error_messages', format: [:api], status: :unprocessable_entity, layout: nil
+				end
+			end
+			return
 		end
+
+		@incident.safe_attributes = params[:incident] if !already_submitted || approvePermission
 		@incident.created_by_user_id = User.current.id if @incident.new_record? && User.current.logged?
 		@incident.updated_by_user_id = User.current.id if User.current.logged?
 
@@ -179,9 +190,7 @@ class RmincidentController < WkcrmController
 
 	def get_residents_by_location
 		location_id = params[:location_id].presence
-		residents = RmResident.left_join_contacts
-			.where(id: RmResident.group(:resident_type, :resident_id).select("MAX(id)"))
-			.includes(:resident)
+		residents = active_residents_scope
 		if location_id.present?
 			residents = residents.where(
 				"#{WkCrmContact.table_name}.location_id = :location_id OR #{WkAccount.table_name}.location_id = :location_id",
@@ -218,11 +227,16 @@ class RmincidentController < WkcrmController
 	end
 
 	def load_residents
-		@resident_options = RmResident.left_join_contacts
-			.where(id: RmResident.group(:resident_type, :resident_id).select("MAX(id)"))
-			.includes(:resident)
+		@resident_options = active_residents_scope
 			.filter_map { |r| r.name.present? ? [r.name, r.id] : nil }
 		@resident_location_options = WkLocation.order(:name).pluck(:name, :id)
+	end
+
+	def active_residents_scope
+		active_resident_ids = RmResident.current_resident.reorder(nil).group(:resident_type, :resident_id).select("MAX(id)")
+		RmResident.current_resident.left_join_contacts
+			.where(id: active_resident_ids)
+			.includes(:resident)
 	end
 
 	def resident_info_hash(resident)
@@ -253,16 +267,8 @@ class RmincidentController < WkcrmController
 	end
 
 	def record_incident_status(incident, status_code)
-		mapped_status = case status_code.to_s.upcase
-		when 'S'
-			RmIncident::STATUS_OPEN
-		when 'A'
-			RmIncident::STATUS_CLOSED
-		else
-			raise ArgumentError, "Unsupported incident status code: #{status_code}"
-		end
-
-		incident.update_column(:status, mapped_status) if incident.status != mapped_status
+		status_code = status_code.to_s.upcase
+		raise ArgumentError, "Unsupported incident status code: #{status_code}" unless [RmIncident::STATUS_SUBMITTED, RmIncident::STATUS_APPROVED].include?(status_code)
 
 		last_status = incident.wkstatus.order(status_date: :desc).first
 		return if last_status.present? && last_status.status.to_s.upcase == status_code
@@ -281,6 +287,39 @@ class RmincidentController < WkcrmController
 
 	def incident_submitted?(incident)
 		return false if incident.new_record?
-		incident.wkstatus.where(status: 'S').exists?
+		incident.wkstatus.where(status: RmIncident::STATUS_SUBMITTED).exists?
+	end
+
+	def incident_approved?(incident)
+		return false if incident.new_record?
+		incident.wkstatus.where(status: RmIncident::STATUS_APPROVED).exists?
+	end
+
+	def apply_incident_status_filter(entries, status_code)
+		status_table = WkStatus.table_name
+		status_code = status_code.to_s.upcase
+
+		case status_code
+		when RmIncident::STATUS_APPROVED
+			entries.where(
+				"EXISTS (SELECT 1 FROM #{status_table} ws WHERE ws.status_for_type = ? AND ws.status_for_id = rm_incidents.id AND ws.status = ?)",
+				'RmIncident', RmIncident::STATUS_APPROVED
+			)
+		when RmIncident::STATUS_SUBMITTED
+			entries.where(
+				"EXISTS (SELECT 1 FROM #{status_table} ws WHERE ws.status_for_type = ? AND ws.status_for_id = rm_incidents.id AND ws.status = ?)",
+				'RmIncident', RmIncident::STATUS_SUBMITTED
+			).where(
+				"NOT EXISTS (SELECT 1 FROM #{status_table} ws WHERE ws.status_for_type = ? AND ws.status_for_id = rm_incidents.id AND ws.status = ?)",
+				'RmIncident', RmIncident::STATUS_APPROVED
+			)
+		when RmIncident::STATUS_NEW
+			entries.where(
+				"NOT EXISTS (SELECT 1 FROM #{status_table} ws WHERE ws.status_for_type = ? AND ws.status_for_id = rm_incidents.id AND ws.status IN (?, ?))",
+				'RmIncident', RmIncident::STATUS_SUBMITTED, RmIncident::STATUS_APPROVED
+			)
+		else
+			raise ArgumentError, "Unsupported incident status filter: #{status_code}"
+		end
 	end
 end
