@@ -290,6 +290,10 @@ class ResidentHook < Redmine::Hook::ViewListener
 		showLink = context[:type][:surveyForType] == "RmResident" && context[:params][:survey_for].blank?  ? true : false
 	end
 
+	def show_survey_result(context={})
+		showResult = context[:type][:surveyForType] == "RmResident"
+	end
+
 
 	render_on :resident_evaluation, :partial => 'rmevaluation/evaluation'
 end
