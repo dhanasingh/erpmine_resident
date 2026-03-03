@@ -77,3 +77,9 @@ ta-IN:
    label_new_evaluation: புதிய மதிப்பீட்டு அமைப்பு
    label_edit_evaluation: மதிப்பீட்டை திருத்தவும்
    label_select_resident: குடியிருப்பவரை தேர்ந்தெடுக்கவும்
+   report_occupancy_report: Occupancy Report
+   label_prev_month_occ: Prev Month Occ
+   label_total_capacity: Capacity
+   label_current_occ: Current Occ
+   label_percent_occ: Occ %
+   label_vacant: Vacant

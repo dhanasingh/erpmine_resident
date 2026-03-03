@@ -77,3 +77,9 @@ en:
    label_new_evaluation: Evaluation Setup
    label_edit_evaluation: Edit Evaluation
    label_select_resident: Select Resident
+   report_occupancy_report: Occupancy Report
+   label_prev_month_occ: Prev Month Occ
+   label_total_capacity: Capacity
+   label_current_occ: Current Occ
+   label_percent_occ: Occ %
+   label_vacant: Vacant
