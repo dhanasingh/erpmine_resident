@@ -14,7 +14,8 @@ api.rm_incident do
   api.notes @incident.notes
   api.follow_up @incident.follow_up
   api.preventive_actions @incident.prev_action
-  api.reporting_staff_name @incident.rpt_name
+  api.reporting_staff_user_id @incident.rpt_user_id
+  api.reporting_staff_name @incident.reporting_staff_user&.name
   api.resident_info(@selected_resident_info || {})
   api.submitted_by @submitted_by
   api.approved_by @approved_by
@@ -25,6 +26,7 @@ end
 api.headers do
   api.residents (@resident_options || []).map { |name, id| { id: id, name: name } }
   api.resident_locations (@resident_location_options || []).map { |name, id| { id: id, name: name } }
+  api.reporting_staffs (@reporting_staff_options || []).map { |name, value| { id: value, name: name } }
   api.incident_types incident_type_options.map { |name, id| { id: id, name: name } }
   api.incident_statuses incident_status_options.map { |name, id| { id: id, name: name } }
 end

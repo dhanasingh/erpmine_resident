@@ -10,7 +10,7 @@ api.array :rm_incidents, api_meta(:total_count => @entry_count, :offset => @offs
       api.location entry.location
       api.status incident_status_code(entry)
       api.status_label incident_status_label(entry)
-      api.reporting_staff entry.rpt_name
+      api.reporting_staff entry.reporting_staff_user&.name
     end
   end
 end

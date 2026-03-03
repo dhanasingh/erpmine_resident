@@ -153,7 +153,7 @@ module RmincidentHelper
 		incident_pdf_section_header(pdf, l(:label_reporting_signatures))
 
 		# Name row full-width
-		incident_pdf_full_row(pdf, l(:field_reporting_staff_name), incident.rpt_name, 0)
+		incident_pdf_full_row(pdf, l(:field_reporting_staff_name), incident.reporting_staff_user&.name, 0)
 
 		# Two side-by-side signature panels
 		submitted_date = submitted_status&.status_date.present? ? format_time(submitted_status.status_date) : nil

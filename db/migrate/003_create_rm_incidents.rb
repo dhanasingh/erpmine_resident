@@ -4,10 +4,10 @@ class CreateRmIncidents < ActiveRecord::Migration[4.2]
 
 	def up
 		create_table :rm_incidents do |t|
-			t.references :rm_resident, :null => false, :index => true
-			t.datetime :incident_datetime, :null => false
-			t.references :incident_type, :index => true
-			t.string :location, :limit => 255
+			t.references :rm_resident, null: false, index: true
+			t.datetime :incident_datetime, null: false
+			t.references :incident_type, index: true
+			t.string :location, limit: 255
 			t.text :desc
 			t.text :witnesses
 			t.text :imm_action
@@ -15,9 +15,9 @@ class CreateRmIncidents < ActiveRecord::Migration[4.2]
 			t.text :injuries
 			t.text :notes
 			t.text :follow_up
-			t.string :rpt_name, :limit => 50
-			t.references :created_by_user, :class => "User"
-			t.references :updated_by_user, :class => "User"
+			t.references :rpt_user, index: true, class: "User"
+			t.references :created_by_user, class: "User"
+			t.references :updated_by_user, class: "User"
 			t.timestamps null: false
 		end
 

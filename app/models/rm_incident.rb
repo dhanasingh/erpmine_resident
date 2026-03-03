@@ -26,6 +26,7 @@ class RmIncident < ApplicationRecord
 	belongs_to :rm_resident, :class_name => 'RmResident', :foreign_key => 'rm_resident_id'
 	belongs_to :created_user, :class_name => 'User', :foreign_key => 'created_by_user_id'
 	belongs_to :updated_user, :class_name => 'User', :foreign_key => 'updated_by_user_id'
+	belongs_to :reporting_staff_user, :class_name => 'User', :foreign_key => 'rpt_user_id', optional: true
 	has_many :wkstatus, -> { where(status_for_type: 'RmIncident') },
 		:foreign_key => 'status_for_id', :class_name => 'WkStatus', :dependent => :destroy
 
@@ -35,7 +36,7 @@ class RmIncident < ApplicationRecord
 	safe_attributes 'rm_resident_id', 'incident_datetime', 'incident_type_id', 'desc',
 		'location', 'witnesses', 'imm_action', 'injuries',
 		'notes', 'follow_up', 'prev_action',
-		'rpt_name',
+		'rpt_user_id',
 		'created_by_user_id', 'updated_by_user_id'
 
 	def workflow_status_code
@@ -55,4 +56,5 @@ class RmIncident < ApplicationRecord
 		enum_exists = WkCrmEnumeration.where(id: incident_type_id, enum_type: INCIDENT_ENUM_TYPE).exists?
 		errors.add(:incident_type_id, :invalid) unless enum_exists
 	end
+
 end

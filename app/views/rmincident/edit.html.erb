@@ -90,7 +90,7 @@
 					</div>
 				</div>
 				<p>
-					<label><%= l(:field_location) %></label>
+					<label><%= l(:field_incident_location) %></label>
 					<%= f.text_field :location, :maxlength => 255, :size => 80, :no_label => true %>
 				</p>
 				<p>
@@ -138,10 +138,16 @@
 				<legend><%= l(:label_reporting_signatures) %></legend>
 				<div class="splitcontent">
 					<div class="splitcontentleft">
-						<p>
-							<label><%= l(:field_reporting_staff_name) %></label>
-							<%= f.text_field :rpt_name, :maxlength => 150, :no_label => true %>
-						</p>
+						<% unless @submitted_by.present? %>
+							<p>
+								<label><%= l(:field_reporting_staff_name) %></label>
+								<% if @incident.new_record? %>
+									<%= select_tag 'incident[rpt_user_id]', options_for_select(@reporting_staff_options || [], @incident.rpt_user_id), id: 'incident_rpt_user_id' %>
+								<% else %>
+									<span class="incident-static-value"><%= h(@incident.reporting_staff_user&.name) %></span>
+								<% end %>
+							</p>
+						<% end %>
 						<% if @submitted_by.present? %>
 							<p>
 								<label><%= l(:field_reporting_staff_signature) %></label>

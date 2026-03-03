@@ -62,13 +62,16 @@ class RmincidentController < WkcrmController
 
 	def edit
 		@selected_resident_location = params[:resident_location].to_s
+		load_reporting_staff_options
 		if params[:id].present?
 			@incident = RmIncident.find(params[:id])
 			@rm_resident = @incident.rm_resident
 			load_status_signatures(@incident)
 		else
 			@incident = RmIncident.new
-			@incident.rpt_name = User.current.name if User.current.logged? && @incident.rpt_name.blank?
+			if User.current.logged? && @incident.rpt_user_id.blank?
+				@incident.rpt_user_id = User.current.id
+			end
 			@rm_resident = RmResident.find(params[:rm_resident_id]) if params[:rm_resident_id].present?
 			@incident.rm_resident_id = @rm_resident.id if @rm_resident.present?
 		end
@@ -132,6 +135,11 @@ class RmincidentController < WkcrmController
 			return
 		end
 
+		if already_submitted && params[:incident].present?
+			params[:incident].delete(:rpt_user_id)
+			params[:incident].delete('rpt_user_id')
+		end
+
 		@incident.safe_attributes = params[:incident] if !already_submitted || approvePermission
 		@incident.created_by_user_id = User.current.id if @incident.new_record? && User.current.logged?
 		@incident.updated_by_user_id = User.current.id if User.current.logged?
@@ -147,6 +155,7 @@ class RmincidentController < WkcrmController
 			end
 		else
 			@selected_resident_location = params[:resident_location].to_s
+			load_reporting_staff_options
 			@rm_resident = @incident.rm_resident
 			resident_locked = @incident.persisted? && @rm_resident.present?
 			if resident_locked
@@ -230,6 +239,12 @@ class RmincidentController < WkcrmController
 		@resident_options = active_residents_scope
 			.filter_map { |r| r.name.present? ? [r.name, r.id] : nil }
 		@resident_location_options = WkLocation.order(:name).pluck(:name, :id)
+	end
+
+	def load_reporting_staff_options
+		users = getReportUsers(User.current.id)
+		users = [User.current] if users.blank?
+		@reporting_staff_options = users.map { |user| [user.name, user.id] }
 	end
 
 	def active_residents_scope
