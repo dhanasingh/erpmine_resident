@@ -37,20 +37,27 @@ class RmincidentController < WkcrmController
 		load_residents
 		@location_options = WkLocation.order(:name).pluck(:name)
 
-		entries = RmIncident.includes(:rm_resident)
+		entries = RmIncident.includes(:rm_resident, :reporting_staff_user)
 		entries = entries.where(rm_resident_id: @selected_resident_id) if @selected_resident_id.present?
 		entries = entries.where("LOWER(rm_incidents.location) = LOWER(?)", @selected_location) if @selected_location.present?
 		entries = entries.where(incident_type_id: @selected_incident_type) if @selected_incident_type.present?
 		entries = apply_incident_status_filter(entries, @selected_incident_status) if @selected_incident_status.present?
-		entries = entries.where("rm_incidents.incident_datetime >= ?", @from.beginning_of_day) if @from.present?
-		entries = entries.where("rm_incidents.incident_datetime <= ?", @to.end_of_day) if @to.present?
-		entries = entries.order(Arel.sql "incident_datetime DESC, id DESC")
+		entries = entries.where("rm_incidents.incident_date >= ?", @from.beginning_of_day) if @from.present?
+		entries = entries.where("rm_incidents.incident_date <= ?", @to.end_of_day) if @to.present?
+		entries = entries.order(Arel.sql "incident_date DESC, id DESC")
 
 		respond_to do |format|
 			format.html do
 				@entry_count = entries.count
 				@entry_pages = Paginator.new @entry_count, per_page_option, params['page']
 				@incident_entries = entries.limit(@entry_pages.per_page).offset(@entry_pages.offset)
+			end
+			format.csv do
+				send_data(
+					incident_list_to_csv(entries),
+					type: 'text/csv; header=present',
+					filename: "incident-list-#{User.current&.login || 'export'}-#{Date.today}.csv"
+				)
 			end
 			format.api do
 				@entry_count = entries.count
@@ -69,8 +76,8 @@ class RmincidentController < WkcrmController
 			load_status_signatures(@incident)
 		else
 			@incident = RmIncident.new
-			if User.current.logged? && @incident.rpt_user_id.blank?
-				@incident.rpt_user_id = User.current.id
+			if @incident.reported_by_id.blank?
+				@incident.reported_by_id = User.current.id
 			end
 			@rm_resident = RmResident.find(params[:rm_resident_id]) if params[:rm_resident_id].present?
 			@incident.rm_resident_id = @rm_resident.id if @rm_resident.present?
@@ -101,7 +108,7 @@ class RmincidentController < WkcrmController
 	def update
 		approve_requested = params[:approve_incident].present?
 		@incident = params[:incident][:id].present? ? RmIncident.find(params[:incident][:id]) : RmIncident.new
-		if approve_requested && (!approvePermission || @incident.new_record?)
+			if approve_requested && (!approvePermission(@incident) || @incident.new_record?)
 			render_403
 			return false
 		end
@@ -136,16 +143,15 @@ class RmincidentController < WkcrmController
 		end
 
 		if already_submitted && params[:incident].present?
-			params[:incident].delete(:rpt_user_id)
-			params[:incident].delete('rpt_user_id')
+			params[:incident]&.delete('reported_by_id') || params[:incident]&.delete(:reported_by_id)
 		end
 
-		@incident.safe_attributes = params[:incident] if !already_submitted || approvePermission
-		@incident.created_by_user_id = User.current.id if @incident.new_record? && User.current.logged?
-		@incident.updated_by_user_id = User.current.id if User.current.logged?
+		@incident.safe_attributes = params[:incident] if !already_submitted || approvePermission(@incident)
+		@incident.created_by_id = User.current.id if @incident.new_record?
+		@incident.updated_by_id = User.current.id
 
 		if @incident.save
-			record_incident_status(@incident, approve_requested ? 'A' : 'S') if User.current.logged?
+			record_incident_status(@incident, approve_requested ? 'A' : 'S')
 			respond_to do |format|
 				format.html do
 					flash[:notice] = l(:notice_successful_update)
@@ -211,6 +217,30 @@ class RmincidentController < WkcrmController
 
 	private
 
+	def incident_list_to_csv(entries)
+		headers = {
+			incident_date: l(:field_incident_date),
+			resident_name: l(:field_resident),
+			incident_type: l(:field_incident_type),
+			location: l(:field_location),
+			status: l(:field_status),
+			reporting_staff: l(:field_reporting_staff_name)
+		}
+
+		rows = entries.to_a.map do |entry|
+			{
+				incident_date: entry.incident_date.present? ? format_time(entry.incident_date) : '',
+				resident_name: entry.rm_resident&.name,
+				incident_type: helpers.incident_type_label(entry.incident_type_id),
+				location: entry.location,
+				status: helpers.incident_status_label(entry),
+				reporting_staff: entry.reporting_staff_user&.name
+			}
+		end
+
+		csv_export(headers: headers, data: rows)
+	end
+
 	def set_limit_and_offset
 		@offset, @limit = api_offset_and_limit
 		@limit = params[:limit] if params[:limit].present?
@@ -248,9 +278,8 @@ class RmincidentController < WkcrmController
 	end
 
 	def active_residents_scope
-		active_resident_ids = RmResident.current_resident.reorder(nil).group(:resident_type, :resident_id).select("MAX(id)")
-		RmResident.current_resident.left_join_contacts
-			.where(id: active_resident_ids)
+		RmResident.left_join_contacts
+			.where(move_out_date: nil)
 			.includes(:resident)
 	end
 
@@ -296,8 +325,13 @@ class RmincidentController < WkcrmController
 		)
 	end
 
-	def approvePermission
-		User.current.admin? || validateERPPermission('A_CRM_PRVLG')
+	def approvePermission(incident = nil)
+		return true if validateERPPermission('A_CRM_PRVLG')
+	
+		reporting_user_id = incident&.try(:reported_by_id)
+		return true if reporting_user_id && respond_to?(:isSupervisorForUser) && isSupervisorForUser(reporting_user_id)
+	
+		false
 	end
 
 	def incident_submitted?(incident)

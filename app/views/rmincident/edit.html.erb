@@ -1,21 +1,19 @@
 <% content_for :header_tags do %>
 	<%= stylesheet_link_tag 'rmincident', :plugin => 'erpmine_resident' %>
-	<%= javascript_include_tag 'index', :plugin => "erpmine_resident" if User.current.logged? %>
-	<%= javascript_include_tag 'rmincident_edit', :plugin => "erpmine_resident" if User.current.logged? %>
+	<%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
+	<%= javascript_include_tag 'rmincident_edit', :plugin => "erpmine_resident" %>
 <% end %>
 
 <h2><%= @incident.new_record? ? l(:label_new_incident) : l(:label_edit_incident) %></h2>
 
-<% if User.current.logged? %>
-	<%= javascript_tag do %>
-		var apartmentUrl = '<%= url_for(controller: "rmapartment", action: "index", tab: "rmapartment") %>';
-		var residentUrl = '<%= url_for(controller: "rmresident", action: "index", tab: "rmresident") %>';
-		var performserviceUrl = '<%= raw url_for(controller: :rmperformservice, action: :edit, user_id: User.current.id, startday: Date.today, sheet_view: 'I' ) %>';
-		var incidentUrl = '<%= url_for(controller: "rmincident", action: "index", tab: "rmincident", rm_resident_id: params[:rm_resident_id]) %>';
-	<% end %>
-
-	<%= hidden_field_tag 'back_url', url_for(:controller => params[:controller], :action => params[:action]) %>
+<%= javascript_tag do %>
+	var apartmentUrl = '<%= url_for(controller: "rmapartment", action: "index", tab: "rmapartment") %>';
+	var residentUrl = '<%= url_for(controller: "rmresident", action: "index", tab: "rmresident") %>';
+	var performserviceUrl = '<%= raw url_for(controller: :rmperformservice, action: :edit, user_id: User.current.id, startday: Date.today, sheet_view: 'I' ) %>';
+	var incidentUrl = '<%= url_for(controller: "rmincident", action: "index", tab: "rmincident", rm_resident_id: params[:rm_resident_id]) %>';
 <% end %>
+
+<%= hidden_field_tag 'back_url', url_for(:controller => params[:controller], :action => params[:action]) %>
 
 <%= form_tag({controller: 'rmincident', action: 'update'}, method: :post, id: 'incident_form', data: {
 	incident_new_record: (@incident.new_record? && request.get?),
@@ -29,7 +27,7 @@
 		<div class="box tabular">
 			<% resident_info = (@selected_resident_info || {}) %>
 			<% approved_mode = @approved_on.present? %>
-			<% readonly_mode = @incident.persisted? && (approved_mode || !approvePermission) %>
+			<% readonly_mode = @incident.persisted? && (approved_mode || !approvePermission(@incident)) %>
 			<% resident_locked = @incident.persisted? && @rm_resident.present? %>
 			<%# ── Resident Detail & Status ── %>
 			<fieldset <%= 'disabled="disabled"' if readonly_mode %>>
@@ -72,8 +70,8 @@
 				<div class="splitcontent">
 					<div class="splitcontentleft">
 						<p>
-							<label><%= l(:field_incident_datetime) %> <span class="required">*</span></label>
-							<%= f.datetime_field :incident_datetime, :required => true, :no_label => true %>
+							<label><%= l(:field_incident_date) %> <span class="required">*</span></label>
+							<%= f.datetime_field :incident_date, :required => true, :no_label => true %>
 						</p>
 						<p>
 							<label><%= l(:field_incident_type) %></label>
@@ -142,7 +140,7 @@
 							<p>
 								<label><%= l(:field_reporting_staff_name) %></label>
 								<% if @incident.new_record? %>
-									<%= select_tag 'incident[rpt_user_id]', options_for_select(@reporting_staff_options || [], @incident.rpt_user_id), id: 'incident_rpt_user_id' %>
+										<%= select_tag 'incident[reported_by_id]', options_for_select(@reporting_staff_options || [], @incident.reported_by_id), id: 'incident_reported_by_id' %>
 								<% else %>
 									<span class="incident-static-value"><%= h(@incident.reporting_staff_user&.name) %></span>
 								<% end %>
@@ -185,7 +183,7 @@
 			<% if @incident.new_record? && !readonly_mode %>
 				<%= submit_tag l(:button_submit), :id => 'incident_submit', :onclick => "return confirm('Are you sure you want to submit this incident?');" %>
 			<% end %>
-			<% if @incident.persisted? && approvePermission && !approved_mode %>
+			<% if @incident.persisted? && approvePermission(@incident) && !approved_mode %>
 				<%= submit_tag l(:button_wk_approve), :id => 'incident_approve', :name => 'approve_incident', :onclick => "return confirm('Are you sure you want to approve this incident?');" %>
 			<% end %>
 			<%= link_to l(:button_cancel), url_for(controller: 'rmincident', action: 'index', tab: 'rmincident', rm_resident_id: params[:rm_resident_id]) %>
@@ -195,7 +193,9 @@
 
 <% if @incident.persisted? %>
 	<% other_formats_links do |f| %>
-		<%= f.link_to 'PDF', url: { controller: 'rmincident', action: 'edit', id: @incident.id, rm_resident_id: @incident.rm_resident_id } %>
+		<%= f.link_to 'PDF',
+			url: { controller: 'rmincident', action: 'edit', id: @incident.id, rm_resident_id: @incident.rm_resident_id },
+			caption: sprite_icon('download', 'PDF') %>
 	<% end %>
 <% end %>
 

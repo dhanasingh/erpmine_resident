@@ -1,8 +1,9 @@
 api.rm_incident do
   api.id @incident.id
+  api.can_approve approvePermission(@incident)
   api.rm_resident_id @incident.rm_resident_id
   api.resident_name @rm_resident&.name
-  api.incident_datetime @incident.incident_datetime&.strftime('%Y-%m-%d %H:%M:%S')
+  api.incident_datetime @incident.incident_date&.strftime('%Y-%m-%d %H:%M:%S')
   api.incident_type_id @incident.incident_type_id
   api.incident_type incident_type_label(@incident.incident_type_id)
   api.status incident_status_code(@incident)
@@ -14,7 +15,7 @@ api.rm_incident do
   api.notes @incident.notes
   api.follow_up @incident.follow_up
   api.preventive_actions @incident.prev_action
-  api.reporting_staff_user_id @incident.rpt_user_id
+  api.reporting_staff_user_id @incident.reported_by_id
   api.reporting_staff_name @incident.reporting_staff_user&.name
   api.resident_info(@selected_resident_info || {})
   api.submitted_by @submitted_by

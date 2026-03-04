@@ -18,7 +18,6 @@
 class RmResident < ApplicationRecord
   belongs_to :resident, :polymorphic => true
   has_one :location,  :through => :resident
-  scope :current_resident,  -> { where("move_out_date IS NULL OR move_out_date > ? ", Date.today).order("move_in_date DESC") }
   belongs_to :bed, foreign_key: "bed_id", class_name: "WkInventoryItem"
   belongs_to :apartment, foreign_key: "apartment_id", class_name: "WkInventoryItem"
   belongs_to :wk_crm_contact, -> { where(rm_residents: {resident_type: 'WkCrmContact'}) }, foreign_key: 'resident_id'

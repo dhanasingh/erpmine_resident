@@ -5,7 +5,7 @@ class CreateRmIncidents < ActiveRecord::Migration[4.2]
 	def up
 		create_table :rm_incidents do |t|
 			t.references :rm_resident, null: false, index: true
-			t.datetime :incident_datetime, null: false
+			t.datetime :incident_date, null: false
 			t.references :incident_type, index: true
 			t.string :location, limit: 255
 			t.text :desc
@@ -15,9 +15,33 @@ class CreateRmIncidents < ActiveRecord::Migration[4.2]
 			t.text :injuries
 			t.text :notes
 			t.text :follow_up
-			t.references :rpt_user, index: true, class: "User"
-			t.references :created_by_user, class: "User"
-			t.references :updated_by_user, class: "User"
+			t.references :reported_by, index: true, class: "User"
+			t.references :created_by, class: "User"
+			t.references :updated_by, class: "User"
+			t.timestamps null: false
+		end
+
+		create_table :rm_incident_logs do |t|
+			t.references :rm_incident, null: false, index: true
+			t.string :action_type, null: false, limit: 1
+			t.references :action_by, class: "User"
+			t.datetime :action_on, null: false
+			t.references :rm_resident, null: false, index: true
+			t.datetime :incident_date, null: false
+			t.references :incident_type, index: true
+			t.string :location, limit: 255
+			t.text :desc
+			t.text :witnesses
+			t.text :imm_action
+			t.text :prev_action
+			t.text :injuries
+			t.text :notes
+			t.text :follow_up
+			t.references :reported_by, index: true, class: "User"
+			t.references :created_by, class: "User"
+			t.references :updated_by, class: "User"
+			t.datetime :incident_created_at
+			t.datetime :incident_updated_at
 			t.timestamps null: false
 		end
 
@@ -32,6 +56,7 @@ class CreateRmIncidents < ActiveRecord::Migration[4.2]
 	end
 
 	def down
+		drop_table :rm_incident_logs
 		drop_table :rm_incidents
 
 		WkCrmEnumeration.where(enum_type: INCIDENT_ENUM_TYPE, name: DEFAULT_INCIDENT_TYPES).delete_all

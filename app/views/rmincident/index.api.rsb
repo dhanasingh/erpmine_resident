@@ -4,7 +4,7 @@ api.array :rm_incidents, api_meta(:total_count => @entry_count, :offset => @offs
       api.id entry.id
       api.rm_resident_id entry.rm_resident_id
       api.resident_name entry.rm_resident&.name
-      api.incident_datetime entry.incident_datetime&.strftime('%Y-%m-%d %H:%M:%S')
+      api.incident_datetime entry.incident_date&.strftime('%Y-%m-%d %H:%M:%S')
       api.incident_type_id entry.incident_type_id
       api.incident_type incident_type_label(entry.incident_type_id)
       api.location entry.location

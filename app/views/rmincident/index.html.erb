@@ -11,46 +11,49 @@
 <%= render_tabs resident_tabs %>
 <%= hidden_field_tag 'back_url', url_for(:controller => params[:controller], :action => params[:action]) %>
 
-<div class="contextual">
-  <%= link_to sprite_icon('add', l(:label_new_incident)), url_for(controller: 'rmincident', action: 'edit', rm_resident_id: @selected_resident_id), :class => 'icon icon-add' %>
-</div>
+<!-- New Incident link moved inside the filter box for alignment with filters -->
 
 <%= form_tag({:controller => controller_name, :action => 'index'}, :method => :get, :id => 'query_form') do %>
   <%= hidden_field_tag 'searchlist', controller_name %>
   <%= hidden_field_tag 'tab', controller_name %>
   <div>
     <fieldset>
-      <table>
-        <tr>
-          <th style="text-align:left;"><%= l(:field_resident) %></th>
-          <td style="text-align:left;">
-            <%= select_tag 'rm_resident_id', options_for_select([["", ""]] + @resident_options, @selected_resident_id) %>
-          </td>
-          <th style="text-align:left;"><%= l(:field_location) %></th>
-          <td style="text-align:left;">
-            <%= select_tag 'location', options_for_select([["", ""]] + @location_options.map { |name| [name, name] }, @selected_location) %>
-          </td>
-          <th style="text-align:left;"><%= l(:field_incident_type) %></th>
-          <td style="text-align:left;">
-            <%= select_tag 'incident_type', options_for_select([["", ""]] + incident_type_options, @selected_incident_type) %>
-          </td>
-          <th style="text-align:left;"><%= l(:field_status) %></th>
-          <td style="text-align:left;">
-            <%= select_tag 'incident_status', options_for_select([["", ""]] + incident_status_options, @selected_incident_status) %>
-          </td>
-        </tr>
-      </table>
+      <div style="float: left;">
+        <table>
+          <tr>
+            <th style="text-align:left;"><%= l(:field_resident) %></th>
+            <td style="text-align:left;">
+              <%= select_tag 'rm_resident_id', options_for_select([["", ""]] + @resident_options, @selected_resident_id) %>
+            </td>
+            <th style="text-align:left;"><%= l(:field_location) %></th>
+            <td style="text-align:left;">
+              <%= select_tag 'location', options_for_select([["", ""]] + @location_options.map { |name| [name, name] }, @selected_location) %>
+            </td>
+            <th style="text-align:left;"><%= l(:field_incident_type) %></th>
+            <td style="text-align:left;">
+              <%= select_tag 'incident_type', options_for_select([["", ""]] + incident_type_options, @selected_incident_type) %>
+            </td>
+            <th style="text-align:left;"><%= l(:field_status) %></th>
+            <td style="text-align:left;">
+              <%= select_tag 'incident_status', options_for_select([["", ""]] + incident_status_options, @selected_incident_status) %>
+            </td>
+          </tr>
+        </table>
 
-      <%= render :partial => 'wktime/date_range' %>
-      <style>
-        #date_range_wrapper { float: none; display: inline-block; vertical-align: middle; }
-        #date_range_wrapper span { display: flex; align-items: center; justify-content: center; gap: 6px; }
-      </style>
+        <%= render :partial => 'wktime/date_range' %>
+        <style>
+          #date_range_wrapper { float: none; display: inline-block; vertical-align: middle; }
+          #date_range_wrapper span { display: flex; align-items: center; justify-content: center; gap: 6px; }
+        </style>
 
-      <p class="buttons">
-        <%= link_to_function sprite_icon('checked', l(:button_apply)), '$("#query_form").submit(); return false;', :class => 'icon icon-checked' %>
-        <%= link_to sprite_icon('reload', l(:button_clear)), {:controller => controller_name, :action => action_name, :tab => controller_name, :clear => true}, :class => 'icon icon-reload' %>
-      </p>
+        <p class="buttons">
+          <%= link_to_function sprite_icon('checked', l(:button_apply)), '$("#query_form").submit(); return false;', :class => 'icon icon-checked' %>
+          <%= link_to sprite_icon('reload', l(:button_clear)), {:controller => controller_name, :action => action_name, :tab => controller_name, :clear => true}, :class => 'icon icon-reload' %>
+        </p>
+      </div>
+      <div style="float: right;">
+        <%= link_to sprite_icon('add', l(:label_new_incident)), url_for(controller: 'rmincident', action: 'edit', rm_resident_id: @selected_resident_id), :class => 'icon icon-add' %>
+      </div>
     </fieldset>
   </div>
 <% end %>
@@ -59,6 +62,9 @@
 
 <% if @incident_entries.present? %>
 	<span class="pagination"><%= pagination_links_full @entry_pages, @entry_count %></span>
+  <% other_formats_links do |f| %>
+    <%= f.link_to_with_query_parameters 'CSV', {} %>
+  <% end %>
 <% else %>
 	<p class="nodata"><%= l(:label_no_data) %></p>
 <% end %>

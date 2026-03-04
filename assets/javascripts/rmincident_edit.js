@@ -4,7 +4,7 @@
       return;
     }
 
-    var dateTimeInput = document.getElementById('incident_incident_datetime');
+    var dateTimeInput = document.getElementById('incident_incident_date');
     if (!dateTimeInput || dateTimeInput.value) {
       return;
     }

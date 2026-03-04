@@ -111,7 +111,7 @@ module RmincidentHelper
 			[l(:label_apartment),   apartment_val]
 		], [
 			[l(:field_move_in_date), resident_info[:move_in_date]],
-			[l(:field_location),    resident_info[:location]]
+			[l(:label_facility),    resident_info[:location]]
 		])
 		pdf.ln(3)
 
@@ -120,7 +120,7 @@ module RmincidentHelper
 		incident_pdf_two_col_rows(pdf, [
 			[l(:field_incident_datetime), incident.incident_datetime.present? ? format_time(incident.incident_datetime) : nil]
 		], [
-			[l(:field_location), incident.location]
+			[l(:field_incident_location), incident.location]
 		])
 		incident_pdf_full_row(pdf, l(:field_incident_type), incident_type_label(incident.incident_type_id), 1)
 		incident_pdf_full_row(pdf, l(:field_description), incident.desc)
