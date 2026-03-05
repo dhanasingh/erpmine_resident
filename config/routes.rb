@@ -81,3 +81,5 @@ delete 'rmresident/residentservicedestroy', :to => 'rmresident#residentservicede
 post 'rmresident/moveInResident', :to => 'rmresident#moveInResident'
 
 get 'rmevaluation/index', to: 'rmevaluation#index'
+
+get 'rmresident/get_resident_tabs', :to => 'rmresident#get_resident_tabs'

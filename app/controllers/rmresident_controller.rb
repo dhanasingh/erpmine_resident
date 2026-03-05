@@ -588,4 +588,11 @@ class RmresidentController < WkcrmController
 		end
 		redirect_back_or_default :action => 'index', :tab => params[:tab]
 	end
+
+	def get_resident_tabs
+		tabs = resident_tabs
+		if tabs.present?
+			redirect_to controller: tabs.first[:name], action: 'index'
+		end
+	end
 end

@@ -1,10 +1,16 @@
 <%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
 
 <script type="text/javascript">
-    var apartmentUrl = '<%= url_for(controller: "rmapartment", action: "index", tab: "rmapartment") %>';
-    var residentUrl = '<%= url_for(controller: "rmresident", action: "index", tab: "rmresident") %>';
-    var performserviceUrl = '<%= raw url_for(controller: :rmperformservice, action: :edit, user_id: User.current.id, startday: Date.today, sheet_view: 'I' ) %>';
-    var incidentUrl = '<%= url_for(controller: "rmincident", action: "index", tab: "rmincident") %>';
+    <% if showInventory %>
+        var apartmentUrl = '<%= url_for(controller: "rmapartment", action: "index", tab: "rmapartment") %>';
+    <% end %>
+    <% if showCRMModule %>
+        var residentUrl = '<%= url_for(controller: "rmresident", action: "index", tab: "rmresident") %>';
+        var incidentUrl = '<%= url_for(controller: "rmincident", action: "index", tab: "rmincident") %>';
+    <% end %>
+    <% if showCRMModule && showTime && checkViewPermission %>
+        var performserviceUrl = '<%= raw url_for(controller: :rmperformservice, action: :edit, user_id: User.current.id, startday: Date.today, sheet_view: 'I' ) %>';
+    <% end %>
     var evaluationUrl = '<%= url_for(controller: "rmevaluation", action: "index", tab: "rmevaluation", surveyForType: 'RmResident').html_safe %>';
 </script>
 

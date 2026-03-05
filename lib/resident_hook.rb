@@ -1,8 +1,15 @@
 class ResidentHook < Redmine::Hook::ViewListener
 	def external_erpmine_menus(context={})
-		menuArr = Array.new(3)
-		# define resident menu controller name
-		menuArr = ["rmapartment", "rmresident", "rmperformservice", "rmincident", "rmevaluation"]
+		wktime_helper = Object.new.extend(WktimeHelper)
+		menuArr = []
+		# define resident menu controller name based on module permissions
+		menuArr << "rmapartment" if wktime_helper.showInventory
+		menuArr << "rmresident" if wktime_helper.showCRMModule
+		if wktime_helper.showCRMModule && wktime_helper.showTime && wktime_helper.checkViewPermission
+			menuArr << "rmperformservice"
+		end
+		menuArr << "rmincident" if wktime_helper.showCRMModule
+		menuArr << "rmevaluation"
 		menuArr
 	end
 
@@ -262,7 +269,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def wktime_menu_hook(context = {})
 		menu = context[:menu]
 		return unless menu.present?
-		menu.push :apartment, { controller: 'rmapartment', action: 'index' }, caption: :label_resident
+		menu.push :apartment, { controller: 'rmresident', action: 'get_resident_tabs' }, caption: :label_resident
 	end
 
 	def survey_points(context = {})
