@@ -43,7 +43,7 @@ module ReportMoveInMoveOutByDate
           location:  r[:location].presence || '—',
           resident:  r[:resident],
           apartment: apt.presence || '—',
-          reason:    r[:reason].presence || '—'
+          reason:    r[:reason].presence || ' '
         }
       end
     end
@@ -304,7 +304,7 @@ module ReportMoveInMoveOutByDate
           bed:       property_name(r.bed_id),
           project:   r.try(:project_name),
           location:  r.try(:location_name) || '',
-          reason:    r.try(:move_out_reason_name).presence || '—'
+          reason:    r.try(:move_out_reason_name).presence || ' '
         }
       end
     end

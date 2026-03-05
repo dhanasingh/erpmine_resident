@@ -30,7 +30,7 @@
 
   <!-- ================= MOVE INS ================= -->
 
-  <h4 style="margin-top:1.5em; font-weight:bold; text-align:center;"><%= l(:label_move_ins) %></h4>
+  <h3 style="margin-top:1.5em; font-weight:bold; text-align:center;"><%= l(:label_move_ins) %></h3>
 
   <% if data[:move_in].present? %>
   <table style="width:100%; border-collapse:collapse;">
@@ -78,7 +78,7 @@
   <br><br>
 
   <!-- ================= MOVE OUTS ================= -->
-  <h4 style="margin-top:1.5em; font-weight:bold; text-align:center;"><%= l(:label_move_outs) %></h4>
+  <h3 style="margin-top:1.5em; font-weight:bold; text-align:center;"><%= l(:label_move_outs) %></h3>
 
   <% if data[:move_out].present? %>
   <table style="width:100%; border-collapse:collapse; ">
@@ -95,8 +95,8 @@
     <tbody>
       <% serial_out = 0 %>
       <% data[:move_out].each do |date, rows| %>
-        <% serial_out += 1 %>
         <% rows.each do |r| %>
+        <% serial_out += 1 %>
           <tr>
             <td style="border:1px solid #666; padding:6px;"><%= serial_out %></td>
             <td style="border:1px solid #666; padding:6px;"><%= date %></td>
@@ -107,7 +107,7 @@
                   [r[:apartment], ("#{l(:label_bed)} #{r[:bed]}" if r[:bed].present?)].compact.join(' - ')
                   : '—' %>
             </td>
-            <td style="border:1px solid #666; padding:6px;"><%= r[:reason] || '—' %></td>
+            <td style="border:1px solid #666; padding:6px;"><%= r[:reason] || ' ' %></td>
           </tr>
         <% end %>
       <% end %>
