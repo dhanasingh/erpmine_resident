@@ -106,7 +106,7 @@ class RmincidentController < WkcrmController
 	end
 
 	def update
-		approve_requested = params[:approve_incident].present?
+		approve_requested = ActiveModel::Type::Boolean.new.cast(params[:approve_incident])
 		@incident = params[:incident][:id].present? ? RmIncident.find(params[:incident][:id]) : RmIncident.new
 			if approve_requested && (!approvePermission(@incident) || @incident.new_record?)
 			render_403

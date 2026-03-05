@@ -56,6 +56,12 @@ class CreateRmIncidents < ActiveRecord::Migration[4.2]
 	end
 
 	def down
+		execute <<~SQL
+			DELETE FROM wk_statuses
+			WHERE status_for_type = 'RmIncident'
+			AND status_for_id IN (SELECT id FROM rm_incidents)
+		SQL
+
 		drop_table :rm_incident_logs
 		drop_table :rm_incidents
 

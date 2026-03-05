@@ -118,7 +118,7 @@ module RmincidentHelper
 		# ── Incident Details ────────────────────────────────────────────────────
 		incident_pdf_section_header(pdf, l(:label_incident_details))
 		incident_pdf_two_col_rows(pdf, [
-			[l(:field_incident_datetime), incident.incident_datetime.present? ? format_time(incident.incident_datetime) : nil]
+			[l(:field_incident_datetime), incident.incident_date.present? ? format_time(incident.incident_date) : nil]
 		], [
 			[l(:field_incident_location), incident.location]
 		])
