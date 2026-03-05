@@ -161,28 +161,53 @@ module ReportOccupancyReport
   private
 
   def capacity_by_facility(projId, location_id)
-    entries = WkInventoryItem
+    # Count beds (items with a parent apartment)
+    bed_entries = WkInventoryItem
       .joins("INNER JOIN wk_inventory_items apartment ON apartment.id = wk_inventory_items.parent_id" + get_comp_cond('apartment'))
       .joins("LEFT JOIN wk_locations loc ON loc.id = apartment.location_id" + get_comp_cond('loc'))
       .where("wk_inventory_items.product_type = 'RA' AND wk_inventory_items.parent_id IS NOT NULL" + get_comp_cond('wk_inventory_items'))
       .where("loc.id IS NOT NULL")
 
     if projId.present? && projId.to_s != '0'
-      entries = entries.where('COALESCE(wk_inventory_items.project_id, apartment.project_id) = ?', projId.to_i)
+      bed_entries = bed_entries.where('COALESCE(wk_inventory_items.project_id, apartment.project_id) = ?', projId.to_i)
     end
 
     if location_id.present? && location_id.to_s != '0'
-      entries = entries.where('apartment.location_id = ?', location_id.to_i)
+      bed_entries = bed_entries.where('apartment.location_id = ?', location_id.to_i)
     end
 
-    entries
+    bed_count = bed_entries
       .group('loc.id', 'loc.name')
       .order('loc.name')
       .count('DISTINCT wk_inventory_items.id')
+
+    # Count apartments that have no child beds
+    apt_entries = WkInventoryItem
+      .joins("LEFT JOIN wk_locations loc ON loc.id = wk_inventory_items.location_id" + get_comp_cond('loc'))
+      .where("wk_inventory_items.product_type = 'RA' AND wk_inventory_items.parent_id IS NULL" + get_comp_cond('wk_inventory_items'))
+      .where("loc.id IS NOT NULL")
+      .where("NOT EXISTS (SELECT 1 FROM wk_inventory_items child WHERE child.parent_id = wk_inventory_items.id)")
+
+    if projId.present? && projId.to_s != '0'
+      apt_entries = apt_entries.where('wk_inventory_items.project_id = ?', projId.to_i)
+    end
+
+    if location_id.present? && location_id.to_s != '0'
+      apt_entries = apt_entries.where('wk_inventory_items.location_id = ?', location_id.to_i)
+    end
+
+    apt_count = apt_entries
+      .group('loc.id', 'loc.name')
+      .order('loc.name')
+      .count('DISTINCT wk_inventory_items.id')
+
+    # Merge both counts
+    bed_count.merge(apt_count) { |_k, bed_v, apt_v| bed_v + apt_v }
   end
 
   def occupancy_by_facility(as_on_date, projId, location_id)
-    entries = RmResident
+    # Residents with beds
+    bed_residents = RmResident
       .joins("INNER JOIN wk_inventory_items bed ON bed.id = rm_residents.bed_id" + get_comp_cond('bed'))
       .joins("INNER JOIN wk_inventory_items apartment ON apartment.id = bed.parent_id" + get_comp_cond('apartment'))
       .joins("LEFT JOIN wk_locations loc ON loc.id = apartment.location_id" + get_comp_cond('loc'))
@@ -191,13 +216,34 @@ module ReportOccupancyReport
       .where('loc.id IS NOT NULL')
 
     if projId.present? && projId.to_s != '0'
-      entries = entries.where('COALESCE(bed.project_id, apartment.project_id) = ?', projId.to_i)
+      bed_residents = bed_residents.where('COALESCE(bed.project_id, apartment.project_id) = ?', projId.to_i)
     end
 
     if location_id.present? && location_id.to_s != '0'
-      entries = entries.where('apartment.location_id = ?', location_id.to_i)
+      bed_residents = bed_residents.where('apartment.location_id = ?', location_id.to_i)
     end
 
-    entries.group('loc.id').count('DISTINCT rm_residents.bed_id')
+    bed_occ = bed_residents.group('loc.id').count('DISTINCT rm_residents.bed_id')
+
+    # Residents in apartments without beds
+    apt_residents = RmResident
+      .joins("INNER JOIN wk_inventory_items apartment ON apartment.id = rm_residents.apartment_id" + get_comp_cond('apartment'))
+      .joins("LEFT JOIN wk_locations loc ON loc.id = apartment.location_id" + get_comp_cond('loc'))
+      .where("rm_residents.bed_id IS NULL AND rm_residents.apartment_id IS NOT NULL" + get_comp_cond('rm_residents'))
+      .where('rm_residents.move_in_date <= ? AND (rm_residents.move_out_date IS NULL OR rm_residents.move_out_date > ?)', as_on_date.end_of_day, as_on_date.end_of_day)
+      .where('loc.id IS NOT NULL')
+
+    if projId.present? && projId.to_s != '0'
+      apt_residents = apt_residents.where('apartment.project_id = ?', projId.to_i)
+    end
+
+    if location_id.present? && location_id.to_s != '0'
+      apt_residents = apt_residents.where('apartment.location_id = ?', location_id.to_i)
+    end
+
+    apt_occ = apt_residents.group('loc.id').count('DISTINCT rm_residents.apartment_id')
+
+    # Merge both counts
+    bed_occ.merge(apt_occ) { |_k, bed_v, apt_v| bed_v + apt_v }
   end
 end
