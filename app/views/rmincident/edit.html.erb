@@ -46,7 +46,7 @@
 								<%= f.hidden_field :rm_resident_id, value: @rm_resident.id %>
 								<span class="incident-static-value"><%= h @rm_resident.name %></span>
 							<% else %>
-								<%= select_tag 'incident[rm_resident_id]', options_for_select(@resident_options, @incident.rm_resident_id), required: true, id: 'incident_rm_resident_id' %>
+								<%= select_tag 'incident[rm_resident_id]', options_for_select(@resident_options, @incident.rm_resident_id), id: 'incident_rm_resident_id' %>
 							<% end %>
 						</p>
 						<div id="incident_resident_info_section" class="incident-resident-info">

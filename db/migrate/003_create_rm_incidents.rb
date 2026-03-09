@@ -16,6 +16,7 @@ class CreateRmIncidents < ActiveRecord::Migration[4.2]
 			t.text :notes
 			t.text :follow_up
 			t.references :reported_by, index: true, class: "User"
+			t.references :approved_by, index: true, class: "User"
 			t.references :created_by, class: "User"
 			t.references :updated_by, class: "User"
 			t.timestamps null: false
@@ -38,6 +39,7 @@ class CreateRmIncidents < ActiveRecord::Migration[4.2]
 			t.text :notes
 			t.text :follow_up
 			t.references :reported_by, index: true, class: "User"
+			t.references :approved_by, index: true, class: "User"
 			t.references :created_by, class: "User"
 			t.references :updated_by, class: "User"
 			t.datetime :incident_created_at

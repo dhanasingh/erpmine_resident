@@ -108,7 +108,7 @@ class RmincidentController < WkcrmController
 	def update
 		approve_requested = ActiveModel::Type::Boolean.new.cast(params[:approve_incident])
 		@incident = params[:incident][:id].present? ? RmIncident.find(params[:incident][:id]) : RmIncident.new
-			if approve_requested && (!approvePermission(@incident) || @incident.new_record?)
+		if approve_requested && (!approvePermission(@incident) || @incident.new_record?)
 			render_403
 			return false
 		end
@@ -147,6 +147,7 @@ class RmincidentController < WkcrmController
 		end
 
 		@incident.safe_attributes = params[:incident] if !already_submitted || approvePermission(@incident)
+		@incident.approved_by_id = User.current.id if approve_requested
 		@incident.created_by_id = User.current.id if @incident.new_record?
 		@incident.updated_by_id = User.current.id
 
@@ -273,8 +274,7 @@ class RmincidentController < WkcrmController
 
 	def load_reporting_staff_options
 		users = getReportUsers(User.current.id)
-		users = [User.current] if users.blank?
-		@reporting_staff_options = users.map { |user| [user.name, user.id] }
+		@reporting_staff_options = [[User.current.name, User.current.id]] + users.to_a.map { |u| [u.name, u.id] }
 	end
 
 	def active_residents_scope
@@ -304,8 +304,8 @@ class RmincidentController < WkcrmController
 	def load_status_signatures(incident)
 		submitted_status = incident.wkstatus.where(status: 'S').order(status_date: :desc).first
 		approved_status = incident.wkstatus.where(status: 'A').order(status_date: :desc).first
-		@submitted_by = User.find_by(id: submitted_status&.status_by_id)&.name
-		@approved_by = User.find_by(id: approved_status&.status_by_id)&.name
+		@submitted_by = User.find_by(id: incident.reported_by_id)&.name
+		@approved_by = User.find_by(id: incident.approved_by_id)&.name
 		@submitted_on = submitted_status&.status_date
 		@approved_on = approved_status&.status_date
 	end

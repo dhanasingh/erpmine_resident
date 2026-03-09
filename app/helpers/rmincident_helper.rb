@@ -111,7 +111,7 @@ module RmincidentHelper
 			[l(:label_apartment),   apartment_val]
 		], [
 			[l(:field_move_in_date), resident_info[:move_in_date]],
-			[l(:label_facility),    resident_info[:location]]
+			[l(:field_location),    resident_info[:location]]
 		])
 		pdf.ln(3)
 

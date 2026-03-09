@@ -1,4 +1,4 @@
-(function() {
+(function () {
   function initializeIncidentDateTime(form) {
     if (form.dataset.incidentNewRecord !== 'true') {
       return;
@@ -10,7 +10,7 @@
     }
 
     var now = new Date();
-    var pad = function(value) { return String(value).padStart(2, '0'); };
+    var pad = function (value) { return String(value).padStart(2, '0'); };
     var localDateTime = now.getFullYear() + '-' +
       pad(now.getMonth() + 1) + '-' +
       pad(now.getDate()) + 'T' +
@@ -49,8 +49,8 @@
       }
 
       fetch(infoUrl + '?rm_resident_id=' + encodeURIComponent(selectedId), { headers: { 'Accept': 'application/json' } })
-        .then(function(resp) { return resp.json(); })
-        .then(function(data) {
+        .then(function (resp) { return resp.json(); })
+        .then(function (data) {
           apartmentInfo.textContent = data.apartment || '-';
           bedInfo.textContent = data.bed || '-';
           moveInInfo.textContent = data.move_in_date || '-';
@@ -62,20 +62,53 @@
       var currentSelectedId = residentSelect.value;
       var locationFilter = locationSelect.value;
 
-      fetch(filterUrl + '?location_id=' + encodeURIComponent(locationFilter), { headers: { 'Accept': 'application/json' } })
-        .then(function(resp) { return resp.json(); })
-        .then(function(residents) {
+      fetch(filterUrl + '?location_id=' + encodeURIComponent(locationFilter), {
+        headers: { 'Accept': 'application/json' }
+      })
+        .then(function (resp) { return resp.json(); })
+        .then(function (residents) {
+
           residentSelect.innerHTML = '';
 
-          residents.forEach(function(entry) {
-            var option = document.createElement('option');
-            option.value = entry.id;
-            option.text = entry.name;
-            residentSelect.appendChild(option);
-          });
+          var hasCurrentSelection = false;
 
-          var hasCurrentSelection = residents.some(function(entry) { return String(entry.id) === String(currentSelectedId); });
-          residentSelect.value = hasCurrentSelection ? currentSelectedId : (residents[0] ? String(residents[0].id) : '');
+          if (residents.length === 0) {
+            var emptyOption = document.createElement('option');
+            emptyOption.value = '';
+            emptyOption.text = '';
+            residentSelect.appendChild(emptyOption);
+          } else {
+            residents.forEach(function (entry) {
+              var option = document.createElement('option');
+              option.value = entry.id;
+              option.text = entry.name;
+              residentSelect.appendChild(option);
+
+              if (String(entry.id) === String(currentSelectedId)) {
+                hasCurrentSelection = true;
+              }
+            });
+          }
+
+          // Retain current selection if valid, else pick first available or empty
+          if (hasCurrentSelection) {
+            residentSelect.value = currentSelectedId;
+          } else {
+            residentSelect.value = residents.length > 0 ? residents[0].id : '';
+            if (window.jQuery) {
+              jQuery(residentSelect).trigger('change');
+            }
+          }
+
+          updateResidentInfo();
+        })
+        .catch(function (err) {
+          console.error('Error fetching residents:', err);
+          residentSelect.innerHTML = '<option value=""></option>';
+          residentSelect.value = '';
+          if (window.jQuery) {
+            jQuery(residentSelect).trigger('change');
+          }
           updateResidentInfo();
         });
     }
@@ -85,7 +118,7 @@
     rebuildResidents();
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     var form = document.getElementById('incident_form');
     if (!form) {
       return;
