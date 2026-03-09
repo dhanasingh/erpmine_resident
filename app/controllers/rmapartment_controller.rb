@@ -91,4 +91,22 @@ class RmapartmentController < WkproductitemController
 		filters = [:location_id, :availability, :project_id]
 		super(filters)
 	end
+
+	def getCsvData(entries)
+		rate = getRatePerHash(false)
+		asset_type = getAssetTypeHash(false)
+		data = entries.map do |entry|
+			asset_rate = entry['rate'] ? "#{entry.asset_currency}#{entry['rate']}#{rate[entry['rate_per']]}" : ''
+
+			{
+				parent_name: entry['parent_name'].blank? ? entry['asset_name'] : entry['parent_name'],
+				asset_name: entry['parent_name'].blank? ? '' : entry['asset_name'],
+				product_attribute_name: entry['product_attribute_name'],
+				serial_number: entry['serial_number'],
+				rate: asset_rate,
+				is_loggable: entry.is_loggable?,
+				location_name: entry['location_name'] || ''
+			}
+			end
+	end
 end

@@ -40,12 +40,12 @@ include WklogmaterialHelper
 		tabs = []
 		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice" || params[:controller] == "rmincident" || params[:controller] == "rmevaluation"
 			tabs << {:name => 'rmapartment', :partial => 'wktime/tab_content', :label => :label_apartment} if showInventory
-			tabs << {:name => 'rmresident', :partial => 'wktime/tab_content', :label => :label_resident} if showCRMModule
-			if showCRMModule && showTime && checkViewPermission
+			if showCRMModule
+				tabs << {:name => 'rmresident', :partial => 'wktime/tab_content', :label => :label_resident}
 				tabs << {:name => 'rmperformservice', :partial => 'wktime/tab_content', :label => :label_perform_service}
+				tabs << {:name => 'rmincident', :partial => 'wktime/tab_content', :label => :label_incident}
+				tabs << {:name => 'rmevaluation', :partial => 'wktime/tab_content', :label => :label_evaluation}
 			end
-			tabs << {:name => 'rmincident', :partial => 'wktime/tab_content', :label => :label_incident} if showCRMModule
-			tabs << {:name => 'rmevaluation', :partial => 'wktime/tab_content', :label => :label_evaluation}
 		end
 		tabs
 	end

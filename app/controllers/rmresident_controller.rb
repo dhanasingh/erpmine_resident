@@ -593,6 +593,8 @@ class RmresidentController < WkcrmController
 		tabs = resident_tabs
 		if tabs.present?
 			redirect_to controller: tabs.first[:name], action: 'index'
+		else
+			render_403
 		end
 	end
 end

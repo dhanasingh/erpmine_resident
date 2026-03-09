@@ -7,11 +7,9 @@
     <% if showCRMModule %>
         var residentUrl = '<%= url_for(controller: "rmresident", action: "index", tab: "rmresident") %>';
         var incidentUrl = '<%= url_for(controller: "rmincident", action: "index", tab: "rmincident") %>';
-    <% end %>
-    <% if showCRMModule && showTime && checkViewPermission %>
         var performserviceUrl = '<%= raw url_for(controller: :rmperformservice, action: :edit, user_id: User.current.id, startday: Date.today, sheet_view: 'I' ) %>';
+        var evaluationUrl = '<%= url_for(controller: "rmevaluation", action: "index", tab: "rmevaluation", surveyForType: 'RmResident').html_safe %>';
     <% end %>
-    var evaluationUrl = '<%= url_for(controller: "rmevaluation", action: "index", tab: "rmevaluation", surveyForType: 'RmResident').html_safe %>';
 </script>
 
 <%= render_tabs resident_tabs %>
