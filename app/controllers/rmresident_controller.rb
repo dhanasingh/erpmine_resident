@@ -103,6 +103,20 @@ class RmresidentController < WkcrmController
 			format.api do
 				@resident_entries = entries
 			end
+			format.csv do
+				headers = { name: l(:field_name), location: l(:field_location), apartment: l(:label_apartment), bed: l(:label_bed), move_in_date: l(:label_move_in_date), move_out_date: l(:label_move_out_date) }
+				data = entries.map do |e|
+					{ 
+						name: e.name, 
+						location: (e&.resident&.location&.blank? ? "" : e&.resident&.location&.name), 
+						apartment: (e&.apartment&.blank? ? "" : e&.apartment&.asset_property&.name), 
+						bed: (e&.bed&.blank? ? "" : e&.bed&.asset_property&.name), 
+						move_in_date: (e&.move_in_date&.blank? ? "" : e&.move_in_date&.strftime("%Y-%m-%d")), 
+						move_out_date: (e&.move_out_date&.blank? ? "" : e&.move_out_date&.strftime("%Y-%m-%d")) 
+					}
+				end
+				send_data(csv_export({headers: headers, data: data}), type: 'text/csv; header=present', filename: 'resident.csv')
+			end
 		end
 	end
 
