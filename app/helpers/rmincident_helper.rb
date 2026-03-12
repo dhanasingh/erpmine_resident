@@ -147,8 +147,8 @@ module RmincidentHelper
 		# ── Reporting & Signatures ──────────────────────────────────────────────
 		submitted_status = incident.wkstatus.where(status: 'S').order(status_date: :desc).first
 		approved_status  = incident.wkstatus.where(status: 'A').order(status_date: :desc).first
-		submitted_by = User.find_by(id: submitted_status&.status_by_id)&.name
-		approved_by  = User.find_by(id: approved_status&.status_by_id)&.name
+		submitted_by = User.find_by(id: incident.reported_by_id)&.name
+		approved_by  = User.find_by(id: incident.approved_by_id)&.name
 
 		incident_pdf_section_header(pdf, l(:label_reporting_signatures))
 
