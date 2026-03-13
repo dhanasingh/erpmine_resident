@@ -1,0 +1,201 @@
+<% content_for :header_tags do %>
+	<%= stylesheet_link_tag 'rmincident', :plugin => 'erpmine_resident' %>
+	<%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
+	<%= javascript_include_tag 'rmincident_edit', :plugin => "erpmine_resident" %>
+<% end %>
+
+<h2><%= @incident.new_record? ? l(:label_new_incident) : l(:label_edit_incident) %></h2>
+
+<%= javascript_tag do %>
+	var apartmentUrl = '<%= url_for(controller: "rmapartment", action: "index", tab: "rmapartment") %>';
+	var residentUrl = '<%= url_for(controller: "rmresident", action: "index", tab: "rmresident") %>';
+	var performserviceUrl = '<%= raw url_for(controller: :rmperformservice, action: :edit, user_id: User.current.id, startday: Date.today, sheet_view: 'I' ) %>';
+	var incidentUrl = '<%= url_for(controller: "rmincident", action: "index", tab: "rmincident", rm_resident_id: params[:rm_resident_id]) %>';
+<% end %>
+
+<%= hidden_field_tag 'back_url', url_for(:controller => params[:controller], :action => params[:action]) %>
+
+<%= form_tag({controller: 'rmincident', action: 'update'}, method: :post, id: 'incident_form', data: {
+	incident_new_record: (@incident.new_record? && request.get?),
+	resident_dynamic: !(@incident.persisted? && @rm_resident.present?),
+	resident_info_url: url_for(controller: 'rmincident', action: 'get_resident_info'),
+	residents_by_location_url: url_for(controller: 'rmincident', action: 'get_residents_by_location')
+}) do %>
+	<%= labelled_fields_for :incident, @incident do |f| %>
+		<%= f.hidden_field :id %>
+
+		<div class="box tabular">
+			<% resident_info = (@selected_resident_info || {}) %>
+			<% approved_mode = @approved_on.present? %>
+			<% readonly_mode = @incident.persisted? && (approved_mode || !approvePermission(@incident)) %>
+			<% resident_locked = @incident.persisted? && @rm_resident.present? %>
+			<%# ── Resident Detail & Status ── %>
+			<fieldset <%= 'disabled="disabled"' if readonly_mode %>>
+				<legend><%= l(:label_resident_detail) %></legend>
+				<div class="splitcontent">
+					<div class="splitcontentleft">
+						<% unless resident_locked %>
+							<p>
+								<label><%= l(:field_location) %></label>
+								<%= select_tag 'resident_location', options_for_select([[l(:label_all), ""]] + (@resident_location_options || []), @selected_resident_location), id: 'incident_resident_location' %>
+							</p>
+						<% end %>
+						<p>
+							<label><%= l(:label_resident) %> <span class="required">*</span></label>
+							<% if resident_locked %>
+								<%= f.hidden_field :rm_resident_id, value: @rm_resident.id %>
+								<span class="incident-static-value"><%= h @rm_resident.name %></span>
+							<% else %>
+								<%= select_tag 'incident[rm_resident_id]', options_for_select(@resident_options, @incident.rm_resident_id), id: 'incident_rm_resident_id' %>
+							<% end %>
+						</p>
+						<div id="incident_resident_info_section" class="incident-resident-info">
+							<span class="incident-resident-info-label-text">Apartment -</span>
+							<span id="incident_resident_apartment" class="incident-resident-info-value-text"><%= h(resident_info[:apartment].presence || '-') %></span>
+							<span id="incident_resident_bed" class="incident-resident-info-value-text"><%= h(resident_info[:bed].presence || '-') %></span>
+							<span class="incident-resident-info-separator">,</span>
+							<span class="incident-resident-info-label-text">move in -</span>
+							<span id="incident_resident_move_in" class="incident-resident-info-value-text"><%= h(resident_info[:move_in_date].presence || '-') %></span>
+							<span class="incident-resident-info-separator">,</span>
+							<span class="incident-resident-info-label-text">facility -</span>
+							<span id="incident_resident_location_info" class="incident-resident-info-value-text"><%= h(resident_info[:location].presence || '-') %></span>
+						</div>
+					</div>
+				</div>
+			</fieldset>
+
+			<%# ── Date & Incident Type ── %>
+			<fieldset <%= 'disabled="disabled"' if readonly_mode %>>
+				<legend><%= l(:label_incident_details) %></legend>
+				<div class="splitcontent">
+					<div class="splitcontentleft">
+						<p>
+							<label><%= l(:field_incident_date) %> <span class="required">*</span></label>
+							<%= f.datetime_field :incident_date, :required => true, :no_label => true %>
+						</p>
+						<p>
+							<label><%= l(:field_incident_type) %></label>
+							<%= select_tag 'incident[incident_type_id]', options_for_select(incident_type_options, @incident.incident_type_id), id: 'incident_incident_type', disabled: readonly_mode %>
+						</p>
+					</div>
+					<div class="splitcontentright">
+						<p>
+							<label><%= l(:field_status) %></label>
+							<% incident_status_value = incident_status_code(@incident) %>
+							<% badge_class = incident_status_badge_class(incident_status_value) %>
+							<span class="incident-status-badge <%= badge_class %>"><%= h(incident_status_label(incident_status_value)) %></span>
+						</p>
+					</div>
+				</div>
+				<p>
+					<label><%= l(:field_incident_location) %></label>
+					<%= f.text_field :location, :maxlength => 255, :size => 80, :no_label => true %>
+				</p>
+				<p>
+					<label><%= l(:field_description) %></label>
+					<%= f.text_area :desc, :rows => 5, :cols => 60, :class => 'wiki-edit', :no_label => true %>
+				</p>
+			</fieldset>
+
+			<%# ── Witnesses ── %>
+			<fieldset <%= 'disabled="disabled"' if readonly_mode %>>
+				<legend><%= l(:label_witnesses) %></legend>
+				<p>
+					<label><%= l(:field_witnesses) %></label>
+					<%= f.text_area :witnesses, :rows => 3, :cols => 60, :no_label => true %>
+				</p>
+			</fieldset>
+
+			<%# ── Actions & Impact ── %>
+			<fieldset <%= 'disabled="disabled"' if readonly_mode %>>
+				<legend><%= l(:label_actions) %></legend>
+				<p>
+					<label><%= l(:field_injuries_or_damages) %></label>
+					<%= f.text_area :injuries, :rows => 4, :cols => 60, :no_label => true %>
+				</p>
+				<p>
+					<label><%= l(:field_immediate_actions) %></label>
+					<%= f.text_area :imm_action, :rows => 4, :cols => 60, :no_label => true %>
+				</p>
+				<p>
+					<label><%= l(:field_additional_notes) %></label>
+					<%= f.text_area :notes, :rows => 3, :cols => 60, :no_label => true %>
+				</p>
+				<p>
+					<label><%= l(:field_follow_up_actions) %></label>
+					<%= f.text_area :follow_up, :rows => 3, :cols => 60, :no_label => true %>
+				</p>
+				<p>
+					<label><%= l(:field_preventive_measures) %></label>
+					<%= f.text_area :prev_action, :rows => 3, :cols => 60, :no_label => true %>
+				</p>
+			</fieldset>
+
+			<%# ── Reporting & Signatures ── %>
+			<fieldset <%= 'disabled="disabled"' if readonly_mode %>>
+				<legend><%= l(:label_reporting_signatures) %></legend>
+				<div class="splitcontent">
+					<div class="splitcontentleft">
+						<% unless @submitted_by.present? %>
+							<p>
+								<label><%= l(:field_reporting_staff_name) %></label>
+								<% if @incident.new_record? %>
+										<%= select_tag 'incident[reported_by_id]', options_for_select(@reporting_staff_options || [], @incident.reported_by_id), id: 'incident_reported_by_id' %>
+								<% else %>
+									<span class="incident-static-value"><%= h(@incident.reporting_staff_user&.name) %></span>
+								<% end %>
+							</p>
+						<% end %>
+						<% if @submitted_by.present? %>
+							<p>
+								<label><%= l(:field_reporting_staff_signature) %></label>
+								<span class="incident-static-value"><%= h @submitted_by %></span>
+							</p>
+						<% end %>
+						<% if @submitted_on.present? %>
+							<p>
+								<label><%= "#{l(:wk_status_submitted)} #{l(:label_date)}" %></label>
+								<span class="incident-static-value"><%= format_time(@submitted_on) %></span>
+							</p>
+						<% end %>
+					</div>
+					<% if @approved_by.present? || @approved_on.present? %>
+						<div class="splitcontentright">
+							<% if @approved_by.present? %>
+								<p>
+									<label><%= l(:field_approval_staff_signature) %></label>
+									<span class="incident-static-value"><%= h @approved_by %></span>
+								</p>
+							<% end %>
+							<% if @approved_on.present? %>
+								<p>
+									<label><%= "#{l(:wk_status_approved)} #{l(:label_date)}" %></label>
+									<span class="incident-static-value"><%= format_time(@approved_on) %></span>
+								</p>
+							<% end %>
+						</div>
+					<% end %>
+				</div>
+			</fieldset>
+		</div>
+
+		<p>
+			<% if @incident.new_record? && !readonly_mode %>
+				<%= submit_tag l(:button_submit), :id => 'incident_submit', :onclick => "return confirm('Are you sure you want to submit this incident?');" %>
+			<% end %>
+			<% if @incident.persisted? && approvePermission(@incident) && !approved_mode %>
+				<%= submit_tag l(:button_wk_approve), :id => 'incident_approve', :name => 'approve_incident', :onclick => "return confirm('Are you sure you want to approve this incident?');" %>
+			<% end %>
+			<%= link_to l(:button_cancel), url_for(controller: 'rmincident', action: 'index', tab: 'rmincident', rm_resident_id: params[:rm_resident_id]) %>
+		</p>
+	<% end %>
+<% end %>
+
+<% if @incident.persisted? %>
+	<% other_formats_links do |f| %>
+		<%= f.link_to 'PDF',
+			url: { controller: 'rmincident', action: 'edit', id: @incident.id, rm_resident_id: @incident.rm_resident_id },
+			caption: sprite_icon('download', 'PDF') %>
+	<% end %>
+<% end %>
+

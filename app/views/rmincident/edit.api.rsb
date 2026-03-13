@@ -1,0 +1,34 @@
+api.rm_incident do
+  api.id @incident.id
+  api.can_approve approvePermission(@incident)
+  api.rm_resident_id @incident.rm_resident_id
+  api.resident_name @rm_resident&.name
+  api.incident_date @incident.incident_date&.strftime('%Y-%m-%d %H:%M:%S')
+  api.incident_type_id @incident.incident_type_id
+  api.incident_type incident_type_label(@incident.incident_type_id)
+  api.status incident_status_code(@incident)
+  api.location @incident.location
+  api.description @incident.desc
+  api.witnesses @incident.witnesses
+  api.injuries @incident.injuries
+  api.immediate_actions @incident.imm_action
+  api.notes @incident.notes
+  api.follow_up @incident.follow_up
+  api.preventive_actions @incident.prev_action
+  api.reporting_staff_user_id @incident.reported_by_id
+  api.approval_staff_user_id @incident.approved_by_id
+  api.reporting_staff_name @incident.reporting_staff_user&.name
+  api.resident_info(@selected_resident_info || {})
+  api.submitted_by @submitted_by
+  api.approved_by @approved_by
+  api.submitted_on format_time(@submitted_on)
+  api.approved_on format_time(@approved_on)
+end
+
+api.headers do
+  api.residents (@resident_options || []).map { |name, id| { id: id, name: name } }
+  api.resident_locations (@resident_location_options || []).map { |name, id| { id: id, name: name } }
+  api.reporting_staffs (@reporting_staff_options || []).map { |name, value| { id: value, name: name } }
+  api.incident_types incident_type_options.map { |name, id| { id: id, name: name } }
+  api.incident_statuses incident_status_options.map { |name, id| { id: id, name: name } }
+end

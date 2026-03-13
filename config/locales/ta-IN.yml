@@ -1,4 +1,4 @@
-# Tamil strings go here for Rails i18n
+# Tamil (India) locale strings
 ta-IN:
    label_apartment: "அபார்ட்மென்ட்"
    label_resident: குடியிருப்பவர்
@@ -45,7 +45,52 @@ ta-IN:
    label_move_out_msg: குடியிருப்பவர் வெளியேறினார்.
    label_transfer_msg: குடியிருப்பவர் மாற்றப்பட்டார்.
    label_move_out_validate_msg: வெளியேறும் தேதி, குடியேறும் தேதியைவிட அதிகமாக இருக்க வேண்டும்
+   label_incident: சம்பவம்
+   label_approve_incident: சம்பவத்தை அங்கீகரிக்கவும்
+   label_submitted_by: சமர்ப்பித்தவர்
+   label_incident_tracking: Incident Tracking
+   label_new_incident: New Incident
+   label_edit_incident: Edit Incident
+   field_incident_date: Incident Date
+   label_resident_detail: Resident Detail
+   label_incident_details: Incident Details
+   field_incident_datetime: Incident Date/Time
+   field_incident_type: Incident Type
+   field_incident_location: Incident Location
+   field_location: Location
+   label_witnesses: Witnesses
+   field_witnesses: Witnesses
+   label_actions: Actions
+   field_immediate_actions: Immediate Actions
+   field_injuries_or_damages: Injuries or Damages
+   label_follow_up_and_prevention: Follow-up & Prevention
+   field_additional_notes: Additional Notes
+   field_follow_up_actions: Follow-up Actions
+   field_preventive_measures: Preventive Measures
+   label_reporting_signatures: Reporting & Signatures
+   field_reporting_staff_name: Reporting Staff Name
+   field_reporting_staff_signature: Reporting Staff Signature
+   field_approval_staff_signature: Approval Staff Signature
+   button_download_pdf: Download PDF
+   label_open: Open
+   label_closed: Closed
    label_evaluation: மதிப்பீடு
    label_new_evaluation: புதிய மதிப்பீட்டு அமைப்பு
    label_edit_evaluation: மதிப்பீட்டை திருத்தவும்
    label_select_resident: குடியிருப்பவரை தேர்ந்தெடுக்கவும்
+   report_occupancy_report: Occupancy Report
+   label_prev_month_occ: Prev Month Occ
+   label_total_capacity: Capacity
+   label_current_occ: Current Occ
+   label_percent_occ: Occ %
+   label_vacant: Vacant
+   report_move_in_move_out_by_date: Move in - Move out by date
+   label_move_ins: Move-Ins
+   label_move_outs: Move-Outs
+   label_si_no: SI. No.
+   label_facility: Facility
+   label_reason: Reason
+   label_total_move_in: Total Move-In
+   label_total_move_out: Total Move-Out
+   label_no_move_in_records: No Move-In records found.
+   label_no_move_out_records: No Move-Out records found.

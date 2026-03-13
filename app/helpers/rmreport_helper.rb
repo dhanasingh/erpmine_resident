@@ -15,29 +15,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-class RmevaluationController < WksurveyController
+module RmreportHelper
+  include WktimeHelper
 
-  menu_item	:apartment
-	accept_api_auth :index
-	before_action :require_login, :survey_url_validation, :check_perm_and_redirect
-  before_action :check_eval_perm_and_redirect
-
-	def ItemLabel
-		l(:label_evaluation)
-	end
-
-	def newItemLabel
-		l(:label_new_evaluation)
-	end
-
-	def editItemLabel
-		l(:label_edit_evaluation)
-	end
-
-	def check_eval_perm_and_redirect
-		unless validateERPPermission("B_CRM_PRVLG") || validateERPPermission("A_CRM_PRVLG")
-			render_403
-			return false
-		end
-	end
+  def hasViewPermission(reportName)
+    resident_reports = ['report_move_in_move_out_by_date', 'report_occupancy_report', 'report_occupancy_report_web']
+    if resident_reports.include?(reportName.to_s)
+      (validateERPPermission("B_CRM_PRVLG") || validateERPPermission("A_CRM_PRVLG")) && isChecked('wktime_enable_crm_module')
+    else
+      true
+    end
+  end
 end

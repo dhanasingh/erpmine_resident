@@ -1,8 +1,15 @@
 class ResidentHook < Redmine::Hook::ViewListener
 	def external_erpmine_menus(context={})
-		menuArr = Array.new(3)
-		# define resident menu controller name
-		menuArr = ["rmapartment", "rmresident", "rmperformservice", "rmevaluation"]
+		wktime_helper = Object.new.extend(WktimeHelper)
+		menuArr = []
+		# define resident menu controller name based on module permissions
+		menuArr << "rmapartment" if wktime_helper.showInventory
+		menuArr << "rmresident" if wktime_helper.showCRMModule
+		if wktime_helper.showCRMModule && wktime_helper.showTime && wktime_helper.checkViewPermission
+			menuArr << "rmperformservice"
+		end
+		menuArr << "rmincident" if wktime_helper.showCRMModule
+		menuArr << "rmevaluation"
 		menuArr
 	end
 
@@ -85,6 +92,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def external_enum_type(context={})
 		enumHash = Hash.new()
 		enumHash["MOR"] = l(:label_move_out_reason)
+		enumHash[RmIncident::INCIDENT_ENUM_TYPE] = l(:field_incident_type)
 		enumHash
 	end
 
@@ -261,7 +269,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def wktime_menu_hook(context = {})
 		menu = context[:menu]
 		return unless menu.present?
-		menu.push :apartment, { controller: 'rmapartment', action: 'index' }, caption: :label_resident
+		menu.push :apartment, { controller: 'rmresident', action: 'get_resident_tabs' }, caption: :label_resident
 	end
 
 	def survey_points(context = {})
@@ -288,7 +296,42 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def show_survey_link(context={})
 		showLink = context[:type][:surveyForType] == "RmResident" && context[:params][:survey_for].blank?  ? true : false
 	end
+	
+	def show_survey_result(context={})
+		showResult = context[:type][:surveyForType] == "RmResident"
+	end
+	
 
+	def add_report_type(context={})
+		reports = context[:reports]
+		apiRequest = context[:apiRequest]
+		reportLoc = Rails.root.join('plugins', 'erpmine_resident', 'app', 'views', 'rmreport')
+		Dir["#{reportLoc}/_report*"].each do |path|
+			fileName = File.basename(path, '.html.erb')
+			fileName.slice!(0)
+			label = fileName.remove('_web')
+			reports << [l(:"#{label}"), fileName] if Object.new.extend(RmreportHelper).hasViewPermission(label) && (!apiRequest || !(fileName.end_with?('_web')))
+		end
+		reports.uniq!
+	end
+
+	def load_report_module(context={})
+		report_type = context[:report_type]
+		report_file = Rails.root.join("plugins/erpmine_resident/app/views/rmreport/#{report_type}.rb")
+		if File.exist?(report_file)
+			require_dependency report_file.to_s
+			report = Object.new.extend(report_type.camelize.constantize)
+			context[:report_module] << report
+		end
+	end
+
+	def get_report_view_path(context={})
+		report_type = context[:report_type]
+		partial_path = Rails.root.join('plugins', 'erpmine_resident', 'app', 'views', 'rmreport', "_#{report_type}.html.erb")
+		if File.exist?(partial_path)
+			context[:view_path] << 'rmreport/report'
+		end
+	end
 
 	render_on :resident_evaluation, :partial => 'rmevaluation/evaluation'
 end

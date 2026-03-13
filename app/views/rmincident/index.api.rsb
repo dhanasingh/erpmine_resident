@@ -1,0 +1,23 @@
+api.array :rm_incidents, api_meta(:total_count => @entry_count, :offset => @offset, :limit => @limit, unseen_count: @unseen_count) do
+  @incident_entries.each do |entry|
+    api.entry do
+      api.id entry.id
+      api.rm_resident_id entry.rm_resident_id
+      api.resident_name entry.rm_resident&.name
+      api.incident_date entry.incident_date&.strftime('%Y-%m-%d %H:%M')
+      api.incident_type_id entry.incident_type_id
+      api.incident_type incident_type_label(entry.incident_type_id)
+      api.location entry.location
+      api.status incident_status_code(entry)
+      api.status_label incident_status_label(entry)
+      api.reporting_staff entry.reporting_staff_user&.name
+    end
+  end
+end
+
+api.headers do
+  api.residents @resident_options.map { |name, id| { id: id, name: name } }
+  api.locations @location_options
+  api.incident_types incident_type_options.map { |name, id| { id: id, name: name } }
+  api.incident_statuses incident_status_options.map { |name, id| { id: id, name: name } }
+end

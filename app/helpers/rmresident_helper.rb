@@ -37,13 +37,15 @@ include WklogmaterialHelper
 	end
 
 	def resident_tabs
-		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice"|| params[:controller] == "rmevaluation"
-			tabs = [
-				{:name => 'rmapartment', :partial => 'wktime/tab_content', :label => :label_apartment},
-				{:name => 'rmresident', :partial => 'wktime/tab_content', :label => :label_resident},
-				{:name => 'rmperformservice', :partial => 'wktime/tab_content', :label => :label_perform_service},
-				{:name => 'rmevaluation', :partial => 'wktime/tab_content', :label => :label_evaluation}
-			   ]
+		tabs = []
+		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice" || params[:controller] == "rmincident" || params[:controller] == "rmevaluation"
+			tabs << {:name => 'rmapartment', :partial => 'wktime/tab_content', :label => :label_apartment} if showInventory
+			if showCRMModule
+				tabs << {:name => 'rmresident', :partial => 'wktime/tab_content', :label => :label_resident}
+				tabs << {:name => 'rmperformservice', :partial => 'wktime/tab_content', :label => :label_perform_service}
+				tabs << {:name => 'rmincident', :partial => 'wktime/tab_content', :label => :label_incident}
+				tabs << {:name => 'rmevaluation', :partial => 'wktime/tab_content', :label => :label_evaluation}
+			end
 		end
 		tabs
 	end

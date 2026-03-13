@@ -1,0 +1,185 @@
+/* Incident form – Redmine-native overrides only */
+
+#incident_form fieldset {
+  margin-bottom: 16px;
+  border: 1px solid #dfe2e5;
+  border-radius: 4px;
+  padding-bottom: 8px;
+}
+
+#incident_form fieldset legend {
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  background: #16639e;
+  padding: 2px 10px;
+  border-radius: 3px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+#incident_form .box.tabular p {
+  padding-left: 180px;
+  min-height: 2em;
+}
+
+#incident_form .box.tabular label {
+  width: 175px;
+  margin-left: -180px;
+  float: left;
+  text-align: right;
+  font-weight: 600;
+  color: #666;
+  line-height: 24px;
+}
+
+#incident_form .box.tabular label.block {
+  float: none;
+  text-align: left;
+  margin-left: 0;
+  width: auto;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
+}
+
+#incident_form .box.tabular textarea {
+  width: 95%;
+  resize: vertical;
+}
+
+#incident_form .box.tabular input[type="text"],
+#incident_form .box.tabular select {
+  max-width: 95%;
+}
+
+#incident_form .box.tabular input[type="datetime-local"] {
+  max-width: 95%;
+}
+
+#incident_rm_resident_id {
+  min-width: 220px;
+}
+
+.incident-static-value {
+  display: inline-block;
+  line-height: 24px;
+  font-weight: 700;
+  color: #1a3a5c;
+}
+
+#incident_rpt_name {
+  width: 260px;
+  max-width: 260px;
+}
+
+.incident-resident-info {
+  margin: 4px 0 8px 0;
+  padding: 8px 14px;
+  background: #eef4fb;
+  border-left: 3px solid #16639e;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.incident-resident-info-value {
+  padding: 0;
+  min-height: 18px;
+  font-weight: 600;
+  color: #404040;
+}
+
+.incident-resident-info-label-text {
+  font-weight: 400;
+  font-size: 13px;
+  color: #666666;
+}
+
+.incident-resident-info-value-text {
+  font-weight: 700;
+  font-size: 13px;
+  color: #16639e;
+}
+
+.incident-resident-info-separator {
+  color: #cccccc;
+  font-size: 13px;
+}
+
+.incident-plain-value {
+  line-height: 24px;
+  font-weight: 700;
+  font-size: 13px;
+  color: #16639e;
+}
+
+.incident-status-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  line-height: 20px;
+  vertical-align: middle;
+}
+
+.incident-status-badge.is-new {
+  background: #e8f0fe;
+  color: #0d47a1;
+  border: 1px solid #bbdefb;
+}
+
+.incident-status-badge.is-submitted {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffe0b2;
+}
+
+.incident-status-badge.is-approved {
+  background: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #c8e6c9;
+}
+
+/* Splitcontent label overrides inside incident form */
+#incident_form .splitcontentleft p,
+#incident_form .splitcontentright p {
+  padding-left: 180px;
+}
+
+#incident_form .splitcontentleft label,
+#incident_form .splitcontentright label {
+  width: 175px;
+  margin-left: -180px;
+  font-weight: 600;
+  color: #666;
+}
+
+@media (max-width: 860px) {
+  #incident_form .box.tabular p,
+  #incident_form .splitcontentleft p,
+  #incident_form .splitcontentright p {
+    padding-left: 0;
+  }
+
+  #incident_form .box.tabular label,
+  #incident_form .splitcontentleft label,
+  #incident_form .splitcontentright label {
+    float: none;
+    text-align: left;
+    margin-left: 0;
+    width: auto;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .incident-resident-info {
+    margin-left: 0;
+    border-radius: 0;
+  }
+}
