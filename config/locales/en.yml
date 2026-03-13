@@ -84,3 +84,13 @@ en:
    label_current_occ: Current Occ
    label_percent_occ: Occ %
    label_vacant: Vacant
+   report_move_in_move_out_by_date: Move in - Move out by date
+   label_move_ins: Move-Ins
+   label_move_outs: Move-Outs
+   label_si_no: SI. No.
+   label_facility: Facility
+   label_reason: Reason
+   label_total_move_in: Total Move-In
+   label_total_move_out: Total Move-Out
+   label_no_move_in_records: No Move-In records found.
+   label_no_move_out_records: No Move-Out records found.
