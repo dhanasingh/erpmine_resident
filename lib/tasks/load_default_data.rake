@@ -27,8 +27,11 @@ namespace :resident do
     group = Group.create!(name: 'Resident Admin')
     # Add the sole user (if exactly one user exists) and that user is admin
     group.users << User.admin.first if User.admin.exists? && User.admin.length == 1
-    WkPermission.where(short_name: ['V_INV', 'B_CRM_PRVLG']).each do |perm|
-      WkGroupPermission.create!(group_id: group.id, permission_id: perm.id)
+    perm_short_names = ['B_RES_PRVLG', 'A_RES_PRVLG','B_APT_PRVLG', 'A_APT_PRVLG',
+    'B_INC_PRVLG', 'A_INC_PRVLG','B_EVL_PRVLG', 'A_EVL_PRVLG','V_SVC']
+     permissions = WkPermission.where(short_name: perm_short_names)
+     permissions.each do |perm|
+      WkGroupPermission.find_or_create_by!(group_id: group.id, permission_id: perm.id)
     end
 
     # --- Create project ---

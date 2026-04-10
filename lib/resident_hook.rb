@@ -1,15 +1,13 @@
 class ResidentHook < Redmine::Hook::ViewListener
+	include RmresidentHelper
 	def external_erpmine_menus(context={})
-		wktime_helper = Object.new.extend(WktimeHelper)
 		menuArr = []
-		# define resident menu controller name based on module permissions
-		menuArr << "rmapartment" if wktime_helper.showInventory
-		menuArr << "rmresident" if wktime_helper.showCRMModule
-		if wktime_helper.showCRMModule && wktime_helper.showTime && wktime_helper.checkViewPermission
-			menuArr << "rmperformservice"
-		end
-		menuArr << "rmincident" if wktime_helper.showCRMModule
-		menuArr << "rmevaluation"
+		menuArr << "rmapartment"      if show_apartment
+		menuArr << "rmresident"       if show_resident
+		menuArr << "rmperformservice" if show_service
+		menuArr << "rmincident"       if show_incident
+		menuArr << "rmevaluation"     if show_evaluation
+
 		menuArr
 	end
 
@@ -163,7 +161,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 	render_on :view_additional_lead_info, :partial => 'rmresident/move_in'
 
 	def add_survey_for(context={})
-		context[:survey_types][l(:label_resident)] = "RmResident"
+		context[:survey_types] = {l(:label_resident) => "RmResident"}
 	end
 
 	def find_survey_for(context={})
@@ -240,8 +238,9 @@ class ResidentHook < Redmine::Hook::ViewListener
 		type
 	end
 
-	def get_resident_settings(context={})
+	def get_other_settings(context={})
 		settings = context[:configs][:settings] || {}
+		context[:configs][:resident_module] = show_resident_menu
 		userlanguage = User.current.language
 		if userlanguage != 'en'
 			languageSet = context[:configs][:languageSet] || {}
@@ -251,7 +250,6 @@ class ResidentHook < Redmine::Hook::ViewListener
 				languageSet[key.strip] = value.strip if value.present?
 			end
 		end
-		settings[:resident_module] = true
 		Setting.plugin_erpmine_resident.each{ |key, val| settings[key] = val if val != "" }
 	end
 
@@ -269,7 +267,13 @@ class ResidentHook < Redmine::Hook::ViewListener
 	def wktime_menu_hook(context = {})
 		menu = context[:menu]
 		return unless menu.present?
-		menu.push :apartment, { controller: 'rmresident', action: 'get_resident_tabs' }, caption: :label_resident
+		menu.push :apartment,
+						{ controller: 'rmresident', action: 'get_resident_tabs' },
+						{ caption: :label_resident,
+							if: Proc.new {
+								Object.new.extend(RmresidentHelper).show_resident_menu
+							}
+						}
 	end
 
 	def survey_points(context = {})
@@ -332,6 +336,31 @@ class ResidentHook < Redmine::Hook::ViewListener
 			context[:view_path] << 'rmreport/report'
 		end
 	end
+
+	def get_permission_modules(context={})
+		context[:modules].merge!(
+			"Resident"   => l(:label_resident),
+			"Apartment"  => l(:label_apartment),
+			"Incident"   => l(:label_incident),
+			"Evaluation" => l(:label_evaluation)
+		)
+	end
+
+	# def load_resident_permissions(context={})
+	# 	context[:perms].concat([
+	# 		{ name: 'VIEW RESIDENT',       short_name: 'V_RES',       modules: 'Resident'   },
+	# 		{ name: 'ADMIN RESIDENT',      short_name: 'A_RES',       modules: 'Resident'   },
+	# 		{ name: 'BASIC BED PRIVILEGE', short_name: 'B_BED_PRVLG', modules: 'Apartment'  },
+	# 		{ name: 'ADMIN BED PRIVILEGE', short_name: 'A_BED_PRVLG', modules: 'Apartment'  },
+	# 		{ name: 'BASIC INCIDENT',      short_name: 'B_INC',       modules: 'Incident'   },
+	# 		{ name: 'ADMIN INCIDENT',      short_name: 'A_INC',       modules: 'Incident'   },
+	# 		{ name: 'VIEW EVALUATION',     short_name: 'V_EVL',       modules: 'Evaluation' },
+	# 		{ name: 'MANAGE EVALUATION',   short_name: 'M_EVL',       modules: 'Evaluation' },
+	# 		{ name: 'ADMIN SERVICE',        short_name: 'A_SVC',       modules: 'Service'   }
+	# 	])
+	# end
+
+	#render_on :render_permission_fieldset, :partial => 'rmpermission/resident_permissions'
 
 	render_on :resident_evaluation, :partial => 'rmevaluation/evaluation'
 end

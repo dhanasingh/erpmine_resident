@@ -24,6 +24,7 @@ include WkinvoiceHelper
 include WkproductitemHelper
 include WkaccountprojectHelper
 include WklogmaterialHelper
+include WksurveyHelper 
 
 
 	WkCrmContact.class_eval do
@@ -39,13 +40,11 @@ include WklogmaterialHelper
 	def resident_tabs
 		tabs = []
 		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice" || params[:controller] == "rmincident" || params[:controller] == "rmevaluation"
-			tabs << {:name => 'rmapartment', :partial => 'wktime/tab_content', :label => :label_apartment} if showInventory
-			if showCRMModule
-				tabs << {:name => 'rmresident', :partial => 'wktime/tab_content', :label => :label_resident}
-				tabs << {:name => 'rmperformservice', :partial => 'wktime/tab_content', :label => :label_perform_service}
-				tabs << {:name => 'rmincident', :partial => 'wktime/tab_content', :label => :label_incident}
-				tabs << {:name => 'rmevaluation', :partial => 'wktime/tab_content', :label => :label_evaluation}
-			end
+			tabs << {:name => 'rmapartment', :partial => 'wktime/tab_content', :label => :label_apartment} if show_apartment
+			tabs << {:name => 'rmresident', :partial => 'wktime/tab_content', :label => :label_resident} if show_resident
+			tabs << {:name => 'rmperformservice', :partial => 'wktime/tab_content', :label => :label_perform_service} if show_service
+			tabs << {:name => 'rmincident', :partial => 'wktime/tab_content', :label => :label_incident}  if show_incident
+			tabs << {:name => 'rmevaluation', :partial => 'wktime/tab_content', :label => :label_evaluation}  if show_evaluation
 		end
 		tabs
 	end
@@ -449,6 +448,30 @@ include WklogmaterialHelper
 		issueObj = Issue.where(:tracker_id => trackerID, :project_id => projectId ) unless trackerID.blank? || projectId.blank?
 		issueArr = issueObj.pluck(:subject, :id)  unless issueObj.blank?
 		issueArr
+	end
+
+	def show_resident
+		validateERPPermission("B_RES_PRVLG") || validateERPPermission("A_RES_PRVLG")
+	end
+
+	def show_apartment
+		validateERPPermission("B_APT_PRVLG") || validateERPPermission("A_APT_PRVLG")
+	end
+
+	def show_service
+		validateERPPermission("V_SVC")
+	end
+
+	def show_incident
+		validateERPPermission("B_INC_PRVLG") || validateERPPermission("A_INC_PRVLG")
+	end
+
+	def show_evaluation
+		validateERPPermission("B_EVL_PRVLG") || validateERPPermission("A_EVL_PRVLG")
+	end
+
+	def show_resident_menu
+		show_resident || show_apartment || show_service || show_incident || show_evaluation
 	end
 
 end

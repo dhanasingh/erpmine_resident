@@ -83,3 +83,23 @@ post 'rmresident/moveInResident', :to => 'rmresident#moveInResident'
 get 'rmevaluation/index', to: 'rmevaluation#index'
 
 get 'rmresident/get_resident_tabs', :to => 'rmresident#get_resident_tabs'
+
+get 'rmevaluation/edit', :to => 'rmevaluation#edit'
+
+get 'rmevaluation/:id/edit', :to => 'rmevaluation#edit'
+
+get 'rmevaluation/:id/survey_response', :to => 'rmevaluation#survey_response'
+
+get 'rmevaluation/:id/survey_result', :to => 'rmevaluation#survey_result'
+
+post 'rmevaluation/save_survey', :to => 'rmevaluation#save_survey'
+
+post 'rmevaluation/update_survey', :to => 'rmevaluation#update_survey'
+
+get 'rmevaluation/:id/survey', :to => 'rmevaluation#survey'
+
+delete 'rmevaluation/:id', :to => 'rmevaluation#destroy'
+
+post 'rmevaluation/close_current_response', :to => 'rmevaluation#close_current_response'
+
+get 'rmevaluation/export', :to => 'rmevaluation#export'

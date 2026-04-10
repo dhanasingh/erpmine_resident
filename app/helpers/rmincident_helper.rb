@@ -43,6 +43,16 @@ module RmincidentHelper
 		incident.workflow_status_code
 	end
 
+	def approvePermission(incident = nil)
+		if validateERPPermission('A_INC_PRVLG')
+			return true
+		elsif incident.present? && incident.try(:reported_by_id).present? && respond_to?(:isSupervisorForUser) && isSupervisorForUser(incident.reported_by_id)
+			return true
+		else
+			return false
+		end
+	end
+
 	def incident_status_label(value)
 		status_code = value.is_a?(RmIncident) ? incident_status_code(value) : value.to_s.upcase
 

@@ -17,8 +17,6 @@
 
 class RmperformserviceController < WktimeController
 
-	menu_item	:apartment
-
 
 	def index
 		redirect_to action: :edit, user_id: User.current.id, sheet_view: getSheetView()

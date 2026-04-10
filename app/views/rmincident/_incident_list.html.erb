@@ -23,7 +23,7 @@
 						<td class="lbl-txt-align"><%= h(incident_status_label(entry)) %></td>
 						<td style="text-align:center;">
 							<%= link_to sprite_icon('edit'), url_for(controller: 'rmincident', action: 'edit', id: entry.id, rm_resident_id: entry.rm_resident_id), title: l(:button_edit) %>
-							<% if controller.deletePermission %>
+							<% if validateERPPermission("A_INC_PRVLG") %>
 								<%= link_to sprite_icon('del'), {controller: 'rmincident', action: 'destroy', id: entry.id, tab: controller.controller_name}, data: {confirm: l(:text_are_you_sure)}, :method => :delete, :title => l(:button_delete) %>
 							<% end %>
 						</td>

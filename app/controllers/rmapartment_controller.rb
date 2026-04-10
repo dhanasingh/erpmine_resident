@@ -22,8 +22,8 @@ class RmapartmentController < WkproductitemController
   include RmresidentHelper
 	include WkassetHelper
 	accept_api_auth :index, :edit, :update
-
-    def newAsset
+	
+  def newAsset
 		true
 	end
 
@@ -109,4 +109,26 @@ class RmapartmentController < WkproductitemController
 			}
 			end
 	end
+
+	def hasDeletePermission
+    validateERPPermission("A_APT_PRVLG")
+  end
+
+	private
+
+	def check_basic_perm
+		unless 	validateERPPermission("B_APT_PRVLG")
+			render_403
+			return false
+		end
+	end
+
+	def check_admin_perm
+		unless validateERPPermission("A_APT_PRVLG")
+			render_403
+			return false
+		end
+	end
+
+ 
 end

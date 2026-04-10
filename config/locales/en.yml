@@ -94,3 +94,12 @@ en:
    label_total_move_out: Total Move-Out
    label_no_move_in_records: No Move-In records found.
    label_no_move_out_records: No Move-Out records found.
+   BASIC RESIDENT PRIVILEGE: Basic Resident Privilege
+   ADMIN RESIDENT PRIVILEGE: Admin Resident Privilege
+   BASIC APARTMENT PRIVILEGE: Basic Apartment Privilege
+   ADMIN APARTMENT PRIVILEGE: Admin Apartment Privilege
+   BASIC INCIDENT PRIVILEGE: Basic Incident Privilege
+   ADMIN INCIDENT PRIVILEGE: Admin Incident Privilege
+   BASIC EVALUATION PRIVILEGE: Basic Evaluation Privilege
+   ADMIN EVALUATION PRIVILEGE: Admin Evaluation Privilege
+   VIEW SERVICE: View Service
