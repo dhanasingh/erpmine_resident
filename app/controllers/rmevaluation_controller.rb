@@ -45,4 +45,12 @@ class RmevaluationController < WksurveyController
 	def init_survey
     @survey_ctrl = "rmevaluation"
   end
+
+	def getSurveyFor
+    survey_types = {
+        "" => '',
+        l(:label_resident) => "RmResident"
+    }
+    survey_types
+  end
 end

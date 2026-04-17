@@ -160,10 +160,6 @@ class ResidentHook < Redmine::Hook::ViewListener
 
 	render_on :view_additional_lead_info, :partial => 'rmresident/move_in'
 
-	def add_survey_for(context={})
-		context[:survey_types] = {l(:label_resident) => "RmResident"}
-	end
-
 	def find_survey_for(context={})
       result = RmResident.left_join_contacts
       surveyForIDSql = " (rm_residents.id = #{context[:surveyForID]})"
