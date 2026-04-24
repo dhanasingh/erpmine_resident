@@ -333,30 +333,19 @@ class ResidentHook < Redmine::Hook::ViewListener
 		end
 	end
 
-	def get_permission_modules(context={})
-		context[:modules].merge!(
-			"Resident"   => l(:label_resident),
-			"Apartment"  => l(:label_apartment),
-			"Incident"   => l(:label_incident),
-			"Evaluation" => l(:label_evaluation)
-		)
+	def load_other_permissions(context = {})
+		context[:perms].concat([
+			{ name: 'BASIC RESIDENT PRIVILEGE',  short_name: 'B_RES_PRVLG',  modules: 'Resident',   plugin: 'rm' },
+			{ name: 'ADMIN RESIDENT PRIVILEGE',  short_name: 'A_RES_PRVLG',  modules: 'Resident',   plugin: 'rm' },
+			{ name: 'BASIC APARTMENT PRIVILEGE', short_name: 'B_APT_PRVLG',  modules: 'Apartment',  plugin: 'rm' },
+			{ name: 'ADMIN APARTMENT PRIVILEGE', short_name: 'A_APT_PRVLG',  modules: 'Apartment',  plugin: 'rm' },
+			{ name: 'BASIC INCIDENT PRIVILEGE',  short_name: 'B_INC_PRVLG',  modules: 'Incident',   plugin: 'rm' },
+			{ name: 'ADMIN INCIDENT PRIVILEGE',  short_name: 'A_INC_PRVLG',  modules: 'Incident',   plugin: 'rm' },
+			{ name: 'BASIC EVALUATION PRIVILEGE', short_name: 'B_EVL_PRVLG', modules: 'Evaluation', plugin: 'rm' },
+			{ name: 'ADMIN EVALUATION PRIVILEGE', short_name: 'A_EVL_PRVLG', modules: 'Evaluation', plugin: 'rm' },
+			{ name: 'VIEW SERVICE', short_name: 'V_SVC', modules: 'Service', plugin: 'rm' }
+		])
 	end
-
-	# def load_resident_permissions(context={})
-	# 	context[:perms].concat([
-	# 		{ name: 'VIEW RESIDENT',       short_name: 'V_RES',       modules: 'Resident'   },
-	# 		{ name: 'ADMIN RESIDENT',      short_name: 'A_RES',       modules: 'Resident'   },
-	# 		{ name: 'BASIC BED PRIVILEGE', short_name: 'B_BED_PRVLG', modules: 'Apartment'  },
-	# 		{ name: 'ADMIN BED PRIVILEGE', short_name: 'A_BED_PRVLG', modules: 'Apartment'  },
-	# 		{ name: 'BASIC INCIDENT',      short_name: 'B_INC',       modules: 'Incident'   },
-	# 		{ name: 'ADMIN INCIDENT',      short_name: 'A_INC',       modules: 'Incident'   },
-	# 		{ name: 'VIEW EVALUATION',     short_name: 'V_EVL',       modules: 'Evaluation' },
-	# 		{ name: 'MANAGE EVALUATION',   short_name: 'M_EVL',       modules: 'Evaluation' },
-	# 		{ name: 'ADMIN SERVICE',        short_name: 'A_SVC',       modules: 'Service'   }
-	# 	])
-	# end
-
-	#render_on :render_permission_fieldset, :partial => 'rmpermission/resident_permissions'
 
 	render_on :resident_evaluation, :partial => 'rmevaluation/evaluation'
 end
