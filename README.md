@@ -41,28 +41,24 @@ This Plugin has the following module:
 
 | **Resident** | **ERPmine** |
 |-------------|-------------|
+| 1.4.1 | 4.9.4 |
 | 1.4 | 4.9.3 |
 | 1.3 | 4.9.2 |
 | 1.2 | 4.9, 4.9.1 |
 | 1.1 | 4.8.4, 4.8.5 |
 | 1.0 | 4.8.3 |
 
-## Release Notes for v1.4
+## Release Notes for v1.4.1
 
 **Features**
 ```text
-- Added incident tracking module
-- Added csv export in Resident List page
-- Added Move in- Move out by date and Occupancy Reports
+- Resident module permissions
+- Evaluation followup questions
+- Evaluation group/questions reordering
 ```
-**Bug fixes**
-```text
-- Fixed apartment list csv export issue
-```
-
 ## Dependency:
 
-  This plugin is compatible with ERPmine v4.9.3
+  This plugin is compatible with ERPmine v4.9.4
 
 ## Customization:
 
