@@ -17,10 +17,8 @@
 
 class RmevaluationController < WksurveyController
 
-  menu_item	:apartment
 	accept_api_auth :index
-	before_action :require_login, :survey_url_validation, :check_perm_and_redirect
-  before_action :check_eval_perm_and_redirect
+  include WksurveyHelper
 
 	def ItemLabel
 		l(:label_evaluation)
@@ -33,11 +31,26 @@ class RmevaluationController < WksurveyController
 	def editItemLabel
 		l(:label_edit_evaluation)
 	end
+	
+  private
+	
+  def check_view_perm
+    validateERPPermission("B_EVL_PRVLG")
+  end
 
-	def check_eval_perm_and_redirect
-		unless validateERPPermission("B_CRM_PRVLG") || validateERPPermission("A_CRM_PRVLG")
-			render_403
-			return false
-		end
-	end
+  def check_manage_perm
+    validateERPPermission("A_EVL_PRVLG")
+  end
+
+	def init_survey
+    @survey_ctrl = "rmevaluation"
+  end
+
+	def getSurveyFor
+    survey_types = {
+        "" => '',
+        l(:label_resident) => "RmResident"
+    }
+    survey_types
+  end
 end

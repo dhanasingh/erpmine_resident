@@ -15,12 +15,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-class RmincidentController < WkcrmController
+class RmincidentController < WkbaseController
 
-	menu_item :apartment
+		
+	before_action :check_basic_perm, :only => [:index, :edit, :update, :get_resident_info, :get_residents_by_location]
+	before_action :check_admin_perm, :only => [:destroy]
 	accept_api_auth :index, :edit, :update, :destroy, :get_resident_info, :get_residents_by_location
 	include RmresidentHelper
-	helper_method :approvePermission
+	include RmincidentHelper
 
 	def index
 		set_filter_session
@@ -325,14 +327,6 @@ class RmincidentController < WkcrmController
 		)
 	end
 
-	def approvePermission(incident = nil)
-		return true if validateERPPermission('A_CRM_PRVLG')
-	
-		reporting_user_id = incident&.try(:reported_by_id)
-		return true if reporting_user_id && respond_to?(:isSupervisorForUser) && isSupervisorForUser(reporting_user_id)
-	
-		false
-	end
 
 	def incident_submitted?(incident)
 		return false if incident.new_record?
@@ -371,4 +365,21 @@ class RmincidentController < WkcrmController
 			raise ArgumentError, "Unsupported incident status filter: #{status_code}"
 		end
 	end
+  
+	def check_basic_perm
+		unless validateERPPermission("B_INC_PRVLG") || validateERPPermission("A_INC_PRVLG")
+			render_403
+			return false
+		end
+	end
+
+	def check_admin_perm
+	  unless validateERPPermission("A_INC_PRVLG")
+	    render_403
+	    return false
+	  end
+	end
+
+	#todo check_approve_perm if new inci basuic or super || admin
+
 end

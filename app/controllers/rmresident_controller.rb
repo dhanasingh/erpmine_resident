@@ -20,8 +20,8 @@ class RmresidentController < WkcrmController
 	menu_item	:apartment
 	require "active_support"
 	accept_api_auth :updateresidentservice, :index, :edit, :update, :movein, :moveInResident, :residentTransfer, :moveOut, :locationApartments, :apartmentBeds, :bedRate
-
-
+  before_action :init_survey
+  
 
 	require_sudo_mode :updateresidentservice
 
@@ -610,5 +610,30 @@ class RmresidentController < WkcrmController
 		else
 			render_403
 		end
+	end
+
+	
+	def deletePermission
+		validateERPPermission("A_RES_PRVLG")
+	end
+
+	private
+	
+	def check_basic_perm
+		unless validateERPPermission("B_RES_PRVLG") || validateERPPermission("A_RES_PRVLG")
+			render_403
+			return false
+		end
+	end
+
+	def check_admin_perm
+	  unless validateERPPermission("A_RES_PRVLG")
+	    render_403
+	    return false
+	  end
+	end
+
+	def init_survey
+		@survey_ctrl = "rmevaluation"
 	end
 end
