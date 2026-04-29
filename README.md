@@ -52,9 +52,9 @@ This Plugin has the following module:
 
 **Features**
 ```text
-- Resident module permissions
-- Evaluation followup questions
-- Evaluation group/questions reordering
+- Added resident module permissions
+- Added evaluation follow-up questions
+- Added evaluation groups/questions reordering
 ```
 ## Dependency:
 
