@@ -23,10 +23,15 @@ namespace :resident do
   end
 
   def config_setup
+    admin  = User.admin.first
+    status = IssueStatus.first
+    raise "No admin user found" if admin.nil?
+    raise "No issue status found; load Redmine default data first" if status.nil?
+
     # --- Setup resident permissions ---
     group = Group.create!(name: 'Resident Admin')
     # Add the sole user (if exactly one user exists) and that user is admin
-    group.users << User.admin.first if User.admin.exists? && User.admin.length == 1
+    group.users << admin if User.admin.count == 1
     perm_short_names = ['B_RES_PRVLG', 'A_RES_PRVLG','B_APT_PRVLG', 'A_APT_PRVLG',
     'B_INC_PRVLG', 'A_INC_PRVLG','B_EVL_PRVLG', 'A_EVL_PRVLG','V_SVC']
      permissions = WkPermission.where(short_name: perm_short_names)
@@ -51,7 +56,7 @@ namespace :resident do
     # --- Create trackers ---
     ['Rental', 'Service', 'Amenity', 'Care'].each do |name|
       tracker = Tracker.find_or_initialize_by(name: name)
-      tracker.default_status_id = IssueStatus.first.id
+      tracker.default_status_id = status.id
       tracker.core_fields = Tracker::CORE_FIELDS
       tracker.save!
       unless tracker.projects.include?(project)
@@ -72,8 +77,8 @@ namespace :resident do
         issue.subject = subject
         issue.project_id = project.id
         issue.tracker_id = tracker.id
-        issue.author_id = User.admin.first.id
-        issue.status_id = IssueStatus.first.id
+        issue.author_id = admin.id
+        issue.status_id = status.id
         issue.save!
       end
     end
@@ -91,8 +96,8 @@ namespace :resident do
       issue.subject    = level[:subject]
       issue.project_id = project.id
       issue.tracker_id = care_tracker.id
-      issue.author_id  = User.admin.first.id
-      issue.status_id  = IssueStatus.first.id
+      issue.author_id  = admin.id
+      issue.status_id  = status.id
       issue.save!
       WkIssue.find_or_create_by!(issue_id: issue.id) do |wi|
         wi.project_id = project.id
@@ -115,7 +120,7 @@ namespace :resident do
     # --- Apartment and beds setup ---
     category = WkProductCategory.find_or_create_by!(name: 'Resident')
     uom = WkMesureUnit.find_or_create_by!(name: 'Numbers', short_desc: 'No')
-    attr = WkAttributeGroup.find_or_create_by!(name: '	Care level')
+    attr = WkAttributeGroup.find_or_create_by!(name: 'Care level')
     apartment = WkProduct.find_or_create_by!(name: 'Apartment', category_id: category.id, product_type: 'RA', uom_id: uom.id, attribute_group_id: attr.id)
     bed = WkProduct.find_or_create_by!(name: 'Bed', category_id: category.id, product_type: 'RA', uom_id: uom.id, attribute_group_id: attr.id)
 
