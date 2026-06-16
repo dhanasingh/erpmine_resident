@@ -18,10 +18,18 @@
 class RmapartmentController < WkproductitemController
 
   menu_item	:apartment
+  
+  def index
+	session[controller_name] ||= {}
+	session[controller_name][:project_id] = resident_project_id
+	super
+  end
+
   include RmapartmentHelper
   include RmresidentHelper
 	include WkassetHelper
 	accept_api_auth :index, :edit, :update
+
 	
   def newAsset
 		true
@@ -33,6 +41,11 @@ class RmapartmentController < WkproductitemController
 
 	def showAssetProperties
 		true
+	end
+
+	# Apartments are not project-scoped, so hide the Project field/filter.
+	def showProjectField
+		false
 	end
 
 	def newItemLabel
@@ -111,13 +124,22 @@ class RmapartmentController < WkproductitemController
 	end
 
 	def hasDeletePermission
-    validateERPPermission("A_APT_PRVLG")
-  end
+		validateERPPermission("A_APT_PRVLG")
+	end
+
+	def update
+		params[:project_id] = resident_project_id
+		super
+	end
+
+  	def resident_project_id
+		Setting.plugin_erpmine_resident['rm_project']
+	end
 
 	private
 
 	def check_basic_perm
-		unless 	validateERPPermission("B_APT_PRVLG")
+		unless 	validateERPPermission("B_APT_PRVLG") || validateERPPermission("A_APT_PRVLG")
 			render_403
 			return false
 		end

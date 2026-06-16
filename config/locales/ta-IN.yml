@@ -102,7 +102,7 @@ ta-IN:
    ADMIN INCIDENT PRIVILEGE: Admin Incident Privilege
    BASIC EVALUATION PRIVILEGE: Basic Evaluation Privilege
    ADMIN EVALUATION PRIVILEGE: Admin Evaluation Privilege
-   VIEW SERVICE: View Service
+   VIEW SERVICE: View Perform Service
    label_min_points: "Min Points"
    label_max_points: "Max Points"
    label_effective_date: "Effective Date"

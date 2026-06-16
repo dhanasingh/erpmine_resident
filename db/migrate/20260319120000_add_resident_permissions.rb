@@ -15,7 +15,7 @@ class AddResidentPermissions < ActiveRecord::Migration[7.2]
           { name: 'BASIC EVALUATION PRIVILEGE', short_name: 'B_EVL_PRVLG', modules: 'Evaluation', plugin: 'rm' },
           { name: 'ADMIN EVALUATION PRIVILEGE', short_name: 'A_EVL_PRVLG', modules: 'Evaluation', plugin: 'rm' },
 
-          { name: 'VIEW SERVICE', short_name: 'V_SVC', modules: 'Service', plugin: 'rm' }
+          { name: 'VIEW SERVICE', short_name: 'V_SVC', modules: 'Resident', plugin: 'rm' }
         ]
 
         # Add new ones

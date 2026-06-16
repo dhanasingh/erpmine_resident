@@ -15,29 +15,19 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-module RmevaluationHelper
+module RmdashboardHelper
 	include RmresidentHelper
 
-	def getResidents
-		resident = Array.new
-		entries = RmResident.left_join_contacts.where("rm_residents.move_out_date IS NULL").order(id: :desc)
-														.select("rm_residents.id, wk_accounts.name as account_name, first_name, last_name, resident_type")
-		(entries || []).each do  |r|
-			residentName = r.resident_type == "WkAccount" ? r.account_name : ((r&.first_name || '') + ' ' + (r&.last_name || ''))
-			resident <<  [residentName, r.id  ]
+	def get_graphs_yaml_path
+		permittedfiles = []
+		ymlFiles = Dir["plugins/erpmine_resident/lib/rmdashboard/*.rb"].map{ |file| file }
+		ymlFiles.each do |file|
+			fileName = File.basename(file).split("_").first
+			nonPermChart = !['graph001', 'graph002', 'graph003', 'graph004'].include?(fileName)
+			if(nonPermChart || (fileName == 'graph001' && show_resident) || (fileName == 'graph002' && show_incident) || (fileName == 'graph003' && show_apartment) || (fileName == 'graph004' && show_incident))
+					permittedfiles << file
+			end
 		end
-		resident.unshift(["",0])
-	end
-	
-	def getEvaluationList
-		evaluations = []
-
-		surveyList = WkSurvey.where(survey_for_type: 'RmResident').order(id: :desc)
-
-		surveyList.each do |s|
-			evaluations << [s.name, s.id]
-		end
-
-		evaluations.unshift(["", 0])
+		permittedfiles
 	end
 end

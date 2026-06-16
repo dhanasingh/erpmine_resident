@@ -39,7 +39,8 @@ include WksurveyHelper
 
 	def resident_tabs
 		tabs = []
-		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice" || params[:controller] == "rmincident" || params[:controller] == "rmevaluation"
+		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice" || params[:controller] == "rmincident" || params[:controller] == "rmevaluation" || params[:controller] == "rmdashboard"
+			tabs << {:name => 'rmdashboard', :partial => 'wktime/tab_content', :label => :label_dashboards} if show_resident
 			tabs << {:name => 'rmapartment', :partial => 'wktime/tab_content', :label => :label_apartment} if show_apartment
 			tabs << {:name => 'rmresident', :partial => 'wktime/tab_content', :label => :label_resident} if show_resident
 			tabs << {:name => 'rmperformservice', :partial => 'wktime/tab_content', :label => :label_perform_service} if show_service

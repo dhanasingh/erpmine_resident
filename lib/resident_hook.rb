@@ -7,6 +7,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 		menuArr << "rmperformservice" if show_service
 		menuArr << "rmincident"       if show_incident
 		menuArr << "rmevaluation"     if show_evaluation
+		menuArr << "rmdashboard"      if show_resident
 
 		menuArr
 	end
@@ -449,6 +450,23 @@ class ResidentHook < Redmine::Hook::ViewListener
 		end
 	end
 
+	# Whitelist the evaluation filter so wkreport persists it in the session.
+	def add_report_filter_keys(context={})
+		context[:filters] << :evaluation_id
+	end
+
+	# Supply the extra evaluation_id argument expected by report_evaluation's
+	# calcReportData / getExportData, only for that report type.
+	def add_report_calc_args(context={})
+		if context[:report_type] == 'report_evaluation'
+			controller = context[:controller]
+			context[:args] << controller.send(:getSession, :evaluation_id)
+		end
+	end
+
+	# Inject the evaluation filter UI into the wkreport filter form.
+	render_on :report_additional_filters, :partial => 'rmreport/report_evaluation_filter'
+
 	def load_other_permissions(context = {})
 		context[:perms].concat([
 			{ name: 'BASIC RESIDENT PRIVILEGE',  short_name: 'B_RES_PRVLG',  modules: 'Resident',   plugin: 'rm' },
@@ -459,7 +477,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 			{ name: 'ADMIN INCIDENT PRIVILEGE',  short_name: 'A_INC_PRVLG',  modules: 'Incident',   plugin: 'rm' },
 			{ name: 'BASIC EVALUATION PRIVILEGE', short_name: 'B_EVL_PRVLG', modules: 'Evaluation', plugin: 'rm' },
 			{ name: 'ADMIN EVALUATION PRIVILEGE', short_name: 'A_EVL_PRVLG', modules: 'Evaluation', plugin: 'rm' },
-			{ name: 'VIEW SERVICE', short_name: 'V_SVC', modules: 'Service', plugin: 'rm' }
+			{ name: 'VIEW SERVICE', short_name: 'V_SVC', modules: 'Resident', plugin: 'rm' }
 		])
 	end
 
