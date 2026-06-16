@@ -83,10 +83,58 @@ include WksurveyHelper
 		end
 	end
 
+	def addCareBillingEntries(rm_resident, inv_start, inv_end)
+		periods = get_care_billing_periods(rm_resident, inv_start, inv_end)
+		periods.each do |period|
+			care_svc = rm_resident.resident_services
+				.where(issue_id: period[:issue].id)
+				.where("start_date <= ? AND (end_date IS NULL OR end_date >= ?)", period[:end_date], period[:start_date])
+				.first
+			next if care_svc.blank?
+
+			issue     = period[:issue]
+			rateHash  = getIssueRateHash(issue)
+			seg_start = [period[:start_date].to_date, care_svc.start_date.to_date].max
+			seg_end   = care_svc.end_date.present? ? [period[:end_date].to_date, care_svc.end_date.to_date].min : period[:end_date].to_date
+			quantity  = getDuration(seg_start, seg_end, rateHash['rate_per'], 0, false)
+
+			existing = TimeEntry.joins(:spent_for)
+				.where(
+					spent_on: seg_start,
+					issue_id: issue.id,
+					comments: l(:label_auto_populated_entry),
+					wk_spent_fors: { spent_for_type: rm_resident.resident_type, spent_for_id: rm_resident.resident_id }
+				)
+				.where("wk_spent_fors.invoice_item_id IS NULL")
+				.first
+
+			if existing.present?
+				existing.hours = quantity
+				existing.save
+			else
+				te = TimeEntry.new(
+					project_id:  issue.project_id,
+					issue_id:    issue.id,
+					hours:       quantity,
+					comments:    l(:label_auto_populated_entry),
+					activity_id: getDefultActivity,
+					spent_on:    seg_start,
+					spent_for_attributes: {
+						spent_for_id:   rm_resident.resident_id,
+						spent_for_type: rm_resident.resident_type,
+						spent_on_time:  seg_start.to_datetime
+					}
+				)
+				te.user_id = User.current.id
+				te.save
+			end
+		end
+	end
+
 	# Add Rent, Amenities Entries for next invoice cycle
 	def addNewAmenityEntry(service, invInterval, quantity)
 		issue = Issue.find(service.issue_id)
-		if issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i
+		if issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i || issue.tracker_id == getResidentPluginSetting('rm_care_tracker').to_i
 			rateHash = getIssueRateHash(issue)
 			invInterval[0] = service.start_date if  service.start_date > invInterval[0]
 			invInterval[1] = service.end_date if !service.end_date.blank? && service.end_date < invInterval[1]
@@ -448,6 +496,116 @@ include WksurveyHelper
 		issueObj = Issue.where(:tracker_id => trackerID, :project_id => projectId ) unless trackerID.blank? || projectId.blank?
 		issueArr = issueObj.pluck(:subject, :id)  unless issueObj.blank?
 		issueArr
+	end
+
+	def getCareIssueById(issue_id)
+		return nil if issue_id.blank?
+		Issue.find_by(id: issue_id.to_i)
+	end
+
+	def getMatchingCareRate(points)
+		care_tracker_id = getResidentPluginSetting('rm_care_tracker')
+		return nil if care_tracker_id.blank?
+		points_f = points.to_f
+		Issue.joins(:wk_issue)
+			 .where(:tracker_id => care_tracker_id.to_i)
+			 .where('wk_issues.min_points <= ? AND wk_issues.max_points >= ?', points_f, points_f)
+			 .first
+	end
+
+	def get_care_billing_periods(rm_resident, inv_start_dt, inv_end_dt)
+		inv_start = inv_start_dt.to_date
+		inv_end   = inv_end_dt.to_date
+		periods   = []
+
+		assignments = RmCareBillingAssignment
+			.joins(:survey_response)
+			.where(rm_resident_id: rm_resident.id)
+			.where("rm_care_billing_assignments.effective_date <= ?", inv_end)
+			.order("rm_care_billing_assignments.effective_date DESC")
+			.select("rm_care_billing_assignments.*, wk_survey_responses.total_points")
+
+		segment_end = inv_end
+
+		assignments.each do |assignment|
+			break if segment_end < inv_start
+
+			segment_start = [assignment.effective_date.to_date, inv_start].max
+			care_issue    = getMatchingCareRate(assignment.total_points)
+
+			periods << { issue: care_issue, start_date: segment_start, end_date: segment_end } if care_issue.present?
+
+			segment_end = assignment.effective_date.to_date - 1.day
+		end
+
+		periods
+	end
+
+	def save_care_billing_assignment(rm_resident, survey_response, effective_date)
+		return if rm_resident.blank? || survey_response.blank? || effective_date.blank?
+
+		assignment = RmCareBillingAssignment.find_or_initialize_by(
+			rm_resident_id:     rm_resident.id,
+			survey_response_id: survey_response.id
+		)
+		assignment.effective_date     = effective_date.to_date
+		assignment.updated_by_user_id = User.current.id
+		assignment.created_by_user_id = User.current.id if assignment.new_record?
+
+		unless assignment.save
+			Rails.logger.error "CareBillingAssignment save failed: #{assignment.errors.full_messages.join(', ')}"
+		end
+		assignment
+	end
+
+	def upsertCareResidentService(rmResident, care_issue, start_date)
+		return if rmResident.blank? || care_issue.blank? || start_date.blank?
+		start_date = start_date.to_date
+
+		# Clamp start_date to move_in_date — RmResidentService rejects dates before move-in
+		move_in = rmResident.move_in_date&.to_date
+		start_date = move_in if move_in.present? && start_date < move_in
+
+		# End any existing open care services for a different care issue
+		careTrackerId = getResidentPluginSetting('rm_care_tracker').to_i
+		existing_services = rmResident.resident_services
+										 .joins(:issue)
+										 .where(:issues => { :tracker_id => careTrackerId })
+										 .where(:end_date => nil)
+		existing_services.each do |svc|
+			if svc.issue_id != care_issue.id
+				svc.end_date = start_date - 1.day
+				svc.updated_by_user_id = User.current.id
+				svc.save
+				# Remove any unbilled care time entries for the old service so they
+				# don't double-bill alongside the new care level's entry.
+				delAutoGenAmenityEntries(svc)
+			end
+		end
+
+		# Find or create the care service for this specific care issue
+		current_svc = rmResident.resident_services
+									 .where(:issue_id => care_issue.id, :end_date => nil)
+									 .first
+		if current_svc.present?
+			if start_date > current_svc.start_date.to_date
+				current_svc.start_date = start_date
+				current_svc.updated_by_user_id = User.current.id
+				unless current_svc.save
+					Rails.logger.error "Care service update failed: #{current_svc.errors.full_messages.join(', ')}"
+				end
+			end
+		else
+			new_svc = RmResidentService.new
+			new_svc.rm_resident_id       = rmResident.id
+			new_svc.issue_id             = care_issue.id
+			new_svc.start_date           = start_date
+			new_svc.created_by_user_id   = User.current.id
+			new_svc.updated_by_user_id   = User.current.id
+			unless new_svc.save
+				Rails.logger.error "Care service create failed: #{new_svc.errors.full_messages.join(', ')}"
+			end
+		end
 	end
 
 	def show_resident

@@ -93,8 +93,7 @@ ta-IN:
    label_total_move_in: Total Move-In
    label_total_move_out: Total Move-Out
    label_no_move_in_records: No Move-In records found.
-   label_no_move_out_records: No Move-Out records found.
-   
+   label_no_move_out_records: No Move-Out records found.   
    BASIC RESIDENT PRIVILEGE: Basic Resident Privilege
    ADMIN RESIDENT PRIVILEGE: Admin Resident Privilege
    BASIC APARTMENT PRIVILEGE: Basic Apartment Privilege
@@ -104,3 +103,8 @@ ta-IN:
    BASIC EVALUATION PRIVILEGE: Basic Evaluation Privilege
    ADMIN EVALUATION PRIVILEGE: Admin Evaluation Privilege
    VIEW SERVICE: View Service
+   label_min_points: "Min Points"
+   label_max_points: "Max Points"
+   label_effective_date: "Effective Date"
+   label_care: Care
+   label_resident_care: Resident Care

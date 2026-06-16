@@ -25,7 +25,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 
 	def view_accordion_section(context={})
 		sectionArr = Array.new(3)
-		sectionArr = ["rmresident", "rmamentity"] if getResidentType(context) == "RA"
+		sectionArr = ["rmresident", "rmamentity", "rmcare"] if getResidentType(context) == "RA"
 		sectionArr
 	end
 
@@ -81,6 +81,77 @@ class ResidentHook < Redmine::Hook::ViewListener
 		parentType = context[:attributes]["parent_type"]
 		nextBillStart = invEndDt.to_date + 1.day
 		resident_helper.addUnbilledEntries(parentId.to_i, nextBillStart, 1, parentType)
+	end
+
+	def get_entry_billing_quantity(context={})
+		entry   = context[:entry]
+		invoice = context[:invoice]
+		return if entry.blank? || invoice.blank?
+
+		resident_helper = Object.new.extend(RmresidentHelper)
+		care_tracker_id = resident_helper.getResidentPluginSetting('rm_care_tracker').to_i
+		return unless care_tracker_id > 0 && entry.issue&.tracker_id == care_tracker_id
+		return unless entry.spent_on < invoice.start_date.to_date
+
+		rate_hash = context[:rate_hash]
+		rate_per  = rate_hash&.fetch('rate_per', nil)
+		if rate_per.blank?
+			issue_rate_hash = resident_helper.getIssueRateHash(entry.issue)
+			rate_per = issue_rate_hash&.fetch('rate_per', nil)
+		end
+		return if rate_per.blank?
+
+		account_project = context[:account_project]
+		return if account_project.blank?
+
+		periods = resident_helper.getResidentServicePeriod(
+			invoice.start_date, invoice.end_date,
+			account_project.parent_id, account_project.parent_type,
+			entry.issue
+		)
+		return if periods.blank? || periods[0].blank?
+
+		p = periods[0]
+		resident_helper.getDuration(p["start"], p["end"], rate_per, 0, false)
+	end
+
+	def append_recurring_unbilled_entries(context={})
+		invoice         = context[:invoice]
+		account_project = context[:account_project]
+		return if invoice.blank? || account_project.blank?
+
+		resident_helper = Object.new.extend(RmresidentHelper)
+		care_tracker_id = resident_helper.getResidentPluginSetting('rm_care_tracker').to_i
+		return if care_tracker_id.blank? || care_tracker_id == 0
+
+		inv_start   = invoice.start_date.to_date
+		parent_id   = account_project.parent_id
+		parent_type = account_project.parent_type
+
+		time_entries = context[:time_entries]
+		existing_ids = time_entries.pluck(:id)
+
+		# Skip if a care entry already exists within the invoice period
+		care_in_period = TimeEntry.joins(:issue)
+			.where(id: existing_ids, issues: { tracker_id: care_tracker_id })
+			.exists?
+		return if care_in_period
+
+		# Find the latest care time entry for this resident
+		latest = TimeEntry.joins(:spent_for)
+			.joins(:issue)
+			.where(
+				issues:        { tracker_id: care_tracker_id },
+				wk_spent_fors: { spent_for_type: parent_type, spent_for_id: parent_id }
+			)
+			.where("time_entries.spent_on < ?", inv_start)
+			.order("time_entries.spent_on DESC")
+			.first
+
+		return if latest.blank?
+
+		context[:time_entries] = TimeEntry.includes(:spent_for)
+			.where(id: existing_ids + [latest.id])
 	end
 
 	def additional_product_type(context={})
@@ -197,6 +268,51 @@ class ResidentHook < Redmine::Hook::ViewListener
       		context[:urlHash][:controller] = "rmresident"
 			context[:urlHash][:action] = 'edit'
 			context[:urlHash][:rm_resident_id] = context[:urlHash][:surveyForID]
+
+			# When a resident evaluation is submitted, apply care-rate billing
+			if context[:params][:commit] == "Submit"
+				begin
+					survey_id = context[:params][:survey_id]
+					survey    = WkSurvey.find_by(id: survey_id.to_i)
+					if survey.try(:affect_billing?) && survey.try(:use_points?)
+						rmresident_helper = Object.new.extend(RmresidentHelper)
+						rmResident = RmResident.find_by(id: context[:urlHash][:surveyForID].to_i)
+						unless rmResident.blank?
+							# Prefer the ID of the just-saved response; fall back to the form's existing ID
+							resp_id    = context[:params][:saved_survey_response_id] || context[:params][:survey_response_id]
+							saved_resp = resp_id.present? ? WkSurveyResponse.find_by(id: resp_id.to_i) : nil
+							if saved_resp.blank?
+								saved_resp = WkSurveyResponse
+									.where(:survey_id       => survey_id,
+									       :survey_for_type => 'RmResident',
+									       :survey_for_id   => rmResident.id)
+									.order(:id => :desc)
+									.first
+							end
+							total_points = saved_resp&.total_points
+							unless total_points.blank?
+								care_issue = rmresident_helper.getMatchingCareRate(total_points)
+								if care_issue.present?
+									effective_date = context[:params][:effective_date].present? ? context[:params][:effective_date].to_date : Date.today
+									rmresident_helper.save_care_billing_assignment(rmResident, saved_resp, effective_date)
+									rmresident_helper.upsertCareResidentService(rmResident, care_issue, effective_date)
+									care_svc = rmResident.resident_services.reload.where(issue_id: care_issue.id, end_date: nil).first
+									if care_svc.present?
+										nextInvInterval = rmresident_helper.getInvoiceInterval(effective_date, effective_date, true, true)
+										rmresident_helper.addNewAmenityEntry(care_svc, nextInvInterval[0], 1)
+									end
+								else
+									Rails.logger.warn "Care billing: no care issue found for total_points=#{total_points}"
+								end
+							else
+								Rails.logger.warn "Care billing: total_points blank on response id=#{saved_resp&.id}"
+							end
+						end
+					end
+				rescue => e
+					Rails.logger.error "Care billing upsert failed: #{e.message}\n#{e.backtrace.first(5).join("\n")}"
+				end
+			end
 		elsif context[:urlHash][:surveyForType] == "RmResident"
 			context[:urlHash][:controller] = "rmevaluation"
 			context[:urlHash][:action] = 'index'
@@ -347,5 +463,9 @@ class ResidentHook < Redmine::Hook::ViewListener
 		])
 	end
 
+	render_on :survey_response_list_header, :partial => 'rmevaluation/survey_response_list_header'
+	render_on :survey_response_list_row,    :partial => 'rmevaluation/survey_response_list_row'
 	render_on :resident_evaluation, :partial => 'rmevaluation/evaluation'
+	render_on :view_wkissue_fields_bottom, :partial => 'rmevaluation/rm_care_issue_fields'
+	render_on :view_wkissue_show_bottom,   :partial => 'rmevaluation/rm_care_issue_show'
 end

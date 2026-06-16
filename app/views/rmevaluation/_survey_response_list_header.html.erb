@@ -1,0 +1,7 @@
+<% if survey.survey_for_type == 'RmResident' %>
+  <% if position == :start %>
+    <th class="lbl-txt-align"><%= l(:label_resident) %></th>
+  <% elsif position == :end && !show_survey_result %>
+    <th></th>
+  <% end %>
+<% end %>

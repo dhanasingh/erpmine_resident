@@ -6,13 +6,6 @@
 
 <h2><%= @incident.new_record? ? l(:label_new_incident) : l(:label_edit_incident) %></h2>
 
-<%= javascript_tag do %>
-	var apartmentUrl = '<%= url_for(controller: "rmapartment", action: "index", tab: "rmapartment") %>';
-	var residentUrl = '<%= url_for(controller: "rmresident", action: "index", tab: "rmresident") %>';
-	var performserviceUrl = '<%= raw url_for(controller: :rmperformservice, action: :edit, user_id: User.current.id, startday: Date.today, sheet_view: 'I' ) %>';
-	var incidentUrl = '<%= url_for(controller: "rmincident", action: "index", tab: "rmincident", rm_resident_id: params[:rm_resident_id]) %>';
-<% end %>
-
 <%= hidden_field_tag 'back_url', url_for(:controller => params[:controller], :action => params[:action]) %>
 
 <%= form_tag({controller: 'rmincident', action: 'update'}, method: :post, id: 'incident_form', data: {

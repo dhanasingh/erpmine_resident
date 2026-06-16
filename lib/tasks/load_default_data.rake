@@ -49,7 +49,7 @@ namespace :resident do
     project.save!
 
     # --- Create trackers ---
-    ['Rental', 'Service', 'Amenity'].each do |name|
+    ['Rental', 'Service', 'Amenity', 'Care'].each do |name|
       tracker = Tracker.find_or_initialize_by(name: name)
       tracker.default_status_id = IssueStatus.first.id
       tracker.core_fields = Tracker::CORE_FIELDS
@@ -78,12 +78,36 @@ namespace :resident do
       end
     end
 
+    # --- Create Care level issues with min/max points ---
+    care_levels = [
+      { subject: 'Care Level 1', min_points: 0,  max_points: 25  },
+      { subject: 'Care Level 2', min_points: 26, max_points: 50  },
+      { subject: 'Care Level 3', min_points: 51, max_points: 75  },
+      { subject: 'Care Level 4', min_points: 76, max_points: 100 }
+    ]
+    care_tracker = Tracker.find_by(name: 'Care')
+    care_levels.each do |level|
+      issue = Issue.new
+      issue.subject    = level[:subject]
+      issue.project_id = project.id
+      issue.tracker_id = care_tracker.id
+      issue.author_id  = User.admin.first.id
+      issue.status_id  = IssueStatus.first.id
+      issue.save!
+      WkIssue.find_or_create_by!(issue_id: issue.id) do |wi|
+        wi.project_id = project.id
+        wi.min_points = level[:min_points]
+        wi.max_points = level[:max_points]
+      end
+    end
+
     # --- Update settings ---
     Setting.plugin_erpmine_resident = {
       'rm_project' => project.id,
       'rm_rental_tracker' => Tracker.find_by(name: 'Rental')&.id,
       'rm_service_tracker' => Tracker.find_by(name: 'Service')&.id,
-      'rm_amenity_tracker' => Tracker.find_by(name: 'Amenity')&.id
+      'rm_amenity_tracker' => Tracker.find_by(name: 'Amenity')&.id,
+      'rm_care_tracker'    => Tracker.find_by(name: 'Care')&.id
     }
   end
 

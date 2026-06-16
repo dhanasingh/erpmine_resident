@@ -24,6 +24,7 @@ class RmResident < ApplicationRecord
   scope :current_move_out_resident,  -> { where(:move_out_date => nil) }
   has_many :resident_services, foreign_key: "rm_resident_id", :class_name => 'RmResidentService', :dependent => :restrict_with_error
   has_many :incidents, foreign_key: "rm_resident_id", :class_name => 'RmIncident', :dependent => :restrict_with_error
+  has_many :care_billing_assignments, foreign_key: "rm_resident_id", :class_name => 'RmCareBillingAssignment', :dependent => :destroy
   validates_presence_of :apartment_id, :resident_id
 
 	# Ensure resident.resident (contact Object) returns nil unless resident.resident_type == "WkCrmContact"

@@ -1,0 +1,24 @@
+<%
+  care_tracker_id = Setting.plugin_erpmine_resident['rm_care_tracker'].to_i rescue nil
+  is_care_issue   = care_tracker_id.present? && issue.tracker_id == care_tracker_id
+%>
+<% if is_care_issue %>
+  <%= fields_for :erpmineissues, issue.erpmineissues do |f| %>
+    <table style="padding-left:90px; margin-top: 10px; margin-bottom: 10px;">
+      <tr>
+        <td>
+          <label for="<%= f.object_name %>_min_points" style="float: none; margin: 0; width: auto; display: inline-block; font-weight: bold; padding-right: 5px;">
+            <%= l(:label_min_points) %>
+          </label>
+          <%= f.text_field :min_points, size: 8, id: "#{f.object_name}_min_points" %>
+        </td>
+        <td style="padding-left:20px; vertical-align: middle;">
+          <label for="<%= f.object_name %>_max_points" style="float: none; margin: 0; width: auto; display: inline-block; font-weight: bold; padding-right: 5px;">
+            <%= l(:label_max_points) %>
+          </label>
+          <%= f.text_field :max_points, size: 8, id: "#{f.object_name}_max_points" %>
+        </td>
+      </tr>
+    </table>
+  <% end %>
+<% end %>

@@ -1,0 +1,14 @@
+<%
+  care_tracker_id = Setting.plugin_erpmine_resident['rm_care_tracker'].to_i rescue nil
+  is_care_issue   = care_tracker_id.present? && issue.tracker_id == care_tracker_id
+%>
+<% if is_care_issue %>
+  <tr>
+    <th align="left"><%= l(:label_min_points) %></th>
+    <td style="padding-left:40px;"><%= issue.erpmineissues.min_points %></td>
+  </tr>
+  <tr>
+    <th align="left"><%= l(:label_max_points) %></th>
+    <td style="padding-left:40px;"><%= issue.erpmineissues.max_points %></td>
+  </tr>
+<% end %>
