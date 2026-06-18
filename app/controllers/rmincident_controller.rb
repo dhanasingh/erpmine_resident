@@ -31,17 +31,29 @@ class RmincidentController < WkbaseController
 
 		@selected_resident_id = session[controller_name].try(:[], :rm_resident_id)
 		@selected_resident_id = params[:rm_resident_id] if params[:rm_resident_id].present?
-		@selected_location = session[controller_name].try(:[], :location)
+		@selected_location_id = session[controller_name].try(:[], :location_id)
 		@selected_incident_type = session[controller_name].try(:[], :incident_type)
 		@selected_incident_status = session[controller_name].try(:[], :incident_status)
 
 		@rm_resident = RmResident.find_by(id: @selected_resident_id) if @selected_resident_id.present?
 		load_residents
-		@location_options = WkLocation.order(:name).pluck(:name)
 
 		entries = RmIncident.includes(:rm_resident, :reporting_staff_user)
 		entries = entries.where(rm_resident_id: @selected_resident_id) if @selected_resident_id.present?
-		entries = entries.where("LOWER(rm_incidents.location) = LOWER(?)", @selected_location) if @selected_location.present?
+
+		# Location filter goes through the resident's contact/account location_id.
+		loc_ids = WkLocation.accessible_location_ids
+		picked_location = @selected_location_id
+		if loc_ids || picked_location.present?
+			entries = entries
+				.joins("INNER JOIN rm_residents ON rm_residents.id = rm_incidents.rm_resident_id")
+				.joins("LEFT JOIN wk_crm_contacts ON wk_crm_contacts.id = rm_residents.resident_id AND rm_residents.resident_type = 'WkCrmContact'")
+				.joins("LEFT JOIN wk_accounts ON wk_accounts.id = rm_residents.resident_id AND rm_residents.resident_type = 'WkAccount'")
+		end
+		entries = WkLocation.filter_by_contact_account_location(entries, loc_ids)
+		if picked_location.present? && picked_location.to_s != "0"
+			entries = WkLocation.filter_by_contact_account_location(entries, WkLocation.subtree_ids(picked_location))
+		end
 		entries = entries.where(incident_type_id: @selected_incident_type) if @selected_incident_type.present?
 		entries = apply_incident_status_filter(entries, @selected_incident_status) if @selected_incident_status.present?
 		entries = entries.where("rm_incidents.incident_date >= ?", @from.beginning_of_day) if @from.present?
@@ -264,14 +276,18 @@ class RmincidentController < WkbaseController
 	end
 
 	def set_filter_session
-		filters = [:period_type, :period, :from, :to, :rm_resident_id, :location, :incident_type, :incident_status]
+		filters = [:period_type, :period, :from, :to, :rm_resident_id, :location_id, :incident_type, :incident_status]
 		super(filters, {:from => @from, :to => @to})
 	end
 
 	def load_residents
 		@resident_options = active_residents_scope
 			.filter_map { |r| r.name.present? ? [r.name, r.id] : nil }
-		@resident_location_options = WkLocation.order(:name).pluck(:name, :id)
+		# Permitted locations only (nil => unrestricted => all).
+		loc_ids = WkLocation.accessible_location_ids
+		locScope = loc_ids ? WkLocation.where(id: loc_ids) : WkLocation.all
+		@resident_location_options = locScope.order(:name).pluck(:name, :id)
+		@location_options = @resident_location_options.map(&:first)
 	end
 
 	def load_reporting_staff_options
@@ -280,9 +296,10 @@ class RmincidentController < WkbaseController
 	end
 
 	def active_residents_scope
-		RmResident.left_join_contacts
+		scope = RmResident.left_join_contacts
 			.where(move_out_date: nil)
 			.includes(:resident)
+		WkLocation.filter_by_contact_account_location(scope, WkLocation.accessible_location_ids)
 	end
 
 	def resident_info_hash(resident)

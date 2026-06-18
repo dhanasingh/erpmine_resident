@@ -1,15 +1,7 @@
 <% 	parentArr = Array.new
 	bedArr = Array.new
 	locationId = nil
-	locationObj = WkLocation.order(:name)
-	unless locationObj.blank?
-		locationId = locationObj[0].id
-		locationObj.each do | entry |
-			if entry.is_default?
-				locationId = entry.id
-			end
-		end
-	end
+	locationId = WkLocation.permitted_final_location_ids.first
 	locationId = @residentObj.blank? ? locationId : @residentObj.apartment.location_id
 	currentParent = nil
 	parentArr = parentArray(controller.getItemType, false, loadDD, locationId, currentParent)
@@ -34,7 +26,7 @@
 	<tr>
 
 		<th style="text-align:left;"><%= l(:field_location) %></th>
-		<td style="text-align:left;" style="padding-left:40px;"><%=h select_tag("location_id#{id}", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', (@residentObj.blank? ? nil : @residentObj.apartment.location_id), false), :onchange => "locationbasedApartment(this.id, 'apartment_id#{id}', #{User.current.id}, 'bed_id#{id}', 'lblBed#{id}', 'rate#{id}', #{loadDD} )", :disabled => disable) %></td>
+		<td style="text-align:left;" style="padding-left:40px;"><%=h select_tag("location_id#{id}", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', (@residentObj.blank? ? nil : @residentObj.apartment.location_id), false, true), :onchange => "locationbasedApartment(this.id, 'apartment_id#{id}', #{User.current.id}, 'bed_id#{id}', 'lblBed#{id}', 'rate#{id}', #{loadDD} )", :disabled => disable) %></td>
 		<%# if @resAction == "T" %>
 			<!-- <th align="left"><label><%#= l(:label_is_transfer) %></label></th>
 			<td style="padding-left:40px;"><%#= check_box_tag("is_transfer#{id}", 1, false) %></td> -->

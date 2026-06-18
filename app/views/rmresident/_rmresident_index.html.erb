@@ -17,9 +17,10 @@
 		<%= render partial: "wkbilling/index_filters", locals: { contact_id: contactId, account_id: accountId, filter_session: filterSession, isapply: false, isproject: false, isAll: true, blankForActDD: true, blankForContactDD: true, isFilter: true, pjtChanged: false, loadSIDD: false, blankOptionForPjt: false } %>
 		<table>
 			<tr>
-				<th style="text-align:left;"><%= l(:field_location) %></th>
 				<td style="text-align:left;">
-					<%=h select_tag("location_id", generic_options_for_select(WkLocation, nil, 'name', 'name', 'id', locationId, true)) %>
+					<%= render :partial => "wklocation/multi_lvl_loc_dropdown",
+						:locals => { :layout => "horizontal", :field_name => "location_id",
+									:selected_value => locationId, :form_id => "query_form" } %>
 				</td>
 				<th style="text-align:left;"><%= l(:field_status) %></th>
 				<td style="text-align:left;">

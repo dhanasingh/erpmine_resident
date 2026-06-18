@@ -46,8 +46,6 @@ class RmresidentController < WkcrmController
 		account_id = session[controller_name].try(:[], :account_id)
 		parentType = ""
 		parentId = ""
-		location = WkLocation.where(:is_default => 'true').first
-		entries = nil
 		entries = RmResident.left_join_contacts
 		if moveInOutId == "MI"
 			entries = entries.where("rm_residents.move_out_date IS NULL")
@@ -81,9 +79,11 @@ class RmresidentController < WkcrmController
 			entries = entries.where("rm_residents.resident_type = ?", parentType)
 		end
 
-		if (!locationId.blank? || !location.blank?) && locationId != "0"
-			location_id = !locationId.blank? ? locationId.to_i : location.id.to_i
-			entries = entries.where("wk_crm_contacts.location_id = ? OR wk_accounts.location_id = ? ", location_id, location_id)
+		# Permission filter (via the resident's contact/account), then a picked
+		# location narrows further by its subtree; blank means "All".
+		entries = WkLocation.filter_by_contact_account_location(entries, WkLocation.accessible_location_ids)
+		if locationId.present? && locationId != "0"
+			entries = WkLocation.filter_by_contact_account_location(entries, WkLocation.subtree_ids(locationId.to_i))
 		end
 
 		if @from.blank? && !@to.blank?

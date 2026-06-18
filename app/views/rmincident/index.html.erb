@@ -15,9 +15,10 @@
             <td style="text-align:left;">
               <%= select_tag 'rm_resident_id', options_for_select([["", ""]] + @resident_options, @selected_resident_id) %>
             </td>
-            <th style="text-align:left;"><%= l(:field_location) %></th>
             <td style="text-align:left;">
-              <%= select_tag 'location', options_for_select([["", ""]] + @location_options.map { |name| [name, name] }, @selected_location) %>
+              <%= render :partial => "wklocation/multi_lvl_loc_dropdown",
+                  :locals => { :layout => "horizontal", :field_name => "location_id",
+                              :selected_value => @selected_location_id, :form_id => "query_form" } %>
             </td>
             <th style="text-align:left;"><%= l(:field_incident_type) %></th>
             <td style="text-align:left;">

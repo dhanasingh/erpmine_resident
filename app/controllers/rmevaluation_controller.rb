@@ -32,7 +32,21 @@ class RmevaluationController < WksurveyController
 	def editItemLabel
 		l(:label_edit_evaluation)
 	end
-	
+
+	# Hide resident-targeted evaluations whose target resident is outside the
+	# user's permitted location subtree. Generic (survey_for_id IS NULL) surveys
+	# stay visible. nil accessible ids => ADM_ERP/unrestricted => no filtering.
+	def surveyList(params)
+		surveys = super
+		loc_ids = WkLocation.accessible_location_ids
+		return surveys unless loc_ids
+		in_scope = WkLocation.filter_by_contact_account_location(
+			RmResident.left_join_contacts, loc_ids).pluck(:id)
+		surveys.where(
+			"#{WkSurvey.table_name}.survey_for_id IS NULL OR #{WkSurvey.table_name}.survey_for_id IN (?)",
+			in_scope.presence || [-1])
+	end
+
   private
 	
   def check_view_perm
