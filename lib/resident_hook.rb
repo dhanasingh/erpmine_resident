@@ -255,6 +255,9 @@ class ResidentHook < Redmine::Hook::ViewListener
       surveyForSql = " (rm_residents.id = #{context[:surveyForID]} OR LOWER(first_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(last_name) LIKE LOWER('#{context[:surveyFor]}') OR LOWER(name) LIKE LOWER('#{context[:surveyFor]}'))" unless context[:surveyFor].blank?
 	  result = result.where(context[:method] == "search" ? surveyForSql : surveyForIDSql)
 	  .select("rm_residents.id, wk_accounts.name as account_name, first_name, last_name, resident_type")
+	  # Restrict the resident dropdown to the user's permitted location subtree,
+	  # matching the evaluation list (surveyList). nil ids => unrestricted => no-op.
+	  result = WkLocation.filter_by_contact_account_location(result, WkLocation.accessible_location_ids)
 
       result.each do  |r|
 				residentName = r.resident_type == "WkAccount" ? r.account_name : (r&.first_name || '' + " " + r&.last_name || '')
