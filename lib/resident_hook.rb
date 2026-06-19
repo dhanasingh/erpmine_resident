@@ -113,7 +113,24 @@ class ResidentHook < Redmine::Hook::ViewListener
 		return if periods.blank? || periods[0].blank?
 
 		p = periods[0]
-		resident_helper.getDuration(p["start"], p["end"], rate_per, 0, false)
+		totalHours = resident_helper.getDaysBetween(p["start"], p["end"]) * 24
+		resident_helper.getDuration(p["start"], p["end"], rate_per, totalHours, false)
+	end
+
+	# Care entries are billed strictly by the issue's care-level rate
+	# (looked up via points), never by the project's billing rate.
+	def get_entry_billing_rate(context={})
+		entry = context[:entry]
+		return if entry.blank? || entry.issue.blank?
+
+		resident_helper = Object.new.extend(RmresidentHelper)
+		care_tracker_id = resident_helper.getResidentPluginSetting('rm_care_tracker').to_i
+		return unless care_tracker_id > 0 && entry.issue.tracker_id == care_tracker_id
+
+		issue_rate_hash = resident_helper.getIssueRateHash(entry.issue)
+		return if issue_rate_hash.blank? || issue_rate_hash['rate'].blank? || issue_rate_hash['rate'] <= 0
+
+		issue_rate_hash
 	end
 
 	def append_recurring_unbilled_entries(context={})

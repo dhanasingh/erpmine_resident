@@ -97,7 +97,8 @@ include WksurveyHelper
 			rateHash  = getIssueRateHash(issue)
 			seg_start = [period[:start_date].to_date, care_svc.start_date.to_date].max
 			seg_end   = care_svc.end_date.present? ? [period[:end_date].to_date, care_svc.end_date.to_date].min : period[:end_date].to_date
-			quantity  = getDuration(seg_start, seg_end, rateHash['rate_per'], 0, false)
+			totalHours = getDaysBetween(seg_start, seg_end) * 24
+			quantity  = getDuration(seg_start, seg_end, rateHash['rate_per'], totalHours, false)
 
 			existing = TimeEntry.joins(:spent_for)
 				.where(
@@ -151,7 +152,8 @@ include WksurveyHelper
 				teCount = TimeEntry.joins(:spent_for).where(:spent_on => intervalStart, :issue_id => service.issue_id, wk_spent_fors: { spent_for_type: service.resident.resident_type, spent_for_id: service.resident.resident_id }).count
 				teEntry = nil
 				unless teCount > 0
-					quantity = getDuration(intervalStart, intervalEnd, rateHash['rate_per'], 0, false)
+					totalHours = getDaysBetween(intervalStart, intervalEnd) * 24
+					quantity = getDuration(intervalStart, intervalEnd, rateHash['rate_per'], totalHours, false)
 					teAttributes = { project_id: issue.project_id, issue_id: service.issue_id, hours: quantity, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: intervalStart, spent_for_attributes: { spent_for_id: service.resident.resident_id, spent_for_type: service.resident.resident_type, spent_on_time: intervalStart.to_datetime } }
 					teEntry = TimeEntry.new(teAttributes)
 					teEntry.user_id = User.current.id

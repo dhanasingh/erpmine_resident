@@ -14,7 +14,7 @@
 		<tbody>
 			<% @resident_entries.each do |entry| %>
 				<tr>
-					  <td class="lbl-txt-align"><%=h entry.resident ? entry.name : "" %></td>
+					  <td class="lbl-txt-align"><%= entry.resident ? link_to(entry.name, {controller: controller.controller_name, action: 'edit', rm_resident_id: entry.id}, title: l(:button_edit)) : "" %></td>
 					  <td class="lbl-txt-align"><%=h entry.resident&.location&.name %></td>
 					  <td class="lbl-txt-align"><%=h entry.apartment&.asset_property&.name %></td>
 					  <td class="lbl-txt-align"><%=h entry.bed&.asset_property&.name %></td>

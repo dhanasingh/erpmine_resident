@@ -17,7 +17,7 @@
 				<% incidents.each do |entry| %>
 					<tr>
 						<td class="lbl-txt-align"><%= h entry.incident_date&.strftime('%Y-%m-%d %H:%M') %></td>
-						<td class="lbl-txt-align"><%= h entry.rm_resident&.name %></td>
+						<td class="lbl-txt-align"><%= entry.rm_resident ? link_to(entry.rm_resident.name, {controller: 'rmresident', action: 'edit', rm_resident_id: entry.rm_resident_id}, title: l(:button_edit)) : "" %></td>
 						<td class="lbl-txt-align"><%= h incident_type_label(entry.incident_type_id) %></td>
 						<td class="lbl-txt-align"><%= h entry.location %></td>
 						<td class="lbl-txt-align"><%= h(incident_status_label(entry)) %></td>
