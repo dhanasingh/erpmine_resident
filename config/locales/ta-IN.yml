@@ -75,6 +75,7 @@ ta-IN:
    label_open: Open
    label_closed: Closed
    label_evaluation: மதிப்பீடு
+   label_evaluation_response: Evaluation Response
    label_new_evaluation: புதிய மதிப்பீட்டு அமைப்பு
    label_edit_evaluation: மதிப்பீட்டை திருத்தவும்
    label_select_resident: குடியிருப்பவரை தேர்ந்தெடுக்கவும்
@@ -108,3 +109,14 @@ ta-IN:
    label_effective_date: "Effective Date"
    label_care: Care
    label_resident_care: Resident Care
+   report_evaluation: Evaluation
+   label_incidents_by_type: Incidents by Type
+   label_total_incidents: Total Incidents
+   label_moveins_vs_moveouts: Move-Ins vs Move-Outs
+   label_apartment_occupancy: Apartment Occupancy
+   label_occupied: Occupied
+   label_created: Created
+   label_pending_eval: Pending Evaluation
+   label_avail_beds: Available Beds
+   label_bed_occupancy: Bed Occupancy
+   error_former_resident_eval: Could not perform evaluation for Former residents

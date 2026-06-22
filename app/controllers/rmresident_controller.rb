@@ -350,6 +350,10 @@ class RmresidentController < WkcrmController
 
 			errorMsg = residentMoveIn(params[:resTypeID], params[:resType], params[:move_in_date].to_date, nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
 			if errorMsg.blank?
+				if @rmResident.present? && @rmResident.id != resident_id.to_i
+					transferResidentServices(resident_id, @rmResident, params[:move_in_date].to_date)
+				end
+
 				projectId = getResidentPluginSetting('rm_project')
 				rentalIssue = getRentalIssue
 				entryDate = (params[:move_in_date].to_date).at_beginning_of_month.next_month

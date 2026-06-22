@@ -20,6 +20,7 @@ class RmevaluationController < WksurveyController
   menu_item	:apartment
 	accept_api_auth :index
   include WksurveyHelper
+  before_action :check_resident_status, only: [:survey]
 
 	def ItemLabel
 		l(:label_evaluation)
@@ -31,6 +32,10 @@ class RmevaluationController < WksurveyController
 
 	def editItemLabel
 		l(:label_edit_evaluation)
+	end
+
+	def surveyResponseLabel
+		l(:label_evaluation_response)
 	end
 
 	# Hide resident-targeted evaluations whose target resident is outside the
@@ -48,6 +53,17 @@ class RmevaluationController < WksurveyController
 	end
 
   private
+
+  def check_resident_status
+    if params[:surveyForType] == "RmResident" && params[:surveyForID].present?
+      res = RmResident.find_by(id: params[:surveyForID].to_i)
+      if res && res.move_out_date.present?
+        flash[:error] = l(:error_former_resident_eval)
+        redirect_to controller: 'rmresident', action: 'edit', rm_resident_id: res.id, tab: 'rmevaluation'
+        return false
+      end
+    end
+  end
 	
   def check_view_perm
     validateERPPermission("B_EVL_PRVLG")

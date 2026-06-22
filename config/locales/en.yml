@@ -75,6 +75,7 @@ en:
    label_open: Open
    label_closed: Closed
    label_evaluation: Evaluation
+   label_evaluation_response: Evaluation Response
    label_new_evaluation: Evaluation Setup
    label_edit_evaluation: Edit Evaluation
    label_select_resident: Select Resident
@@ -118,3 +119,4 @@ en:
    label_pending_eval: Pending Evaluation
    label_avail_beds: Available Beds
    label_bed_occupancy: Bed Occupancy
+   error_former_resident_eval: Could not perform evaluation for Former residents
