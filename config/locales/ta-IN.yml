@@ -2,6 +2,8 @@
 ta-IN:
    label_apartment: "அபார்ட்மென்ட்"
    label_resident: குடியிருப்பவர்
+   label_evaluation_question: கேள்வி
+   label_evaluation_answer: பதில்
    label_perform_service: சேவையை செய்யவும்
    label_new_apartment: அபார்ட்மென்ட் திருத்தம்
    label_edit_apartment: அபார்ட்மென்ட் திருத்தம்

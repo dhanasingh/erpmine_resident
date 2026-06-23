@@ -446,6 +446,11 @@ class ResidentHook < Redmine::Hook::ViewListener
 		Dir["#{reportLoc}/_report*"].each do |path|
 			fileName = File.basename(path, '.html.erb')
 			fileName.slice!(0)
+			# Skip additional-filter partials (e.g. _report_evaluation_filter). They are
+			# injected into the report filter form via render_on(:report_additional_filters)
+			# and are not selectable report types - listing them produced a bogus
+			# "report_evaluation_filter" entry that has no translation and no report module.
+			next if fileName.end_with?('_filter')
 			label = fileName.remove('_web')
 			reports << [l(:"#{label}"), fileName] if Object.new.extend(RmreportHelper).hasViewPermission(label) && (!apiRequest || !(fileName.end_with?('_web')))
 		end

@@ -25,9 +25,16 @@ module ReportEvaluation
             resident_name = ""
 
             residentObj = RmResident.left_join_contacts
+                .joins("LEFT OUTER JOIN #{WkInventoryItem.table_name} apt_inv ON apt_inv.id = #{RmResident.table_name}.apartment_id")
                 .where("rm_residents.id = ?", response.survey_for_id)
-                .select("wk_accounts.name as account_name, first_name, last_name, resident_type")
+                .select("wk_accounts.name as account_name, first_name, last_name, resident_type, apt_inv.location_id as apartment_location_id")
                 .first
+
+            # Location filter: when a specific location is selected, only include
+            # responses whose resident's apartment belongs to that location.
+            if location_id.present? && location_id.to_s != "0"
+                next if residentObj.nil? || residentObj.apartment_location_id.to_i != location_id.to_i
+            end
 
             if residentObj.present?
 
@@ -72,7 +79,29 @@ module ReportEvaluation
     end
 
 	def getExportData(user_id, group_id, projId, from, to, location_id=nil, evaluation_id=nil)
-		calcReportData(user_id, group_id, projId, from, to, location_id, evaluation_id)
+		result = calcReportData(user_id, group_id, projId, from, to, location_id, evaluation_id)
+
+		# Flatten the resident -> questions structure into the {headers:, data:}
+		# shape expected by pdf_export and the generic csv_export. Empty/error
+		# results yield headers with no rows (clean "no data" export, no crash).
+		headers = {
+			resident: l(:label_resident),
+			question: l(:label_evaluation_question),
+			answer:   l(:label_evaluation_answer)
+		}
+
+		rows = []
+		(result[:residents] || []).each do |res|
+			(res[:questions] || []).each do |q|
+				rows << { resident: res[:resident_name], question: q[:question], answer: q[:answer] }
+			end
+		end
+
+		{
+			title:   result[:title] || result[:error] || l(:report_evaluation),
+			headers: headers,
+			data:    rows
+		}
 	end
 
 	def pdf_export(data:, headers:, title: nil, **args)

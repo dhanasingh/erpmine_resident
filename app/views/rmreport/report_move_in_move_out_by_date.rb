@@ -249,8 +249,8 @@ module ReportMoveInMoveOutByDate
     WHERE rm_residents.move_in_date IS NOT NULL
       AND rm_residents.move_in_date BETWEEN '#{from_date}' AND '#{to_date}'
       " + get_comp_cond('rm_residents') + "
-      #{projId.present? && projId != '0' ? " AND p.id = #{projId}" : ""}
-      #{locId.present? && locId != '0' ? " AND loc.id = #{locId}" : ""}
+      #{projId.present? && projId != '0' ? " AND p.id = #{projId.to_i}" : ""}
+      #{locId.present? && locId != '0' ? " AND loc.id = #{locId.to_i}" : ""}
     ORDER BY rm_residents.move_in_date
   ")
 
@@ -273,8 +273,8 @@ module ReportMoveInMoveOutByDate
     WHERE rm_residents.move_out_date IS NOT NULL
       AND rm_residents.move_out_date BETWEEN '#{from_date}' AND '#{to_date}'
       " + get_comp_cond('rm_residents') + "
-      #{projId.present? && projId != '0' ? " AND p.id = #{projId}" : ""}
-      #{locId.present? && locId != '0' ? " AND loc.id = #{locId}" : ""}
+      #{projId.present? && projId != '0' ? " AND p.id = #{projId.to_i}" : ""}
+      #{locId.present? && locId != '0' ? " AND loc.id = #{locId.to_i}" : ""}
     ORDER BY rm_residents.move_out_date
   ")
 

@@ -76,6 +76,8 @@ en:
    label_closed: Closed
    label_evaluation: Evaluation
    label_evaluation_response: Evaluation Response
+   label_evaluation_question: Question
+   label_evaluation_answer: Answer
    label_new_evaluation: Evaluation Setup
    label_edit_evaluation: Edit Evaluation
    label_select_resident: Select Resident
