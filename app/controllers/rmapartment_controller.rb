@@ -48,6 +48,19 @@ class RmapartmentController < WkproductitemController
 		false
 	end
 
+	# Make the apartment name (parent_name column) a link to its edit page,
+	# matching the clickable names on other ERPmine list pages.
+	def linkParentNameToEdit
+		true
+	end
+
+	# Beds (asset_name column) are edited via the row's edit icon, so show the
+	# bed name as plain text rather than a link, in both the apartment list and
+	# the bed list inside the apartment edit page.
+	def linkAssetNameToEdit
+		false
+	end
+
 	def newItemLabel
 		l(:label_new_apartment)
 	end

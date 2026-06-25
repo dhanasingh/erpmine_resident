@@ -11,10 +11,16 @@ $(document).ready(function () {
 	var url_string = window.location.href;
 	var url = new URL(url_string);
 	var res_action = url.searchParams.get("res_action");
-	if (res_action && res_action != 'MO') {
+	// Move-in (MI) renders apartment + bed + rate server-side, so no page-load
+	// AJAX is needed. Firing it here raced with a quick location change and could
+	// leave a stale apartment/rate. Transfer (T) still loads beds for its
+	// pre-selected destination apartment.
+	if (res_action == 'T') {
 		apartmentBasedBeds('apartment_idM', 'bed_idM', 1, 'rateM', 'lblBedM', true);
 	}
-	$('#res_contact').hide();
+	if ($('#resident_type').length) {
+		residentType();
+	}
 });
 
 function changeProp(tab, indexUrl) {
@@ -113,13 +119,18 @@ function dateRangeValidation(fromId, toId) {
 
 function residentType() {
 	var residentType = $('#resident_type').val();
+	// Both the account and contact sections live in the same form and share
+	// field names (location_id, description, assigned_user_id). Hiding alone
+	// still submits the hidden section's inputs, so the inactive section would
+	// override the active one (e.g. the user-picked location). Disable the
+	// hidden section's inputs so only the active section is submitted.
 	if (residentType == 'WkAccount') {
-		$('#res_contact').hide();
-		$('#res_account').show();
+		$('#res_contact').hide().find(':input').prop('disabled', true);
+		$('#res_account').show().find(':input').prop('disabled', false);
 	}
 	else {
-		$('#res_contact').show();
-		$('#res_account').hide();
+		$('#res_account').hide().find(':input').prop('disabled', true);
+		$('#res_contact').show().find(':input').prop('disabled', false);
 	}
 }
 

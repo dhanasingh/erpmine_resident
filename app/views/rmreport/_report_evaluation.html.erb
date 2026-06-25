@@ -69,6 +69,20 @@
 <% else %>
 
 	<% responses = report.getEvaluationResponses(survey.id) %>
+	<%
+		# Scope responses to residents within the user's permitted location, and
+		# (when chosen) the selected location's subtree. Filters on the resident's
+		# contact/account location — the same dimension as the resident list and the
+		# permission model — so e.g. "South Zone" returns everyone beneath it only.
+		location_id = session[controller.controller_name][:location_id]
+		allowed = RmResident.left_join_contacts
+		allowed = WkLocation.filter_by_contact_account_location(allowed, WkLocation.accessible_location_ids)
+		if location_id.present? && location_id.to_s != "0"
+			allowed = WkLocation.filter_by_contact_account_location(allowed, WkLocation.subtree_ids(location_id))
+		end
+		allowed_resident_ids = allowed.pluck("rm_residents.id").to_set
+		responses = responses.select { |r| allowed_resident_ids.include?(r.survey_for_id) }
+	%>
 	<% if responses.blank? %>
 		<p class="nodata"><%= l(:label_no_data) %></p>
 	<% end %>

@@ -41,6 +41,6 @@ module RmevaluationHelper
 			evaluations << [s.name, s.id]
 		end
 
-		evaluations.unshift(["", 0])
+		evaluations
 	end
 end
