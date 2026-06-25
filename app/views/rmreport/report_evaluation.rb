@@ -306,7 +306,9 @@ module ReportEvaluation
 				if grp[:name].present?
 					pdf.SetFontStyle('B', 11)
 					pdf.set_fill_color(230, 230, 230)
-					pdf.RDMCell(content_width, 7, " #{grp[:name]}", 0, 0, 'L', 1)
+					# ln=1 so the cursor moves BELOW the heading cell; ln=0 left it on the
+					# same line, so the first question overlapped the group heading.
+					pdf.RDMCell(content_width, 7, " #{grp[:name]}", 0, 1, 'L', 1)
 					pdf.ln(2)
 					pdf.set_fill_color(255, 255, 255)
 				end
