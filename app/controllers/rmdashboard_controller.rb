@@ -102,14 +102,20 @@ class RmdashboardController < WkbaseController
       status: ['N', 'O']
     )
 
+    # Restrict the pending list to residents within the user's accessible locations
+    # (nil => admin/unrestricted), so a normal user never sees pending evaluations for
+    # residents outside their permitted scope.
+    allowed_ids = RmResident.ids_in_location_scope
+
     surveys.each do |survey|
 
       assigned_ids =
         if survey.survey_for_id.present?
           [survey.survey_for_id]
         else
-          RmResident.pluck(:id)
+          allowed_ids.nil? ? RmResident.pluck(:id) : allowed_ids
         end
+      assigned_ids &= allowed_ids unless allowed_ids.nil?
 
       responded_ids =
         WkSurveyResponse.where(

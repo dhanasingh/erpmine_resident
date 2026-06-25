@@ -61,6 +61,8 @@ module Rmdashboard
       move_ins = RmResident
         .where("move_in_date >= ? AND move_in_date <= ?", month_start, month_end)
         .includes(:apartment, :bed)
+      # Apartment-location scope (honours picked zone + accessible locations).
+      move_ins = RmResident.in_apartment_location_scope(move_ins, param[:location_id])
 
       header = {
         name: l(:label_resident),
@@ -94,17 +96,10 @@ module Rmdashboard
         month_end
       )
 
-      if location_id.present?
-
-        apartment_ids = WkInventoryItem.where(
-          location_id: location_id
-        ).pluck(:id)
-
-        entries = entries.where(
-          apartment_id: apartment_ids
-        )
-                  
-      end
+      # Apartment-location scope: picked-zone subtree ∩ the user's accessible
+      # locations. When no location is picked this restricts the "All Locations"
+      # series to the user's accessible scope (admins => unrestricted).
+      entries = RmResident.in_apartment_location_scope(entries, location_id)
 
       entries.count
     end

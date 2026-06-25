@@ -12,20 +12,13 @@ module Rmdashboard
       }
       data[:fields] = (Array.new(12){|indx| month_name(((to.month - 1 - indx) % 12) + 1).first(3)}).reverse
 
-      # Move-Ins grouped by month
+      # Move-Ins grouped by month. Scope to the apartment-location scope (picked-zone
+      # subtree ∩ the user's accessible locations) so a parent zone matches child
+      # locations and a normal user never sees other locations' residents.
       moveIns = RmResident.where(
         move_in_date: from.beginning_of_day..to.end_of_day
       )
-
-      if location_id.present?
-        apartment_ids = WkInventoryItem.where(
-          location_id: location_id
-        ).pluck(:id)
-
-        moveIns = moveIns.where(
-          apartment_id: apartment_ids
-        )
-      end
+      moveIns = RmResident.in_apartment_location_scope(moveIns, location_id)
 
       moveIns = moveIns
         .group(getDatePart("rm_residents.move_in_date", "month"))
@@ -43,19 +36,10 @@ module Rmdashboard
 
       data[:data1] = moveInData
 
-      # Move-Outs grouped by month
+      # Move-Outs grouped by month (same apartment-location scope as move-ins).
       moveOuts = RmResident.where.not(move_out_date: nil)
         .where(move_out_date: from.beginning_of_day..to.end_of_day)
-
-      if location_id.present?
-        apartment_ids = WkInventoryItem.where(
-          location_id: location_id
-        ).pluck(:id)
-
-        moveOuts = moveOuts.where(
-          apartment_id: apartment_ids
-        )
-      end
+      moveOuts = RmResident.in_apartment_location_scope(moveOuts, location_id)
 
       moveOuts = moveOuts
         .group(getDatePart("rm_residents.move_out_date", "month"))
@@ -81,6 +65,9 @@ module Rmdashboard
       from = to - 12.months + 1.days
       entries = RmResident.where(move_in_date: from.beginning_of_day..to.end_of_day)
         .order("move_in_date DESC")
+      # Same apartment-location scope as the chart (honours the picked zone and the
+      # user's accessible locations), so the detail list never leaks other locations.
+      entries = RmResident.in_apartment_location_scope(entries, param[:location_id])
       header = {name: l(:label_resident), move_in: l(:field_move_in_date), move_out: l(:field_move_out_date), status: l(:field_status)}
       data = entries.map{|e| {
         name: e&.name,

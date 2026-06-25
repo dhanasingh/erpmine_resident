@@ -38,6 +38,12 @@ module Rmdashboard
       location_name = WkLocation.find_by(id: param[:location_id])&.name
       entries = entries.where(location: location_name) if location_name.present?
 
+      # Security scope: only incidents whose resident is within the current user's
+      # accessible locations (contact/account-location dimension, same as the resident
+      # list / evaluation report). nil => admin/unrestricted, so no extra filter.
+      resident_ids = RmResident.ids_in_location_scope
+      entries = entries.where(rm_resident_id: (resident_ids.presence || [-1])) unless resident_ids.nil?
+
       entries
     end
 

@@ -27,8 +27,23 @@ module ReportEvaluation
             .order("wk_survey_questions.lft, wk_survey_questions.id")
             .group_by { |q| q.wk_survey_que_group }
 
+        # Location scope: picked-zone subtree ∩ the user's accessible locations
+        # (nil => admin/unrestricted). Computed once and matched against each
+        # resident's contact/account location below, so the export is scoped exactly
+        # like the on-screen report and a normal user never sees residents outside
+        # their permitted locations.
+        allowed_loc_ids = WkLocation.report_location_ids(location_id)
+
+        # Date range: keep only responses submitted within [from, to] (matched on
+        # created_at, the "Response Date" the report shows). Applied only when both
+        # bounds are present, so an open range returns everything.
+        responses = survey.wk_survey_responses
+        if from.present? && to.present?
+            responses = responses.where(created_at: from.to_date.beginning_of_day..to.to_date.end_of_day)
+        end
+
         # collect all responses
-        survey.wk_survey_responses.each do |response|
+        responses.each do |response|
 
             resident_name = ""
 
@@ -37,13 +52,10 @@ module ReportEvaluation
                 .select("wk_accounts.name as account_name, first_name, last_name, resident_type, COALESCE(wk_crm_contacts.location_id, wk_accounts.location_id) as resident_location_id")
                 .first
 
-            # Location filter: when a location is selected, include responses whose
-            # resident's (contact/account) location is that location OR any descendant
-            # (subtree match), so picking a parent zone returns everyone beneath it.
-            # Uses the same location dimension as the resident list and permission scope.
-            if location_id.present? && location_id.to_s != "0"
-                loc_ids = WkLocation.subtree_ids(location_id)
-                next if residentObj.nil? || !loc_ids.include?(residentObj.resident_location_id.to_i)
+            # Skip responses whose resident falls outside the allowed location scope
+            # (picked-zone subtree ∩ accessible locations). nil => no restriction.
+            if allowed_loc_ids
+                next if residentObj.nil? || !allowed_loc_ids.include?(residentObj.resident_location_id.to_i)
             end
 
             if residentObj.present?
@@ -142,10 +154,15 @@ module ReportEvaluation
         groups
     end
 
-    def getEvaluationResponses(evaluation_id)
-        WkSurveyResponse
+    def getEvaluationResponses(evaluation_id, from = nil, to = nil)
+        scope = WkSurveyResponse
             .includes(:wk_survey_answers, :user)
             .where(survey_id: evaluation_id)
+        # Date range filter on response submission date (the displayed Response Date).
+        if from.present? && to.present?
+            scope = scope.where(created_at: from.to_date.beginning_of_day..to.to_date.end_of_day)
+        end
+        scope
     end
 
 	def getExportData(user_id, group_id, projId, from, to, location_id=nil, evaluation_id=nil)

@@ -233,6 +233,12 @@ module ReportMoveInMoveOutByDate
   from_date = from.to_date.beginning_of_day
   to_date   = to.to_date.end_of_day
 
+  # Location filter: picked-zone subtree ∩ accessible locations (nil => admin/
+  # unrestricted, no condition), so parent zones match child-location apartments
+  # and a normal user never sees move-ins/outs outside their permitted scope.
+  loc_ids = WkLocation.report_location_ids(locId)
+  locCond = loc_ids.nil? ? "" : " AND loc.id IN (#{(loc_ids.presence || [-1]).join(',')})"
+
   residents_in = RmResident.find_by_sql("
     SELECT rm_residents.*, 
            p.name AS project_name, 
@@ -249,8 +255,8 @@ module ReportMoveInMoveOutByDate
     WHERE rm_residents.move_in_date IS NOT NULL
       AND rm_residents.move_in_date BETWEEN '#{from_date}' AND '#{to_date}'
       " + get_comp_cond('rm_residents') + "
-      #{projId.present? && projId != '0' ? " AND p.id = #{projId.to_i}" : ""}
-      #{locId.present? && locId != '0' ? " AND loc.id = #{locId.to_i}" : ""}
+      #{projId.to_i > 0 ? " AND p.id = #{projId.to_i}" : ""}
+      #{locCond}
     ORDER BY rm_residents.move_in_date
   ")
 
@@ -273,8 +279,8 @@ module ReportMoveInMoveOutByDate
     WHERE rm_residents.move_out_date IS NOT NULL
       AND rm_residents.move_out_date BETWEEN '#{from_date}' AND '#{to_date}'
       " + get_comp_cond('rm_residents') + "
-      #{projId.present? && projId != '0' ? " AND p.id = #{projId.to_i}" : ""}
-      #{locId.present? && locId != '0' ? " AND loc.id = #{locId.to_i}" : ""}
+      #{projId.to_i > 0 ? " AND p.id = #{projId.to_i}" : ""}
+      #{locCond}
     ORDER BY rm_residents.move_out_date
   ")
 

@@ -42,6 +42,32 @@ class RmResident < ApplicationRecord
     joins("LEFT OUTER JOIN #{WkInventoryItem.table_name} ON #{WkInventoryItem.table_name}.id = #{RmResident.table_name}.resident_id" + get_comp_con(WkInventoryItem.table_name))
   }
 
+  # Scope `relation` to residents whose physical apartment — directly via apartment_id
+  # or via their bed's parent apartment — is in the allowed apartment-location scope
+  # (picked-zone subtree ∩ the current user's accessible locations). Used by the
+  # occupancy/move-in dashboard graphs. nil scope => unrestricted => relation unchanged.
+  def self.in_apartment_location_scope(relation = all, location_id = nil)
+    loc_ids = WkLocation.report_location_ids(location_id)
+    return relation if loc_ids.nil?
+    apt_ids = WkInventoryItem.where(location_id: (loc_ids.presence || [-1])).pluck(:id).presence || [-1]
+    relation.where(
+      "#{table_name}.apartment_id IN (:apt) OR #{table_name}.bed_id IN " \
+      "(SELECT b.id FROM #{WkInventoryItem.table_name} b WHERE b.parent_id IN (:apt))",
+      apt: apt_ids
+    )
+  end
+
+  # Resident ids within the allowed contact/account-location scope (picked-zone
+  # subtree ∩ the current user's accessible locations) — the same dimension as the
+  # resident list and evaluation report. Returns nil when unrestricted (admin and no
+  # location picked) so callers can skip filtering entirely.
+  def self.ids_in_location_scope(location_id = nil)
+    loc_ids = WkLocation.report_location_ids(location_id)
+    return nil if loc_ids.nil?
+    WkLocation.filter_by_contact_account_location(left_join_contacts, loc_ids)
+              .pluck("#{table_name}.id")
+  end
+
   def type
     if self.resident_type == "WkAccount"
       self.resident.account_type

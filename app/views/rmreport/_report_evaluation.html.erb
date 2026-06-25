@@ -68,7 +68,7 @@
 
 <% else %>
 
-	<% responses = report.getEvaluationResponses(survey.id) %>
+	<% responses = report.getEvaluationResponses(survey.id, session[controller.controller_name].try(:[], :from), session[controller.controller_name].try(:[], :to)) %>
 	<%
 		# Scope responses to residents within the user's permitted location, and
 		# (when chosen) the selected location's subtree. Filters on the resident's
