@@ -175,11 +175,16 @@ $(document).on("click", "#evaluation-card-click", function () {
 
             $("#evaluation-table tbody").html(tbody);
 
-            $("#evaluation-popup").dialog({
-                modal: true,
-                width: 900,
-                title: "Pending Evaluations"
-            });
+            $("#evaluation-popup")
+                .css({ "max-height": ($(window).height() - 180) + "px", "overflow-y": "auto" })
+                .dialog({
+                    modal: true,
+                    width: 900,
+                    height: "auto",
+                    maxHeight: $(window).height() - 100,
+                    position: { my: "center", at: "center", of: window },
+                    title: "Pending Evaluations"
+                });
 
         }
 
