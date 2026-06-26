@@ -53,34 +53,55 @@ module Rmdashboard
     end
 
     def get_detail_report(param={})
-      to = param[:to].end_of_month
-      from = (to - 11.months).beginning_of_month
-      month_start = from.beginning_of_day
-      month_end = to.end_of_day
-
-      move_ins = RmResident
-        .where("move_in_date >= ? AND move_in_date <= ?", month_start, month_end)
-        .includes(:apartment, :bed)
-      # Apartment-location scope (honours picked zone + accessible locations).
-      move_ins = RmResident.in_apartment_location_scope(move_ins, param[:location_id])
+      to = (param[:to] || Date.today).end_of_month
+      from = param[:from] ? param[:from].beginning_of_month : (to - 11.months).beginning_of_month
+      location_id = param[:location_id]
 
       header = {
-        name: l(:label_resident),
-        apartment_name: l(:label_apartment),
-        bedname: l(:label_bed),
-        move_in: l(:field_move_in_date)
+        month: l(:label_month, default: "Month"),
+        occupied: l(:label_occupied, default: "Occupied") + " " + l(:label_beds, default: "beds"),
+        total: l(:label_total, default: "Total") + " " + l(:label_beds, default: "beds")
       }
 
-      data = move_ins.map do |r|
-        {
-          name: r.name,
-          apartment_name: r.apartment&.assetName || '',
-          bedname: r.bed&.assetName || '',
-          move_in: r.move_in_date&.to_date
+      data = []
+
+      # Build list of months
+      current_month = from
+      while current_month <= to
+        month_end = current_month.end_of_month.end_of_day
+
+        # Count occupied beds scoped to location (apartment-location scope: picked-zone ∩ accessible locations)
+        occupied_query = RmResident
+          .where("rm_residents.bed_id IS NOT NULL")
+          .where("rm_residents.move_in_date <= ? AND (rm_residents.move_out_date IS NULL OR rm_residents.move_out_date > ?)", month_end, month_end)
+        occupied_query = RmResident.in_apartment_location_scope(occupied_query, location_id)
+        occupied_count = occupied_query.count('DISTINCT rm_residents.bed_id')
+
+        # Count total beds scoped to location (product_type 'RA' with parent_id)
+        total_query = WkInventoryItem
+          .joins("INNER JOIN wk_inventory_items apartment ON apartment.id = wk_inventory_items.parent_id")
+          .where(product_type: 'RA')
+          .where("wk_inventory_items.parent_id IS NOT NULL")
+          .where("wk_inventory_items.created_at <= ?", month_end)
+
+        # Apply location scoping if location_id is provided
+        if location_id.present?
+          loc_ids = WkLocation.report_location_ids(location_id)
+          total_query = total_query.where("apartment.location_id IN (?)", (loc_ids.presence || [-1])) unless loc_ids.nil?
+        end
+
+        total_count = total_query.count('DISTINCT wk_inventory_items.id')
+
+        data << {
+          month: current_month.strftime("%b %Y"),
+          occupied: occupied_count,
+          total: total_count
         }
+
+        current_month = current_month.next_month
       end
 
-      return {header: header, data: data}
+      return { header: header, data: data }
     end
 
     private
