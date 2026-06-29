@@ -244,13 +244,13 @@ module ReportMoveInMoveOutByDate
            p.name AS project_name, 
            loc.name AS location_name
     FROM rm_residents
-    LEFT JOIN wk_asset_properties ap 
-      ON ap.id = rm_residents.apartment_id " + get_comp_cond('ap') + "
-    LEFT JOIN wk_inventory_items ii 
+    LEFT JOIN wk_asset_properties ap
+      ON ap.inventory_item_id = rm_residents.apartment_id " + get_comp_cond('ap') + "
+    LEFT JOIN wk_inventory_items ii
       ON ii.id = ap.inventory_item_id " + get_comp_cond('ii') + "
-    LEFT JOIN wk_locations loc 
+    LEFT JOIN wk_locations loc
       ON loc.id = ii.location_id " + get_comp_cond('loc') + "
-    LEFT JOIN projects p 
+    LEFT JOIN projects p
       ON p.id = ii.project_id " + get_comp_cond('p') + "
     WHERE rm_residents.move_in_date IS NOT NULL
       AND rm_residents.move_in_date BETWEEN '#{from_date}' AND '#{to_date}'
@@ -266,15 +266,15 @@ module ReportMoveInMoveOutByDate
            loc.name AS location_name,
            reason_enum.name AS move_out_reason_name
     FROM rm_residents
-    LEFT JOIN wk_asset_properties ap 
-      ON ap.id = rm_residents.apartment_id " + get_comp_cond('ap') + "
-    LEFT JOIN wk_inventory_items ii 
+    LEFT JOIN wk_asset_properties ap
+      ON ap.inventory_item_id = rm_residents.apartment_id " + get_comp_cond('ap') + "
+    LEFT JOIN wk_inventory_items ii
       ON ii.id = ap.inventory_item_id " + get_comp_cond('ii') + "
-    LEFT JOIN wk_locations loc 
+    LEFT JOIN wk_locations loc
       ON loc.id = ii.location_id " + get_comp_cond('loc') + "
-    LEFT JOIN projects p 
+    LEFT JOIN projects p
       ON p.id = ii.project_id " + get_comp_cond('p') + "
-    LEFT JOIN wk_crm_enumerations reason_enum 
+    LEFT JOIN wk_crm_enumerations reason_enum
       ON reason_enum.id = rm_residents.move_out_reason_id " + get_comp_cond('reason_enum') + "
     WHERE rm_residents.move_out_date IS NOT NULL
       AND rm_residents.move_out_date BETWEEN '#{from_date}' AND '#{to_date}'
@@ -342,7 +342,9 @@ end
 
   def property_name(property_id)
     return '' unless property_id.present?
-    prop = WkAssetProperty.find_by(id: property_id)
+    # apartment_id / bed_id reference wk_inventory_items; the display name lives on
+    # the linked asset property (asset_property.inventory_item_id), not its own id.
+    prop = WkAssetProperty.find_by(inventory_item_id: property_id)
     prop&.name&.strip || "Property #{property_id}"
   end
 end
