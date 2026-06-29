@@ -71,26 +71,42 @@ module Rmdashboard
         month_end = current_month.end_of_month.end_of_day
 
         # Count occupied beds scoped to location (apartment-location scope: picked-zone ∩ accessible locations)
-        occupied_query = RmResident
+        bed_occupied_query = RmResident
           .where("rm_residents.bed_id IS NOT NULL")
           .where("rm_residents.move_in_date <= ? AND (rm_residents.move_out_date IS NULL OR rm_residents.move_out_date > ?)", month_end, month_end)
-        occupied_query = RmResident.in_apartment_location_scope(occupied_query, location_id)
-        occupied_count = occupied_query.count('DISTINCT rm_residents.bed_id')
+        bed_occupied_query = RmResident.in_apartment_location_scope(bed_occupied_query, location_id)
+        bed_occupied_count = bed_occupied_query.count('DISTINCT rm_residents.bed_id')
+
+        # Residents moved into an apartment directly (no bed assigned) also occupy capacity
+        apt_occupied_query = RmResident
+          .where("rm_residents.bed_id IS NULL AND rm_residents.apartment_id IS NOT NULL")
+          .where("rm_residents.move_in_date <= ? AND (rm_residents.move_out_date IS NULL OR rm_residents.move_out_date > ?)", month_end, month_end)
+        apt_occupied_query = RmResident.in_apartment_location_scope(apt_occupied_query, location_id)
+        apt_occupied_count = apt_occupied_query.count('DISTINCT rm_residents.apartment_id')
+
+        occupied_count = bed_occupied_count + apt_occupied_count
+
+        loc_ids = location_id.present? ? WkLocation.report_location_ids(location_id) : nil
 
         # Count total beds scoped to location (product_type 'RA' with parent_id)
-        total_query = WkInventoryItem
+        bed_total_query = WkInventoryItem
           .joins("INNER JOIN wk_inventory_items apartment ON apartment.id = wk_inventory_items.parent_id")
           .where(product_type: 'RA')
           .where("wk_inventory_items.parent_id IS NOT NULL")
           .where("wk_inventory_items.created_at <= ?", month_end)
+        bed_total_query = bed_total_query.where("apartment.location_id IN (?)", (loc_ids.presence || [-1])) unless loc_ids.nil?
+        bed_total_count = bed_total_query.count('DISTINCT wk_inventory_items.id')
 
-        # Apply location scoping if location_id is provided
-        if location_id.present?
-          loc_ids = WkLocation.report_location_ids(location_id)
-          total_query = total_query.where("apartment.location_id IN (?)", (loc_ids.presence || [-1])) unless loc_ids.nil?
-        end
+        # Apartments without any child bed also count as occupiable capacity
+        apt_total_query = WkInventoryItem
+          .where(product_type: 'RA')
+          .where("wk_inventory_items.parent_id IS NULL")
+          .where("wk_inventory_items.created_at <= ?", month_end)
+          .where("NOT EXISTS (SELECT 1 FROM wk_inventory_items child WHERE child.parent_id = wk_inventory_items.id)")
+        apt_total_query = apt_total_query.where("wk_inventory_items.location_id IN (?)", (loc_ids.presence || [-1])) unless loc_ids.nil?
+        apt_total_count = apt_total_query.count('DISTINCT wk_inventory_items.id')
 
-        total_count = total_query.count('DISTINCT wk_inventory_items.id')
+        total_count = bed_total_count + apt_total_count
 
         data << {
           month: current_month.strftime("%b %Y"),

@@ -426,6 +426,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 			label["header"] = l(:label_evaluation)
 			label["newItemLabel"] = l(:label_new_evaluation)
 			label["editItemLabel"] = l(:label_edit_evaluation)
+			label["response"] = l(:label_evaluation_response)
 		end
 		label
 	end
