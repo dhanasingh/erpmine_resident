@@ -18,7 +18,7 @@
 class RmapartmentController < WkproductitemController
 
   menu_item	:apartment
-  
+
   def index
 	session[controller_name] ||= {}
 	session[controller_name][:project_id] = resident_project_id
@@ -114,8 +114,9 @@ class RmapartmentController < WkproductitemController
 	end
 
 	def set_filter_session
-		filters = [:location_id, :availability, :project_id]
+		filters = [:location_id, :availability]
 		super(filters)
+		session[controller_name][:project_id] = resident_project_id
 	end
 
 	def getCsvData(entries)
