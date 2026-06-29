@@ -95,11 +95,16 @@ class RmdashboardController < WkbaseController
 
   def evaluation_pending_list
 
+    setDateRange
+
     pending_list = []
 
+    # Scope to the dashboard's selected date range (same session-backed range the
+    # graphs use) by the survey's creation date.
     surveys = WkSurvey.where(
       survey_for_type: 'RmResident',
-      status: ['N', 'O']
+      status: ['N', 'O'],
+      created_at: @from.beginning_of_day..@to.end_of_day
     )
 
     # Restrict the pending list to residents within the user's accessible locations
