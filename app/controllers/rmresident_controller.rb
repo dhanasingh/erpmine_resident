@@ -334,6 +334,9 @@ class RmresidentController < WkcrmController
 	def residentTransfer
 		errorMsg = ""
 		errorMsg = moveOutValidation
+		# Validate the target apartment before the move-out below runs, so a rejected
+		# transfer never leaves the resident moved-out but not moved-in.
+		errorMsg = moveInLocationError(params[:resTypeID], params[:resType], params[:apartment_idM]) if errorMsg.blank?
 		if errorMsg.blank?
 			resident_id = params[:resident_id]
 			resObj = getResidentobj(resident_id)

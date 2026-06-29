@@ -260,11 +260,32 @@ include WksurveyHelper
 		periodArr
 	end
 
+	# Validates that `apartmentId` may host the given resident before a move-in /
+	# transfer. Returns an error message (which aborts the move-in) or "" when allowed:
+	#   * the apartment's location must be within the current user's permitted scope
+	#     (security - a restricted user cannot place residents outside their area), and
+	#   * it must fall within the resident's own (contact/account) location - the
+	#     apartment's location must equal that location OR be nested under it
+	#     (hierarchy allowed), so a resident is never placed outside their location
+	#     (data integrity, applies to everyone). Skipped when the resident has no
+	#     location of their own.
+	def moveInLocationError(residentId, residentType, apartmentId)
+		apartmentLoc = WkInventoryItem.find_by(id: apartmentId)&.location_id
+		return l(:error_movein_location_not_permitted) unless WkLocation.permitted?(apartmentLoc)
+		residentClass = (residentType == 'WkAccount') ? WkAccount : WkCrmContact
+		residentLoc = residentClass.unscoped.find_by(id: residentId)&.location_id
+		if residentLoc.present? && apartmentLoc.present? && !WkLocation.subtree_ids(residentLoc).include?(apartmentLoc.to_i)
+			return l(:error_movein_location_mismatch)
+		end
+		""
+	end
+
 	def residentMoveIn(resId, resType, moveInDate, moveOutDate, invItemId, apartmentId, bedId, rate, moveInHr, moveInMm)
 		errorMsg = ""
 		projectId = getResidentPluginSetting('rm_project')
 		rentalIssue = getRentalIssue
 		errorMsg = l(:label_movein_error_msg) if projectId.blank? || rentalIssue.blank?
+		errorMsg = moveInLocationError(resId, resType, apartmentId) if errorMsg.blank?
 		if errorMsg.blank?
 			# save Resident
 			errorMsg +=  saveResident(nil, resId, resType, moveInDate,nil, apartmentId, bedId)
