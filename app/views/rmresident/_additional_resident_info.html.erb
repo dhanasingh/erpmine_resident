@@ -2,7 +2,7 @@
 	<% if !@resObj.getCurrentResidentStatus.blank? %>
 		<% if @resObj.type == "RA" %>
 			<div style="clear:both;"></div>
-			<div class="splitcontentleft" style="margin-top:-60px;">
+			<div class="splitcontentleft resident-info-details">
 			<fieldset class="box tabular" >
 				<legend><%= l(:label_apartment_details) %></legend>
 				<%  apartmentName = ""
@@ -19,28 +19,28 @@
 				<table>
 					<tr>
 						<th style="text-align:left;"><%= l(:label_apartment) %></th>
-						<td style="text-align:left;" style="padding-left:40px;">
+						<td style="text-align:left; padding-left:1em;">
 							<%= apartmentName %>
 						</td>
 						<th style="text-align:left;"><%= l(:label_move_in_date) %></th>
-						<td style="text-align:left;" >
+						<td style="text-align:left;">
 							<%= moveInDate.strftime('%F') %>
 						</td>
-						<td>
-							<%= link_to l(:label_transfer), url_for(:controller => "rmresident", :action => "movein", :tab => "rmresident", :lead_id => nil, :resident_id => @resObj.getCurrentResidentStatus[0].id, :res_action => "T", resident_type_id: @resObj.resident_id, resident_type: @resObj.resident_type),  :class=> "buttons", :style=> "padding-left:40px;  margin-top:220px;" %>
+						<td class="resident-action-btn">
+							<%= link_to l(:label_transfer), url_for(:controller => "rmresident", :action => "movein", :tab => "rmresident", :lead_id => nil, :resident_id => @resObj.getCurrentResidentStatus[0].id, :res_action => "T", resident_type_id: @resObj.resident_id, resident_type: @resObj.resident_type),  :class=> "buttons" %>
 						</td>
-						<td>
-						<%= link_to l(:label_move_out), url_for(:controller => "rmresident", :action => "movein", :tab => "rmresident", :lead_id => nil, :resident_id => @resObj.getCurrentResidentStatus[0].id, :res_action => "MO", resident_type_id: @resObj.resident_id, resident_type: @resObj.resident_type),  :class=> "buttons", :style=> "padding-left:40px;  margin-top:220px;" %>
+						<td class="resident-action-btn">
+						<%= link_to l(:label_move_out), url_for(:controller => "rmresident", :action => "movein", :tab => "rmresident", :lead_id => nil, :resident_id => @resObj.getCurrentResidentStatus[0].id, :res_action => "MO", resident_type_id: @resObj.resident_id, resident_type: @resObj.resident_type),  :class=> "buttons" %>
 						</td>
 					</tr>
 					<tr>
 					<% unless @resObj.getCurrentResidentStatus[0].bed.blank? %>
-					
+
 						<th style="text-align:left;"><%= l(:label_bed) %></th>
-						<td style="text-align:left;" style="padding-left:40px;"><%= bedName  %></td>
+						<td style="text-align:left; padding-left:1em;"><%= bedName  %></td>
 					<% else %>
 						<th style="text-align:left;"></th>
-						<td style="text-align:left;" style="padding-left:40px;"></td>
+						<td style="text-align:left; padding-left:1em;"></td>
 					<% end %>
 					<% unless moveOutDate.blank?  %>
 						<th style="text-align:left;"><%= l(:field_move_out_date) %></th>
