@@ -283,10 +283,11 @@ class RmincidentController < WkbaseController
 	def load_residents
 		@resident_options = active_residents_scope
 			.filter_map { |r| r.name.present? ? [r.name, r.id] : nil }
-		# Permitted locations only (nil => unrestricted => all).
-		loc_ids = WkLocation.accessible_location_ids
-		locScope = loc_ids ? WkLocation.where(id: loc_ids) : WkLocation.all
-		@resident_location_options = locScope.order(:name).pluck(:name, :id)
+		# Final-only leaf locations, scoped to the user's permitted subtree.
+		# Residents live at leaf locations; get_residents_by_location does an exact
+		# location_id match, so non-leaf parents would always return zero residents.
+		final_ids = WkLocation.permitted_final_location_ids
+		@resident_location_options = WkLocation.where(id: final_ids).order(:name).pluck(:name, :id)
 		@location_options = @resident_location_options.map(&:first)
 	end
 
