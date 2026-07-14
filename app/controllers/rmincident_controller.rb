@@ -17,7 +17,8 @@
 
 class RmincidentController < WkbaseController
 
-		
+	menu_item	:apartment
+
 	before_action :check_basic_perm, :only => [:index, :edit, :update, :get_resident_info, :get_residents_by_location]
 	before_action :check_admin_perm, :only => [:destroy]
 	accept_api_auth :index, :edit, :update, :destroy, :get_resident_info, :get_residents_by_location
