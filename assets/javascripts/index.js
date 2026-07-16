@@ -15,6 +15,9 @@ $(document).ready(function()
 		apartmentBasedBeds('apartment_idM', 'bed_idM', 1, 'rateM', 'lblBedM', true );
 	}
 	$('#res_contact').hide();
+	if($('#resident_type').length){
+		residentType();
+	}
 	});
 
 function changeProp(tab,indexUrl)
@@ -122,12 +125,14 @@ function dateRangeValidation(fromId, toId)
 
 function residentType(){
 	var residentType = $('#resident_type').val();
+	// Inputs in the hidden panel must be disabled, otherwise its duplicate
+	// fields (location_id, description, ...) submit and override the visible panel
 	if(residentType == 'WkAccount'){
-		$('#res_contact').hide();
-		$('#res_account').show();
+		$('#res_contact').hide().find(':input').prop('disabled', true);
+		$('#res_account').show().find(':input').prop('disabled', false);
 	}
 	else{
-		$('#res_contact').show();
-		$('#res_account').hide();
+		$('#res_contact').show().find(':input').prop('disabled', false);
+		$('#res_account').hide().find(':input').prop('disabled', true);
 	}
 }
