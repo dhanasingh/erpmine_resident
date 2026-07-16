@@ -1,6 +1,7 @@
 <%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
 
 <script type="text/javascript">
+    prevTab = 'tab-<%= controller_name %>';
     <% if show_apartment %>
         var apartmentUrl = '<%= url_for(controller: "rmapartment", action: "index", tab: "rmapartment") %>';
     <% end %>
