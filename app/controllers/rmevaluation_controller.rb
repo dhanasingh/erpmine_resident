@@ -17,6 +17,7 @@
 
 class RmevaluationController < WksurveyController
 
+	menu_item	:apartment
 	accept_api_auth :index
   include WksurveyHelper
 
