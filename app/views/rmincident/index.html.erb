@@ -1,5 +1,18 @@
 <%= title l(:label_incident_tracking) %>
 <%= render :partial => 'rmresident/render_resident_tabs' %>
+<%= javascript_include_tag 'index', :plugin => "erpmine_resident" %>
+<h2><%= l(:label_incident_tracking) %></h2>
+<%= javascript_tag do %>
+  prevTab = 'tab-<%= controller_name %>';
+  var apartmentUrl = '<%= url_for(controller: "rmapartment", action: "index", tab: "rmapartment") %>';
+  var residentUrl = '<%= url_for(controller: "rmresident", action: "index", tab: "rmresident") %>';
+  var performserviceUrl = '<%= raw url_for(controller: :rmperformservice, action: :edit, user_id: User.current.id, startday: Date.today, sheet_view: 'I' ) %>';
+  var incidentUrl = '<%= url_for(controller: "rmincident", action: "index", tab: "rmincident", rm_resident_id: params[:rm_resident_id]).html_safe %>';
+  var evaluationUrl = '<%= url_for(controller: "rmevaluation", action: "index", tab: "rmevaluation", surveyForType: 'RmResident').html_safe %>';
+<% end %>
+
+<%= render_tabs resident_tabs %>
+<%= hidden_field_tag 'back_url', url_for(:controller => params[:controller], :action => params[:action]) %>
 
 <!-- New Incident link moved inside the filter box for alignment with filters -->
 

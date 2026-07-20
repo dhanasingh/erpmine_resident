@@ -41,6 +41,7 @@ This Plugin has the following module:
 
 | **Resident** | **ERPmine** |
 |-------------|-------------|
+| 2.0 | 5.0 |
 | 1.4.1 | 4.9.4 |
 | 1.4 | 4.9.3 |
 | 1.3 | 4.9.2 |
@@ -48,17 +49,15 @@ This Plugin has the following module:
 | 1.1 | 4.8.4, 4.8.5 |
 | 1.0 | 4.8.3 |
 
-## Release Notes for v1.4.1
+## Release Notes for v2.0
 
 **Features**
 ```text
-- Added resident module permissions
-- Added evaluation follow-up questions
-- Added evaluation groups/questions reordering
+- Redmine 7.0 compatibility
 ```
 ## Dependency:
 
-  This plugin is compatible with ERPmine v4.9.4
+  This plugin is compatible with ERPmine v5.0
 
 ## Customization:
 

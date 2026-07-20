@@ -244,10 +244,8 @@ module ReportMoveInMoveOutByDate
            p.name AS project_name, 
            loc.name AS location_name
     FROM rm_residents
-    LEFT JOIN wk_asset_properties ap
-      ON ap.inventory_item_id = rm_residents.apartment_id " + get_comp_cond('ap') + "
     LEFT JOIN wk_inventory_items ii
-      ON ii.id = ap.inventory_item_id " + get_comp_cond('ii') + "
+      ON ii.id = rm_residents.apartment_id " + get_comp_cond('ii') + "
     LEFT JOIN wk_locations loc
       ON loc.id = ii.location_id " + get_comp_cond('loc') + "
     LEFT JOIN projects p
@@ -266,10 +264,8 @@ module ReportMoveInMoveOutByDate
            loc.name AS location_name,
            reason_enum.name AS move_out_reason_name
     FROM rm_residents
-    LEFT JOIN wk_asset_properties ap
-      ON ap.inventory_item_id = rm_residents.apartment_id " + get_comp_cond('ap') + "
     LEFT JOIN wk_inventory_items ii
-      ON ii.id = ap.inventory_item_id " + get_comp_cond('ii') + "
+      ON ii.id = rm_residents.apartment_id " + get_comp_cond('ii') + "
     LEFT JOIN wk_locations loc
       ON loc.id = ii.location_id " + get_comp_cond('loc') + "
     LEFT JOIN projects p
@@ -340,11 +336,11 @@ end
     ''
   end
 
-  def property_name(property_id)
-    return '' unless property_id.present?
-    # apartment_id / bed_id reference wk_inventory_items; the display name lives on
-    # the linked asset property (asset_property.inventory_item_id), not its own id.
-    prop = WkAssetProperty.find_by(inventory_item_id: property_id)
-    prop&.name&.strip || "Property #{property_id}"
+  # apartment_id/bed_id on rm_residents are wk_inventory_items ids;
+  # the display name lives on the item's asset property
+  def property_name(inv_item_id)
+    return '' unless inv_item_id.present?
+    prop = WkAssetProperty.find_by(inventory_item_id: inv_item_id)
+    prop&.name&.strip || "Property #{inv_item_id}"
   end
 end

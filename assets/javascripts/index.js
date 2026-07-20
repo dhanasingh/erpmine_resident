@@ -18,10 +18,11 @@ $(document).ready(function () {
 	if (res_action == 'T') {
 		apartmentBasedBeds('apartment_idM', 'bed_idM', 1, 'rateM', 'lblBedM', true);
 	}
-	if ($('#resident_type').length) {
+	$('#res_contact').hide();
+	if($('#resident_type').length){
 		residentType();
 	}
-});
+	});
 
 function changeProp(tab, indexUrl) {
 	var tab_te = document.getElementById(tab);
@@ -119,18 +120,15 @@ function dateRangeValidation(fromId, toId) {
 
 function residentType() {
 	var residentType = $('#resident_type').val();
-	// Both the account and contact sections live in the same form and share
-	// field names (location_id, description, assigned_user_id). Hiding alone
-	// still submits the hidden section's inputs, so the inactive section would
-	// override the active one (e.g. the user-picked location). Disable the
-	// hidden section's inputs so only the active section is submitted.
-	if (residentType == 'WkAccount') {
+	// Inputs in the hidden panel must be disabled, otherwise its duplicate
+	// fields (location_id, description, ...) submit and override the visible panel
+	if(residentType == 'WkAccount'){
 		$('#res_contact').hide().find(':input').prop('disabled', true);
 		$('#res_account').show().find(':input').prop('disabled', false);
 	}
-	else {
-		$('#res_account').hide().find(':input').prop('disabled', true);
+	else{
 		$('#res_contact').show().find(':input').prop('disabled', false);
+		$('#res_account').hide().find(':input').prop('disabled', true);
 	}
 }
 

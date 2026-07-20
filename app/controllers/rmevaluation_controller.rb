@@ -17,7 +17,7 @@
 
 class RmevaluationController < WksurveyController
 
-  menu_item	:apartment
+	menu_item	:apartment
 	accept_api_auth :index
   include WksurveyHelper
   before_action :check_resident_status, only: [:survey]
