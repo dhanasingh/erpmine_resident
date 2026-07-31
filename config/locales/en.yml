@@ -124,3 +124,4 @@ en:
    label_avail_beds: Available Beds
    label_bed_occupancy: Bed Occupancy
    error_former_resident_eval: Could not perform evaluation for Former residents
+   label_evaluation_for: Evaluation for

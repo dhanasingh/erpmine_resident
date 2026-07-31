@@ -38,6 +38,10 @@ class RmevaluationController < WksurveyController
 		l(:label_evaluation_response)
 	end
 
+	def surveyForLabel
+		l(:label_evaluation_for)
+	end
+
 	# Hide resident-targeted evaluations whose target resident is outside the
 	# user's permitted location subtree. Generic (survey_for_id IS NULL) surveys
 	# stay visible. nil accessible ids => ADM_ERP/unrestricted => no filtering.
@@ -79,7 +83,6 @@ class RmevaluationController < WksurveyController
 
 	def getSurveyFor
     survey_types = {
-        "" => '',
         l(:label_resident) => "RmResident"
     }
     survey_types
