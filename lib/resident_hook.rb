@@ -312,7 +312,8 @@ class ResidentHook < Redmine::Hook::ViewListener
 							end
 							total_points = saved_resp&.total_points
 							unless total_points.blank?
-								care_issue = rmresident_helper.getMatchingCareRate(total_points)
+								billing_project_id = rmResident.apartment&.project_id
+								care_issue = rmresident_helper.getMatchingCareRate(total_points, billing_project_id)
 								if care_issue.present?
 									effective_date = context[:params][:effective_date].present? ? context[:params][:effective_date].to_date : Date.today
 									rmresident_helper.save_care_billing_assignment(rmResident, saved_resp, effective_date)

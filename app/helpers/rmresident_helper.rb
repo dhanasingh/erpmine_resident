@@ -119,7 +119,7 @@ include WksurveyHelper
 					issue_id:    issue.id,
 					hours:       quantity,
 					comments:    l(:label_auto_populated_entry),
-					activity_id: getDefultActivity,
+					activity_id: getDefultActivity(issue.project),
 					spent_on:    seg_start,
 					spent_for_attributes: {
 						spent_for_id:   rm_resident.resident_id,
@@ -144,17 +144,25 @@ include WksurveyHelper
 			# invMonthDay = getMonthStartDay #should get from settings
 			# periodStart = rateHash['rate_per'] == 'W' ? invDay.to_i : invMonthDay
 			periodStart = getPeriodStart(rateHash['rate_per'])
-			serviceInterval = getIntervals(invInterval[0], invInterval[1], rateHash['rate_per'], periodStart, true, true)
+			# Hourly rate isn't chunked by the shared getIntervals helper - it returns the
+			# whole range as a single block - so totalHours (days-in-block * 24 below) can
+			# exceed Redmine's 999-hours-per-entry cap for any range longer than ~41 days.
+			# Chunk hourly rate into one interval per day locally so each entry stays <= 24h.
+			serviceInterval = if rateHash['rate_per']&.upcase == 'H'
+				(invInterval[0]..invInterval[1]).map { |day| [day, day] }
+			else
+				getIntervals(invInterval[0], invInterval[1], rateHash['rate_per'], periodStart, true, true)
+			end
 			serviceInterval.each_with_index do |interval, index|
 				intervalStart = interval[0] < invInterval[0] ? invInterval[0] : interval[0]
 				intervalEnd = interval[1] > invInterval[1] ? invInterval[1] : interval[1]
 				# Add entries in the beginning of the interval so here we take intervalStart
 				existingEntries = TimeEntry.joins(:spent_for).where(:spent_on => intervalStart, :issue_id => service.issue_id, wk_spent_fors: { spent_for_type: service.resident.resident_type, spent_for_id: service.resident.resident_id })
-				
+
 				teEntry = nil
 				totalHours = getDaysBetween(intervalStart, intervalEnd) * 24
 				quantity = getDuration(intervalStart, intervalEnd, rateHash['rate_per'], totalHours, false)
-				
+
 				if existingEntries.any?
 					existingEntry = existingEntries.first
 					if existingEntry.spent_for.present? && existingEntry.spent_for.invoice_item_id.blank?
@@ -163,7 +171,7 @@ include WksurveyHelper
 						teEntry = existingEntry
 					end
 				else
-					teAttributes = { project_id: issue.project_id, issue_id: service.issue_id, hours: quantity, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: intervalStart, spent_for_attributes: { spent_for_id: service.resident.resident_id, spent_for_type: service.resident.resident_type, spent_on_time: intervalStart.to_datetime } }
+					teAttributes = { project_id: issue.project_id, issue_id: service.issue_id, hours: quantity, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity(issue.project), spent_on: intervalStart, spent_for_attributes: { spent_for_id: service.resident.resident_id, spent_for_type: service.resident.resident_type, spent_on_time: intervalStart.to_datetime } }
 					teEntry = TimeEntry.new(teAttributes)
 					teEntry.user_id = User.current.id
 					teEntry.save
@@ -212,7 +220,7 @@ include WksurveyHelper
 			meCount = getMaterialEntries(invInterval[0], rentalIssue, currentResident, nil)
 			unless meCount > 0
 				meEntry = nil
-				meAttributes = { project_id: rentalIssue.project_id, issue_id: rentalIssue.id, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: invInterval[0], quantity: quantity, quantity_returned: nil, org_selling_price: nil, is_deleted: false, org_currency: nil, selling_price: sellPrice, currency: rentCurrency, uom_id: uomId, inventory_item_id: residingOn.id, spent_for_attributes: { spent_for_id: currentResident.resident_id, spent_for_type: currentResident.resident_type, spent_on_time: invInterval[0].to_datetime } }
+				meAttributes = { project_id: rentalIssue.project_id, issue_id: rentalIssue.id, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity(rentalIssue.project), spent_on: invInterval[0], quantity: quantity, quantity_returned: nil, org_selling_price: nil, is_deleted: false, org_currency: nil, selling_price: sellPrice, currency: rentCurrency, uom_id: uomId, inventory_item_id: residingOn.id, spent_for_attributes: { spent_for_id: currentResident.resident_id, spent_for_type: currentResident.resident_type, spent_on_time: invInterval[0].to_datetime } }
 				meEntry = WkMaterialEntry.new(meAttributes)
 				meEntry.user_id = User.current.id
 				meEntry.save
@@ -231,7 +239,16 @@ include WksurveyHelper
 		material_entry.count
 	end
 
-	def getDefultActivity
+	# `project`, when given, picks an activity actually enabled for that project
+	# (system-wide activities can be disabled per-project - see Project#activities).
+	# TimeEntry/WkMaterialEntry both reject activity_id values not in project.activities
+	# (project != activity's project), so grabbing an arbitrary global activity id here
+	# can silently fail the save for projects that don't have it enabled.
+	def getDefultActivity(project = nil)
+		if project.present?
+			activity = project.activities.first
+			return activity.id if activity.present?
+		end
 		activityObj = Enumeration.where(:type => 'TimeEntryActivity')
 		activityId = activityObj.blank? ? 0 : activityObj[0].id
 		activityId #get from settings
@@ -541,14 +558,20 @@ include WksurveyHelper
 		Issue.find_by(id: issue_id.to_i)
 	end
 
-	def getMatchingCareRate(points)
+	# `project_id`, when given, restricts the match to care-rate Issues that live in the
+	# resident's own billing project (e.g. their community/apartment project). This matters
+	# because Redmine's TimeEntry validation rejects project_id != issue.project_id
+	# (app/models/time_entry.rb), so any care Issue billed for this resident must live in
+	# that same project or the auto-generated TimeEntry will never surface on their invoice.
+	def getMatchingCareRate(points, project_id = nil)
 		care_tracker_id = getResidentPluginSetting('rm_care_tracker')
 		return nil if care_tracker_id.blank?
 		points_f = points.to_f
-		Issue.joins(:wk_issue)
+		scope = Issue.joins(:wk_issue)
 			 .where(:tracker_id => care_tracker_id.to_i)
 			 .where('wk_issues.min_points <= ? AND wk_issues.max_points >= ?', points_f, points_f)
-			 .first
+		scope = scope.where(:project_id => project_id) if project_id.present?
+		scope.first
 	end
 
 	def get_care_billing_periods(rm_resident, inv_start_dt, inv_end_dt)
