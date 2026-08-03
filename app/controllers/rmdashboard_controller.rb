@@ -112,6 +112,10 @@ class RmdashboardController < WkbaseController
     # residents outside their permitted scope.
     allowed_ids = RmResident.ids_in_location_scope
 
+    # A resident who has already moved out (move_out_date set) should never be
+    # nagged as "pending" just because they never submitted a response.
+    active_ids = RmResident.current_move_out_resident.pluck(:id)
+
     surveys.each do |survey|
 
       assigned_ids =
@@ -121,6 +125,7 @@ class RmdashboardController < WkbaseController
           allowed_ids.nil? ? RmResident.pluck(:id) : allowed_ids
         end
       assigned_ids &= allowed_ids unless allowed_ids.nil?
+      assigned_ids &= active_ids
 
       responded_ids =
         WkSurveyResponse.where(
