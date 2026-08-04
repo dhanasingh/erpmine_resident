@@ -35,13 +35,9 @@ module Rmdashboard
 
     def getIncidents(param={})
       entries = RmIncident.where("incident_date BETWEEN ? AND ?", param[:from].beginning_of_day, param[:to].end_of_day)
-      location_name = WkLocation.find_by(id: param[:location_id])&.name
-      entries = entries.where(location: location_name) if location_name.present?
 
-      # Security scope: only incidents whose resident is within the current user's
-      # accessible locations (contact/account-location dimension, same as the resident
-      # list / evaluation report). nil => admin/unrestricted, so no extra filter.
-      resident_ids = RmResident.ids_in_location_scope
+      # the picked location's subtree with the user's accessible scope.
+      resident_ids = RmResident.ids_in_location_scope(param[:location_id])
       entries = entries.where(rm_resident_id: (resident_ids.presence || [-1])) unless resident_ids.nil?
 
       entries
