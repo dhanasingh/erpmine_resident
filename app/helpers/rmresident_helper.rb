@@ -112,7 +112,7 @@ include WksurveyHelper
 
 			if existing.present?
 				existing.hours = quantity
-				existing.save
+				existing.save!
 			else
 				te = TimeEntry.new(
 					project_id:  issue.project_id,
@@ -128,7 +128,7 @@ include WksurveyHelper
 					}
 				)
 				te.user_id = User.current.id
-				te.save
+				te.save!
 			end
 		end
 	end
@@ -144,15 +144,7 @@ include WksurveyHelper
 			# invMonthDay = getMonthStartDay #should get from settings
 			# periodStart = rateHash['rate_per'] == 'W' ? invDay.to_i : invMonthDay
 			periodStart = getPeriodStart(rateHash['rate_per'])
-			# Hourly rate isn't chunked by the shared getIntervals helper - it returns the
-			# whole range as a single block - so totalHours (days-in-block * 24 below) can
-			# exceed Redmine's 999-hours-per-entry cap for any range longer than ~41 days.
-			# Chunk hourly rate into one interval per day locally so each entry stays <= 24h.
-			serviceInterval = if rateHash['rate_per']&.upcase == 'H'
-				(invInterval[0]..invInterval[1]).map { |day| [day, day] }
-			else
-				getIntervals(invInterval[0], invInterval[1], rateHash['rate_per'], periodStart, true, true)
-			end
+			serviceInterval = getIntervals(invInterval[0], invInterval[1], rateHash['rate_per'], periodStart, true, true)
 			serviceInterval.each_with_index do |interval, index|
 				intervalStart = interval[0] < invInterval[0] ? invInterval[0] : interval[0]
 				intervalEnd = interval[1] > invInterval[1] ? invInterval[1] : interval[1]
@@ -167,14 +159,14 @@ include WksurveyHelper
 					existingEntry = existingEntries.first
 					if existingEntry.spent_for.present? && existingEntry.spent_for.invoice_item_id.blank?
 						existingEntry.hours = quantity
-						existingEntry.save
+						existingEntry.save!
 						teEntry = existingEntry
 					end
 				else
 					teAttributes = { project_id: issue.project_id, issue_id: service.issue_id, hours: quantity, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity(issue.project), spent_on: intervalStart, spent_for_attributes: { spent_for_id: service.resident.resident_id, spent_for_type: service.resident.resident_type, spent_on_time: intervalStart.to_datetime } }
 					teEntry = TimeEntry.new(teAttributes)
 					teEntry.user_id = User.current.id
-					teEntry.save
+					teEntry.save!
 				end
 				teEntry
 			end

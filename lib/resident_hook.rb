@@ -333,6 +333,12 @@ class ResidentHook < Redmine::Hook::ViewListener
 					end
 				rescue => e
 					Rails.logger.error "Care billing upsert failed: #{e.message}\n#{e.backtrace.first(5).join("\n")}"
+					ctrl = context[:controller]
+					if ctrl && ctrl.respond_to?(:flash) && ctrl.flash
+						# Show the raw validation error (or generic message) to the user so
+						msg = e.is_a?(ActiveRecord::RecordInvalid) ? e.record.errors.full_messages.join(", ") : e.message
+						ctrl.flash[:error] = "#{l(:notice_care_billing_failed)}: #{msg}"
+					end
 				end
 			end
 		elsif context[:urlHash][:surveyForType] == "RmResident"
