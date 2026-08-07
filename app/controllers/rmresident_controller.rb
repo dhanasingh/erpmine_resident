@@ -570,7 +570,7 @@ class RmresidentController < WkcrmController
 					end
 				else
 					flash[:error] = errorMsg
-					redirect_to controller: 'rmresident', action: 'index', tab: 'rmresident'
+					redirect_back_or_default({controller: 'rmresident', action: 'index', tab: 'rmresident'}, referer: true)
 				end
 			}
 			format.api{
