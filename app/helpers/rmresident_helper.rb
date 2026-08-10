@@ -39,7 +39,8 @@ include WksurveyHelper
 
 	def resident_tabs
 		tabs = []
-		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice" || params[:controller] == "rmincident" || params[:controller] == "rmevaluation"
+		if params[:controller] == "rmapartment" || params[:controller] == "rmresident" || params[:controller] == "rmperformservice" || params[:controller] == "rmincident" || params[:controller] == "rmevaluation" || params[:controller] == "rmdashboard"
+			tabs << {:name => 'rmdashboard', :partial => 'wktime/tab_content', :label => :label_dashboards} if show_resident
 			tabs << {:name => 'rmapartment', :partial => 'wktime/tab_content', :label => :label_apartment} if show_apartment
 			tabs << {:name => 'rmresident', :partial => 'wktime/tab_content', :label => :label_resident} if show_resident
 			tabs << {:name => 'rmperformservice', :partial => 'wktime/tab_content', :label => :label_perform_service} if show_service
@@ -83,10 +84,59 @@ include WksurveyHelper
 		end
 	end
 
+	def addCareBillingEntries(rm_resident, inv_start, inv_end)
+		periods = get_care_billing_periods(rm_resident, inv_start, inv_end)
+		periods.each do |period|
+			care_svc = rm_resident.resident_services
+				.where(issue_id: period[:issue].id)
+				.where("start_date <= ? AND (end_date IS NULL OR end_date >= ?)", period[:end_date], period[:start_date])
+				.first
+			next if care_svc.blank?
+
+			issue     = period[:issue]
+			rateHash  = getIssueRateHash(issue)
+			seg_start = [period[:start_date].to_date, care_svc.start_date.to_date].max
+			seg_end   = care_svc.end_date.present? ? [period[:end_date].to_date, care_svc.end_date.to_date].min : period[:end_date].to_date
+			totalHours = getDaysBetween(seg_start, seg_end) * 24
+			quantity  = getDuration(seg_start, seg_end, rateHash['rate_per'], totalHours, false)
+
+			existing = TimeEntry.joins(:spent_for)
+				.where(
+					spent_on: seg_start,
+					issue_id: issue.id,
+					comments: l(:label_auto_populated_entry),
+					wk_spent_fors: { spent_for_type: rm_resident.resident_type, spent_for_id: rm_resident.resident_id }
+				)
+				.where("wk_spent_fors.invoice_item_id IS NULL")
+				.first
+
+			if existing.present?
+				existing.hours = quantity
+				existing.save!
+			else
+				te = TimeEntry.new(
+					project_id:  issue.project_id,
+					issue_id:    issue.id,
+					hours:       quantity,
+					comments:    l(:label_auto_populated_entry),
+					activity_id: getDefultActivity(issue.project),
+					spent_on:    seg_start,
+					spent_for_attributes: {
+						spent_for_id:   rm_resident.resident_id,
+						spent_for_type: rm_resident.resident_type,
+						spent_on_time:  seg_start.to_datetime
+					}
+				)
+				te.user_id = User.current.id
+				te.save!
+			end
+		end
+	end
+
 	# Add Rent, Amenities Entries for next invoice cycle
 	def addNewAmenityEntry(service, invInterval, quantity)
 		issue = Issue.find(service.issue_id)
-		if issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i
+		if issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i || issue.tracker_id == getResidentPluginSetting('rm_care_tracker').to_i
 			rateHash = getIssueRateHash(issue)
 			invInterval[0] = service.start_date if  service.start_date > invInterval[0]
 			invInterval[1] = service.end_date if !service.end_date.blank? && service.end_date < invInterval[1]
@@ -99,14 +149,24 @@ include WksurveyHelper
 				intervalStart = interval[0] < invInterval[0] ? invInterval[0] : interval[0]
 				intervalEnd = interval[1] > invInterval[1] ? invInterval[1] : interval[1]
 				# Add entries in the beginning of the interval so here we take intervalStart
-				teCount = TimeEntry.joins(:spent_for).where(:spent_on => intervalStart, :issue_id => service.issue_id, wk_spent_fors: { spent_for_type: service.resident.resident_type, spent_for_id: service.resident.resident_id }).count
+				existingEntries = TimeEntry.joins(:spent_for).where(:spent_on => intervalStart, :issue_id => service.issue_id, wk_spent_fors: { spent_for_type: service.resident.resident_type, spent_for_id: service.resident.resident_id })
+
 				teEntry = nil
-				unless teCount > 0
-					quantity = getDuration(intervalStart, intervalEnd, rateHash['rate_per'], 0, false)
-					teAttributes = { project_id: issue.project_id, issue_id: service.issue_id, hours: quantity, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: intervalStart, spent_for_attributes: { spent_for_id: service.resident.resident_id, spent_for_type: service.resident.resident_type, spent_on_time: intervalStart.to_datetime } }
+				totalHours = getDaysBetween(intervalStart, intervalEnd) * 24
+				quantity = getDuration(intervalStart, intervalEnd, rateHash['rate_per'], totalHours, false)
+
+				if existingEntries.any?
+					existingEntry = existingEntries.first
+					if existingEntry.spent_for.present? && existingEntry.spent_for.invoice_item_id.blank?
+						existingEntry.hours = quantity
+						existingEntry.save!
+						teEntry = existingEntry
+					end
+				else
+					teAttributes = { project_id: issue.project_id, issue_id: service.issue_id, hours: quantity, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity(issue.project), spent_on: intervalStart, spent_for_attributes: { spent_for_id: service.resident.resident_id, spent_for_type: service.resident.resident_type, spent_on_time: intervalStart.to_datetime } }
 					teEntry = TimeEntry.new(teAttributes)
 					teEntry.user_id = User.current.id
-					teEntry.save
+					teEntry.save!
 				end
 				teEntry
 			end
@@ -114,8 +174,10 @@ include WksurveyHelper
 	end
 
 	def delAutoGenAmenityEntries(residentAmenity)
-		resident = getResidentEntry(residentAmenity.start_date)
-		amenityEntries =  TimeEntry.joins(:spent_for).where(:issue_id => residentAmenity.issue_id, wk_spent_fors: { spent_for_id: residentAmenity.resident.resident_id, spent_for_type: residentAmenity.resident.resident_type, invoice_item_id: nil}).where("(time_entries.spent_on < ? AND time_entries.spent_on >= ?) OR (time_entries.spent_on > ? AND time_entries.spent_on <= ?)", residentAmenity.start_date, resident.move_in_date, residentAmenity.end_date, (resident.move_out_date.blank? ? Date.today + 1.year : resident.move_out_date))
+		resident = residentAmenity.resident
+		return if resident.blank?
+		
+		amenityEntries =  TimeEntry.joins(:spent_for).where(:issue_id => residentAmenity.issue_id, wk_spent_fors: { spent_for_id: resident.resident_id, spent_for_type: resident.resident_type, invoice_item_id: nil}).where("(time_entries.spent_on < ? AND time_entries.spent_on >= ?) OR (time_entries.spent_on > ? AND time_entries.spent_on <= ?)", residentAmenity.start_date, resident.move_in_date, residentAmenity.end_date, (resident.move_out_date.blank? ? Date.today + 1.year : resident.move_out_date))
 		amenityEntries.destroy_all
 	end
 
@@ -150,7 +212,7 @@ include WksurveyHelper
 			meCount = getMaterialEntries(invInterval[0], rentalIssue, currentResident, nil)
 			unless meCount > 0
 				meEntry = nil
-				meAttributes = { project_id: rentalIssue.project_id, issue_id: rentalIssue.id, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity, spent_on: invInterval[0], quantity: quantity, quantity_returned: nil, org_selling_price: nil, is_deleted: false, org_currency: nil, selling_price: sellPrice, currency: rentCurrency, uom_id: uomId, inventory_item_id: residingOn.id, spent_for_attributes: { spent_for_id: currentResident.resident_id, spent_for_type: currentResident.resident_type, spent_on_time: invInterval[0].to_datetime } }
+				meAttributes = { project_id: rentalIssue.project_id, issue_id: rentalIssue.id, comments: l(:label_auto_populated_entry), activity_id: getDefultActivity(rentalIssue.project), spent_on: invInterval[0], quantity: quantity, quantity_returned: nil, org_selling_price: nil, is_deleted: false, org_currency: nil, selling_price: sellPrice, currency: rentCurrency, uom_id: uomId, inventory_item_id: residingOn.id, spent_for_attributes: { spent_for_id: currentResident.resident_id, spent_for_type: currentResident.resident_type, spent_on_time: invInterval[0].to_datetime } }
 				meEntry = WkMaterialEntry.new(meAttributes)
 				meEntry.user_id = User.current.id
 				meEntry.save
@@ -169,7 +231,16 @@ include WksurveyHelper
 		material_entry.count
 	end
 
-	def getDefultActivity
+	# `project`, when given, picks an activity actually enabled for that project
+	# (system-wide activities can be disabled per-project - see Project#activities).
+	# TimeEntry/WkMaterialEntry both reject activity_id values not in project.activities
+	# (project != activity's project), so grabbing an arbitrary global activity id here
+	# can silently fail the save for projects that don't have it enabled.
+	def getDefultActivity(project = nil)
+		if project.present?
+			activity = project.activities.first
+			return activity.id if activity.present?
+		end
 		activityObj = Enumeration.where(:type => 'TimeEntryActivity')
 		activityId = activityObj.blank? ? 0 : activityObj[0].id
 		activityId #get from settings
@@ -198,11 +269,32 @@ include WksurveyHelper
 		periodArr
 	end
 
+	# Validates that `apartmentId` may host the given resident before a move-in /
+	# transfer. Returns an error message (which aborts the move-in) or "" when allowed:
+	#   * the apartment's location must be within the current user's permitted scope
+	#     (security - a restricted user cannot place residents outside their area), and
+	#   * it must fall within the resident's own (contact/account) location - the
+	#     apartment's location must equal that location OR be nested under it
+	#     (hierarchy allowed), so a resident is never placed outside their location
+	#     (data integrity, applies to everyone). Skipped when the resident has no
+	#     location of their own.
+	def moveInLocationError(residentId, residentType, apartmentId)
+		apartmentLoc = WkInventoryItem.find_by(id: apartmentId)&.location_id
+		return l(:error_movein_location_not_permitted) unless WkLocation.permitted?(apartmentLoc)
+		residentClass = (residentType == 'WkAccount') ? WkAccount : WkCrmContact
+		residentLoc = residentClass.unscoped.find_by(id: residentId)&.location_id
+		if residentLoc.present? && apartmentLoc.present? && !WkLocation.subtree_ids(residentLoc).include?(apartmentLoc.to_i)
+			return l(:error_movein_location_mismatch)
+		end
+		""
+	end
+
 	def residentMoveIn(resId, resType, moveInDate, moveOutDate, invItemId, apartmentId, bedId, rate, moveInHr, moveInMm)
 		errorMsg = ""
 		projectId = getResidentPluginSetting('rm_project')
 		rentalIssue = getRentalIssue
 		errorMsg = l(:label_movein_error_msg) if projectId.blank? || rentalIssue.blank?
+		errorMsg = moveInLocationError(resId, resType, apartmentId) if errorMsg.blank?
 		if errorMsg.blank?
 			# save Resident
 			errorMsg +=  saveResident(nil, resId, resType, moveInDate,nil, apartmentId, bedId)
@@ -302,12 +394,15 @@ include WksurveyHelper
 	end
 
 	def updateAutoTEntries(resService, intevalDt)
-		if resService.issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i
+		if resService.issue.tracker_id == getResidentPluginSetting('rm_amenity_tracker').to_i || resService.issue.tracker_id == getResidentPluginSetting('rm_care_tracker').to_i
 			invInterval = getInvoiceInterval(intevalDt, intevalDt, true, true)
-			addNewAmenityEntry(resService, invInterval[0], 1)
+			# Find autogenerated entries and delete
 			delAutoGenAmenityEntries(resService)
+
+			addNewAmenityEntry(resService, invInterval[0], 1)
 		end
 	end
+
 
 	def getResidentPluginSetting(setting_name)
 		Setting.plugin_erpmine_resident[setting_name]
@@ -448,6 +543,160 @@ include WksurveyHelper
 		issueObj = Issue.where(:tracker_id => trackerID, :project_id => projectId ) unless trackerID.blank? || projectId.blank?
 		issueArr = issueObj.pluck(:subject, :id)  unless issueObj.blank?
 		issueArr
+	end
+
+	def getCareIssueById(issue_id)
+		return nil if issue_id.blank?
+		Issue.find_by(id: issue_id.to_i)
+	end
+
+	# `project_id`, when given, restricts the match to care-rate Issues that live in the
+	# resident's own billing project (e.g. their community/apartment project). This matters
+	# because Redmine's TimeEntry validation rejects project_id != issue.project_id
+	# (app/models/time_entry.rb), so any care Issue billed for this resident must live in
+	# that same project or the auto-generated TimeEntry will never surface on their invoice.
+	def getMatchingCareRate(points, project_id = nil)
+		care_tracker_id = getResidentPluginSetting('rm_care_tracker')
+		return nil if care_tracker_id.blank?
+		points_f = points.to_f
+		scope = Issue.joins(:wk_issue)
+			 .where(:tracker_id => care_tracker_id.to_i)
+			 .where('wk_issues.min_points <= ? AND wk_issues.max_points >= ?', points_f, points_f)
+		scope = scope.where(:project_id => project_id) if project_id.present?
+		scope.first
+	end
+
+	def get_care_billing_periods(rm_resident, inv_start_dt, inv_end_dt)
+		inv_start = inv_start_dt.to_date
+		inv_end   = inv_end_dt.to_date
+		periods   = []
+
+		assignments = RmCareBillingAssignment
+			.joins(:survey_response)
+			.where(rm_resident_id: rm_resident.id)
+			.where("rm_care_billing_assignments.effective_date <= ?", inv_end)
+			.order("rm_care_billing_assignments.effective_date DESC")
+			.select("rm_care_billing_assignments.*, wk_survey_responses.total_points")
+
+		segment_end = inv_end
+
+		assignments.each do |assignment|
+			break if segment_end < inv_start
+
+			segment_start = [assignment.effective_date.to_date, inv_start].max
+			care_issue    = getMatchingCareRate(assignment.total_points)
+
+			periods << { issue: care_issue, start_date: segment_start, end_date: segment_end } if care_issue.present?
+
+			segment_end = assignment.effective_date.to_date - 1.day
+		end
+
+		periods
+	end
+
+	def save_care_billing_assignment(rm_resident, survey_response, effective_date)
+		return if rm_resident.blank? || survey_response.blank? || effective_date.blank?
+
+		assignment = RmCareBillingAssignment.find_or_initialize_by(
+			rm_resident_id:     rm_resident.id,
+			survey_response_id: survey_response.id
+		)
+		assignment.effective_date     = effective_date.to_date
+		assignment.updated_by_user_id = User.current.id
+		assignment.created_by_user_id = User.current.id if assignment.new_record?
+
+		unless assignment.save
+			Rails.logger.error "CareBillingAssignment save failed: #{assignment.errors.full_messages.join(', ')}"
+		end
+		assignment
+	end
+
+	def upsertCareResidentService(rmResident, care_issue, start_date)
+		return if rmResident.blank? || care_issue.blank? || start_date.blank?
+		start_date = start_date.to_date
+
+		# Clamp start_date to move_in_date — RmResidentService rejects dates before move-in
+		move_in = rmResident.move_in_date&.to_date
+		start_date = move_in if move_in.present? && start_date < move_in
+
+		# End any existing open care services for a different care issue
+		careTrackerId = getResidentPluginSetting('rm_care_tracker').to_i
+		existing_services = rmResident.resident_services
+										 .joins(:issue)
+										 .where(:issues => { :tracker_id => careTrackerId })
+										 .where(:end_date => nil)
+		existing_services.each do |svc|
+			if svc.issue_id != care_issue.id
+				svc.end_date = start_date - 1.day
+				svc.updated_by_user_id = User.current.id
+				svc.save
+				# Remove any unbilled care time entries for the old service so they
+				# don't double-bill alongside the new care level's entry.
+				delAutoGenAmenityEntries(svc)
+			end
+		end
+
+		# Find or create the care service for this specific care issue
+		current_svc = rmResident.resident_services
+									 .where(:issue_id => care_issue.id, :end_date => nil)
+									 .first
+		if current_svc.present?
+			if start_date > current_svc.start_date.to_date
+				current_svc.start_date = start_date
+				current_svc.updated_by_user_id = User.current.id
+				unless current_svc.save
+					Rails.logger.error "Care service update failed: #{current_svc.errors.full_messages.join(', ')}"
+				end
+			end
+		else
+			new_svc = RmResidentService.new
+			new_svc.rm_resident_id       = rmResident.id
+			new_svc.issue_id             = care_issue.id
+			new_svc.start_date           = start_date
+			new_svc.created_by_user_id   = User.current.id
+			new_svc.updated_by_user_id   = User.current.id
+			unless new_svc.save
+				Rails.logger.error "Care service create failed: #{new_svc.errors.full_messages.join(', ')}"
+			end
+		end
+	end
+
+	def transferResidentServices(oldResidentId, newResObj, moveInDate)
+		return if oldResidentId.blank? || newResObj.blank? || moveInDate.blank?
+
+		oldResObj = RmResident.find_by(id: oldResidentId.to_i)
+		return if oldResObj.blank?
+		care_tracker_id = getResidentPluginSetting('rm_care_tracker').to_i
+
+		# Clone active resident services that were closed by the move-out process (ONLY for Care entries)
+		oldResObj.resident_services.each do |svc|
+			if svc.end_date.present? && svc.end_date == oldResObj.move_out_date&.to_date && svc.issue.tracker_id == care_tracker_id
+				new_svc = svc.dup
+				new_svc.rm_resident_id = newResObj.id
+				new_svc.start_date = moveInDate.to_date
+				new_svc.end_date = nil
+				new_svc.created_by_user_id = User.current.id
+				new_svc.updated_by_user_id = User.current.id
+				if new_svc.save
+					updateAutoTEntries(new_svc, moveInDate.to_date)
+				else
+					Rails.logger.error "Failed to clone care service during transfer: #{new_svc.errors.full_messages.join(', ')}"
+				end
+			end
+		end
+
+		# Clone the latest Care Billing Assignment
+		latest_assignment = RmCareBillingAssignment.where(rm_resident_id: oldResObj.id).order("effective_date DESC").first
+		if latest_assignment.present?
+			new_assignment = latest_assignment.dup
+			new_assignment.rm_resident_id = newResObj.id
+			new_assignment.effective_date = moveInDate.to_date
+			new_assignment.created_by_user_id = User.current.id
+			new_assignment.updated_by_user_id = User.current.id
+			unless new_assignment.save
+				Rails.logger.error "Failed to clone care billing assignment during transfer: #{new_assignment.errors.full_messages.join(', ')}"
+			end
+		end
 	end
 
 	def show_resident

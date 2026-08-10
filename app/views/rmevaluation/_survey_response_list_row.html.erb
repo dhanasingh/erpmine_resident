@@ -1,0 +1,10 @@
+<% if entry.survey_for_type == 'RmResident' %>
+  <% if position == :start %>
+    <td class="lbl-txt-align"><%= RmResident.find_by(id: entry.survey_for_id)&.name %></td>
+  <% elsif position == :end && !show_survey_result %>
+    <th>
+      <%= link_to l(:button_pdf), url_for(controller: 'rmevaluation', action: 'export', survey_id: entry.survey_id, surveyForType: entry.survey_for_type, surveyForID: entry.survey_for_id, response_id: entry.id, format: 'pdf'),
+              class: 'icon-only icon-download', title: l(:button_pdf) %>
+    </th>
+  <% end %>
+<% end %>

@@ -18,5 +18,8 @@ end
 api.headers do
   api.location getAllLocations
   api.available availabilityHash.invert
-  api.project getProjectArr
+  # Apartments are not project-scoped, so the project filter is hidden on web
+  # (controller.showProjectField == false); mirror that here so the mobile app
+  # doesn't render the project dropdown either.
+  api.project getProjectArr if controller.showProjectField
 end

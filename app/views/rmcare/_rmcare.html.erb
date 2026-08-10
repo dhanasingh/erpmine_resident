@@ -1,0 +1,4 @@
+<label><%= l(:label_resident_care) %></label>
+<div>
+	<%= render partial: "rmresident/resident_service_list", locals: { resservices: @resObj.blank? ? nil : @resObj.resident_services.includes(:issue).where(issues: { :tracker_id => [Setting.plugin_erpmine_resident['rm_care_tracker']] }), serviceType: "RC" } %>
+</div>

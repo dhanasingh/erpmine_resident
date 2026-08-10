@@ -1,0 +1,159 @@
+<%= stylesheet_link_tag 'wksurvey', plugin: 'redmine_wktime' %>
+
+<style>
+	.survey-container input[type="text"],
+	.survey-container textarea {
+		border: 1px solid #d3d3d3 !important;
+		padding: 5px !important;
+		border-radius: 4px !important;
+		width: 400px !important;
+	}
+
+	.survey-container .box.tabular {
+		border: 1px solid #d3d3d3;
+		padding: 10px;
+		background: #fff;
+	}
+
+	.survey-container table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	.survey-container .survey-question-block {
+		padding-bottom: 10px;
+	}
+
+	.evaluation-report-page {
+		border: 1px solid #cfd7e6;
+		background: #f6f7f9;
+		padding: 10px;
+		margin-bottom: 20px;
+	}
+
+	.evaluation-header.box {
+		border: 1px solid #cfd7e6 !important;
+		background: #fff !important;
+		margin-bottom: 12px !important;
+	}
+
+	.survey-container .box.tabular {
+		border: 1px solid #cfd7e6 !important;
+		background: #fff !important;
+		padding: 10px !important;
+		margin-bottom: 10px !important;
+	}
+
+	.survey-container fieldset.box.tabular {
+		border: 1px solid #cfd7e6 !important;
+		background: #fff !important;
+		margin-bottom: 5px !important;
+		padding: 10px !important;
+	}
+</style>
+
+<%
+	require_relative 'report_evaluation'
+
+	report = Object.new.extend(ReportEvaluation)
+
+	survey = WkSurvey.find_by(
+		id: session[controller.controller_name][:evaluation_id]
+	)
+%>
+
+<% if survey.blank? %>
+
+	<p class="nodata">No Evaluation Found</p>
+
+<% else %>
+
+	<% responses = report.getEvaluationResponses(survey.id, session[controller.controller_name].try(:[], :from), session[controller.controller_name].try(:[], :to)) %>
+	<%
+		# Scope responses to residents within the user's permitted location, and
+		# (when chosen) the selected location's subtree. Filters on the resident's
+		# contact/account location — the same dimension as the resident list and the
+		# permission model — so e.g. "South Zone" returns everyone beneath it only.
+		location_id = session[controller.controller_name][:location_id]
+		allowed = RmResident.left_join_contacts
+		allowed = WkLocation.filter_by_contact_account_location(allowed, WkLocation.accessible_location_ids)
+		if location_id.present? && location_id.to_s != "0"
+			allowed = WkLocation.filter_by_contact_account_location(allowed, WkLocation.subtree_ids(location_id))
+		end
+		allowed_resident_ids = allowed.pluck("rm_residents.id").to_set
+		responses = responses.select { |r| allowed_resident_ids.include?(r.survey_for_id) }
+	%>
+	<% if responses.blank? %>
+		<p class="nodata"><%= l(:label_no_data) %></p>
+	<% end %>
+	<% responses.each_with_index do |survey_response, index| %>
+
+		<%
+			@survey = survey
+			@response = survey_response
+			@isReview = false
+			@isReviewed = false
+		%>
+
+		<div class="evaluation-report-page box tabular">
+
+			<!-- HEADER -->
+			<div class="evaluation-header box" style="padding:15px; margin-bottom:5px;">
+
+				<h2 style="text-align:center; margin-top:0px;">
+					<%= survey.name %>
+				</h2>
+
+				<%
+					resident_name = ""
+
+					resident = RmResident.left_join_contacts
+						.where("rm_residents.id = ?", survey_response.survey_for_id)
+						.select("wk_accounts.name as account_name,
+								first_name,
+								last_name,
+								resident_type")
+						.first
+
+					if resident.present?
+
+						if resident.resident_type == "WkAccount"
+							resident_name = resident.account_name
+						else
+							resident_name =
+								"#{resident.first_name} #{resident.last_name}"
+						end
+					end
+				%>
+
+				<div style="display:flex; justify-content:space-between; padding:10px 0;">
+
+					<div style="width:33%;">
+						<div style="font-weight:bold;">Resident</div>
+						<div><%= resident_name %></div>
+					</div>
+
+					<div style="width:33%;">
+						<div style="font-weight:bold;">Response Date</div>
+						<div><%= survey_response.created_at.to_date %></div>
+					</div>
+
+				</div>
+
+			</div>
+
+			<!-- REUSE EXISTING DESIGN -->
+			<div class="survey-container">
+				<%= render partial: 'wksurvey/response_detail',
+						locals: { isPrint: true } %>
+			</div>
+
+		</div>
+
+		<% unless index == responses.length - 1 %>
+			<div style="page-break-after: always;"></div>
+		<% end %>
+
+	<% end %>
+
+<% end %>

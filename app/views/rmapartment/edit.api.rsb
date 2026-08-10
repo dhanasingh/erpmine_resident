@@ -19,7 +19,10 @@ api.rm_apartment do
   api.serial_number @inventoryItem&.serial_number || ''
   api.product_attribute_id @inventoryItem&.product_attribute_id || ''
   api.location_id @inventoryItem&.location_id || ''
-  api.project_id @inventoryItem&.project_id || ''
+  # Mirror web: the project field is hidden for apartments (showProjectField == false),
+  # so don't send it to the mobile edit form either. Saving is unaffected -
+  # RmapartmentController#update always forces project_id = resident_project_id.
+  api.project_id(@inventoryItem&.project_id || '') if controller.showProjectField
   api.notes @inventoryItem&.notes || ''
   api.inv_item @inventoryItem || ''
   api.array :rm_bed do
@@ -49,6 +52,10 @@ api.headers do
   api.owner_type getAssetTypeHash(false).invert
   api.parent parentArray(controller.getItemType, true, false, nil, inventory_item_id)
   api.attribute getAttributeArr(controller.getItemType)
-  api.defaultLocation WkLocation.default_id
+  api.defaultLocation WkLocation.default_id_for
+  # Leaf/final permitted locations only, like the web apartment edit form. The
+  # current (or default) location is passed so it stays selectable even if it is
+  # not itself a leaf.
+  api.location getAllLocations(@inventoryItem&.location_id || WkLocation.default_id_for, final_only: true)
   api.parent_id parent_id
 end

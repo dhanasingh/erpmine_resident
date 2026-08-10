@@ -35,5 +35,11 @@
 		<%=  select_tag('settings[rm_amenity_tracker]',
 				options_for_select(trackerArr, :selected => @settings['rm_amenity_tracker'].blank? ? "" : @settings['rm_amenity_tracker']))%>
 	</p>
+
+	<p style="padding-left: 190px;">
+		<label><%=l(:label_care)%></label>
+		<%=  select_tag('settings[rm_care_tracker]',
+				options_for_select(trackerArr, :selected => @settings['rm_care_tracker'].blank? ? "" : @settings['rm_care_tracker']))%>
+	</p>
 	
 </fieldset>

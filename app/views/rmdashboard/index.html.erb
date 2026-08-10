@@ -1,0 +1,82 @@
+<%= title l(:label_dashboards) %>
+
+<%= render partial: 'rmresident/render_resident_tabs' %>
+<%= render partial: 'rmdashboard/filters' %>
+
+<% content_for :header_tags do %>
+
+  <%= stylesheet_link_tag "rm_dashboard", plugin: "erpmine_resident" %>
+
+<% end %>
+<%= render partial: "wkbase/chartjs" %>
+<%= javascript_include_tag "dashboard", plugin: "redmine_wktime" %>
+
+<%= javascript_tag do %>
+	function renderDetailReport(path, graphName) {  
+		var url = "<%= url_for(controller: 'rmdashboard', action: 'get_detail_report') %>?gPath=" + path;
+		var dashURL = new URL(window.location);
+		dashURL.searchParams.forEach(function(value, key){
+			if(["period", "project_id", "period_type", "user_id", "group_id", "from", "to", "location_id"].includes(key)){
+					url += "&" + key + "=" + value;
+			}
+		});
+		renderpopup(url, graphName);
+	}
+
+	$(document).ready(function(){
+		<% get_graphs_yaml_path.sort.each do |path| %>
+			renderChart(<%= raw url_for(action: "graph", gPath: path).to_json %>, "<%=path%>");
+		<% end %>
+	});
+<% end %>
+
+<div class="evaluation-custom-card" id="evaluation-card-click">
+
+  <div class="evaluation-card-main">
+
+    <div class="evaluation-icon-wrapper">
+
+      <div class="evaluation-icon-circle">
+        📋
+      </div>
+
+    </div>
+
+    <div class="evaluation-content-wrapper">
+
+      <div class="evaluation-count-number" id="evaluation-pending-count">
+        0
+      </div>
+
+      <div class="evaluation-count-title">
+        Evaluation
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div id="graph"></div>
+
+<div id="evaluation-popup" style="display:none;">
+
+    <table class="list" id="evaluation-table">
+
+        <thead>
+            <tr>
+                <th>Resident Name</th>
+                <th>Evaluation Name</th>
+                <th>Response Status</th>
+                <th>Recurrence Date</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        </tbody>
+
+    </table>
+
+</div>
+

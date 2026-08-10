@@ -15,17 +15,19 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-module RmperformserviceHelper
-include RmapartmentHelper
-  def getResIssues
-    issues = Array.new
-    allIssues = Issue.where(:project_id => controller.getDefultProject).to_a
-      .sort_by { |i| [i.subject.to_s.downcase, i.id] }
-    issues << [ "", ""] if !Setting.plugin_redmine_wktime['wktime_allow_blank_issue'].blank? &&
-    Setting.plugin_redmine_wktime['wktime_allow_blank_issue'].to_i == 1
-    allIssues.each do |i|
-      issues << [ i.to_s , i.id ]
-    end
-    issues
-  end
+module RmdashboardHelper
+	include RmresidentHelper
+
+	def get_graphs_yaml_path
+		permittedfiles = []
+		ymlFiles = Dir["plugins/erpmine_resident/lib/rmdashboard/*.rb"].map{ |file| file }
+		ymlFiles.each do |file|
+			fileName = File.basename(file).split("_").first
+			nonPermChart = !['graph001', 'graph002', 'graph003', 'graph004'].include?(fileName)
+			if(nonPermChart || (fileName == 'graph001' && show_resident) || (fileName == 'graph002' && show_incident) || (fileName == 'graph003' && show_apartment) || (fileName == 'graph004' && show_incident))
+					permittedfiles << file
+			end
+		end
+		permittedfiles
+	end
 end

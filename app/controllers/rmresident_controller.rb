@@ -46,8 +46,6 @@ class RmresidentController < WkcrmController
 		account_id = session[controller_name].try(:[], :account_id)
 		parentType = ""
 		parentId = ""
-		location = WkLocation.where(:is_default => 'true').first
-		entries = nil
 		entries = RmResident.left_join_contacts
 		if moveInOutId == "MI"
 			entries = entries.where("rm_residents.move_out_date IS NULL")
@@ -81,9 +79,11 @@ class RmresidentController < WkcrmController
 			entries = entries.where("rm_residents.resident_type = ?", parentType)
 		end
 
-		if (!locationId.blank? || !location.blank?) && locationId != "0"
-			location_id = !locationId.blank? ? locationId.to_i : location.id.to_i
-			entries = entries.where("wk_crm_contacts.location_id = ? OR wk_accounts.location_id = ? ", location_id, location_id)
+		# Permission filter (via the resident's contact/account), then a picked
+		# location narrows further by its subtree; blank means "All".
+		entries = WkLocation.filter_by_contact_account_location(entries, WkLocation.accessible_location_ids)
+		if locationId.present? && locationId != "0"
+			entries = WkLocation.filter_by_contact_account_location(entries, WkLocation.subtree_ids(locationId.to_i))
 		end
 
 		if @from.blank? && !@to.blank?
@@ -334,6 +334,9 @@ class RmresidentController < WkcrmController
 	def residentTransfer
 		errorMsg = ""
 		errorMsg = moveOutValidation
+		# Validate the target apartment before the move-out below runs, so a rejected
+		# transfer never leaves the resident moved-out but not moved-in.
+		errorMsg = moveInLocationError(params[:resTypeID], params[:resType], params[:apartment_idM]) if errorMsg.blank?
 		if errorMsg.blank?
 			resident_id = params[:resident_id]
 			resObj = getResidentobj(resident_id)
@@ -350,6 +353,10 @@ class RmresidentController < WkcrmController
 
 			errorMsg = residentMoveIn(params[:resTypeID], params[:resType], params[:move_in_date].to_date, nil, invItemId, params[:apartment_idM], params[:bed_idM], params[:rateM], params[:move_in_hr],  params[:move_in_min])
 			if errorMsg.blank?
+				if @rmResident.present? && @rmResident.id != resident_id.to_i
+					transferResidentServices(resident_id, @rmResident, params[:move_in_date].to_date)
+				end
+
 				projectId = getResidentPluginSetting('rm_project')
 				rentalIssue = getRentalIssue
 				entryDate = (params[:move_in_date].to_date).at_beginning_of_month.next_month
@@ -563,7 +570,7 @@ class RmresidentController < WkcrmController
 					end
 				else
 					flash[:error] = errorMsg
-					redirect_to controller: 'rmresident', action: 'index', tab: 'rmresident'
+					redirect_back_or_default({controller: 'rmresident', action: 'index', tab: 'rmresident'}, referer: true)
 				end
 			}
 			format.api{

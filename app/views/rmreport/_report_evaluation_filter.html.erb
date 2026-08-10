@@ -1,0 +1,22 @@
+<div id="evaluation_filter_row" class="report-extra-filter" style="margin-top:5px; display:none;">
+	<label><strong><%= l(:report_evaluation) %></strong></label>
+	<%= select_tag 'evaluation_id',
+		options_for_select(
+			Object.new.extend(RmevaluationHelper).getEvaluationList,
+			session[controller_name].try(:[], :evaluation_id)
+		),
+		style: "width:200px;" %>
+</div>
+
+<script>
+(function () {
+	function toggleEvaluationFilter() {
+		var reportType = document.getElementById('report_type');
+		var row = document.getElementById('evaluation_filter_row');
+		if (!reportType || !row) { return; }
+		row.style.display = (reportType.value === 'report_evaluation_web') ? 'block' : 'none';
+	}
+	$(document).on('change', '#report_type', toggleEvaluationFilter);
+	$(document).ready(toggleEvaluationFilter);
+})();
+</script>

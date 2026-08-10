@@ -103,3 +103,13 @@ delete 'rmevaluation/:id', :to => 'rmevaluation#destroy'
 post 'rmevaluation/close_current_response', :to => 'rmevaluation#close_current_response'
 
 get 'rmevaluation/export', :to => 'rmevaluation#export'
+
+get 'rmdashboard/index', :to => 'rmdashboard#index'
+
+get 'rmdashboard/graph', :to => 'rmdashboard#graph'
+
+get 'rmdashboard/get_graphs', to: 'rmdashboard#get_graphs'
+
+get 'rmdashboard/get_detail_report', to: 'rmdashboard#get_detail_report'
+
+get 'rmdashboard/evaluation_pending_list', to: 'rmdashboard#evaluation_pending_list'

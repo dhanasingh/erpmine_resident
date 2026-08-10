@@ -41,7 +41,9 @@ self.queried_class = RmResident
 		add_available_filter "move_in_date", :type => :date_past
 		add_available_filter "move_out_date", :type => :date_past
 		
-		locations = WkLocation.order(:name)
+		# Only permitted locations are selectable (nil => unrestricted => all).
+		loc_ids = WkLocation.accessible_location_ids
+		locations = loc_ids ? WkLocation.where(id: loc_ids).order(:name) : WkLocation.order(:name)
 		#add_available_filter("resident_id", :type => :tree, :label => :field_resident_id)
 		add_available_filter("resident.location_id",
 		  :type => :list,
@@ -54,10 +56,11 @@ self.queried_class = RmResident
 	end
 
 	def base_scope
-		RmResident.
-		includes(:resident).
-		left_join_contacts.
-		where(statement)
+		scope = RmResident.
+			includes(:resident).
+			left_join_contacts.
+			where(statement)
+		WkLocation.filter_by_contact_account_location(scope, WkLocation.accessible_location_ids)
 	end
 
 	def results_scope(options={})

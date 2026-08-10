@@ -42,6 +42,8 @@ en:
    label_auto_populated_entry: Auto populated Entry
    label_edit_bed: Edit Bed
    label_movein_error_msg: Please configure the Rental Project and Trackers
+   error_movein_location_not_permitted: The selected apartment is outside your permitted location.
+   error_movein_location_mismatch: The apartment must be within the resident's location.
    label_move_out_msg: Resident moved out.
    label_transfer_msg: Resident Transferred.
    label_move_out_validate_msg: Move out date should be greater then move in date
@@ -75,6 +77,9 @@ en:
    label_open: Open
    label_closed: Closed
    label_evaluation: Evaluation
+   label_evaluation_response: Evaluation Response
+   label_evaluation_question: Question
+   label_evaluation_answer: Answer
    label_new_evaluation: Evaluation Setup
    label_edit_evaluation: Edit Evaluation
    label_select_resident: Select Resident
@@ -102,4 +107,22 @@ en:
    ADMIN INCIDENT PRIVILEGE: Admin Incident Privilege
    BASIC EVALUATION PRIVILEGE: Basic Evaluation Privilege
    ADMIN EVALUATION PRIVILEGE: Admin Evaluation Privilege
-   VIEW SERVICE: View Service
+   VIEW SERVICE: View Perform Service
+   label_min_points: "Min Points"
+   label_max_points: "Max Points"
+   label_effective_date: "Effective Date"
+   label_care: Care
+   label_resident_care: Resident Care
+   report_evaluation: Evaluation
+   label_incidents_by_type: Incidents by Type
+   label_total_incidents: Total Incidents
+   label_moveins_vs_moveouts: Move-Ins vs Move-Outs
+   label_apartment_occupancy: Apartment Occupancy
+   label_occupied: Occupied
+   label_created: Created
+   label_pending_eval: Pending Evaluation
+   label_avail_beds: Available Beds
+   label_bed_occupancy: Bed Occupancy
+   error_former_resident_eval: Could not perform evaluation for Former residents
+   label_evaluation_for: Evaluation for
+   notice_care_billing_failed: "Care billing failed"

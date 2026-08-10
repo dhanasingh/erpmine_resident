@@ -1,0 +1,42 @@
+.evaluation-custom-card{
+    width: 280px;
+    height: 130px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin: 25px 0 20px 20px;
+    display: flex;
+    align-items: center;
+    padding: 20px;
+}
+
+.evaluation-card-main{
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.evaluation-icon-circle{
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: #f3f7ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+}
+
+.evaluation-count-number{
+    font-size: 52px;
+    font-weight: bold;
+    color: #1e73ff;
+    line-height: 1;
+}
+
+.evaluation-count-title{
+    font-size: 28px;
+    font-weight: 600;
+    margin-top: 8px;
+    color: #222;
+}

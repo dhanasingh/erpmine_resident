@@ -172,9 +172,9 @@ module ReportOccupancyReport
       bed_entries = bed_entries.where('COALESCE(wk_inventory_items.project_id, apartment.project_id) = ?', projId.to_i)
     end
 
-    if location_id.present? && location_id.to_s != '0'
-      bed_entries = bed_entries.where('apartment.location_id = ?', location_id.to_i)
-    end
+    # Picked-zone subtree ∩ accessible locations (nil => admin/unrestricted).
+    loc_ids = WkLocation.report_location_ids(location_id)
+    bed_entries = bed_entries.where('apartment.location_id IN (?)', (loc_ids.presence || [-1])) unless loc_ids.nil?
 
     bed_count = bed_entries
       .group('loc.id', 'loc.name')
@@ -192,9 +192,8 @@ module ReportOccupancyReport
       apt_entries = apt_entries.where('wk_inventory_items.project_id = ?', projId.to_i)
     end
 
-    if location_id.present? && location_id.to_s != '0'
-      apt_entries = apt_entries.where('wk_inventory_items.location_id = ?', location_id.to_i)
-    end
+    loc_ids = WkLocation.report_location_ids(location_id)
+    apt_entries = apt_entries.where('wk_inventory_items.location_id IN (?)', (loc_ids.presence || [-1])) unless loc_ids.nil?
 
     apt_count = apt_entries
       .group('loc.id', 'loc.name')
@@ -219,9 +218,8 @@ module ReportOccupancyReport
       bed_residents = bed_residents.where('COALESCE(bed.project_id, apartment.project_id) = ?', projId.to_i)
     end
 
-    if location_id.present? && location_id.to_s != '0'
-      bed_residents = bed_residents.where('apartment.location_id = ?', location_id.to_i)
-    end
+    loc_ids = WkLocation.report_location_ids(location_id)
+    bed_residents = bed_residents.where('apartment.location_id IN (?)', (loc_ids.presence || [-1])) unless loc_ids.nil?
 
     bed_occ = bed_residents.group('loc.id').count('DISTINCT rm_residents.bed_id')
 
@@ -237,9 +235,8 @@ module ReportOccupancyReport
       apt_residents = apt_residents.where('apartment.project_id = ?', projId.to_i)
     end
 
-    if location_id.present? && location_id.to_s != '0'
-      apt_residents = apt_residents.where('apartment.location_id = ?', location_id.to_i)
-    end
+    loc_ids = WkLocation.report_location_ids(location_id)
+    apt_residents = apt_residents.where('apartment.location_id IN (?)', (loc_ids.presence || [-1])) unless loc_ids.nil?
 
     apt_occ = apt_residents.group('loc.id').count('DISTINCT rm_residents.apartment_id')
 

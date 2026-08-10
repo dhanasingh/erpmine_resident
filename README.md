@@ -41,6 +41,7 @@ This Plugin has the following module:
 
 | **Resident** | **ERPmine** |
 |-------------|-------------|
+| 2.1 | 5.1 |
 | 2.0 | 5.0 |
 | 1.4.1 | 4.9.4 |
 | 1.4 | 4.9.3 |
@@ -49,15 +50,25 @@ This Plugin has the following module:
 | 1.1 | 4.8.4, 4.8.5 |
 | 1.0 | 4.8.3 |
 
-## Release Notes for v2.0
+## Release Notes for v2.1
 
 **Features**
 ```text
-- Redmine 7.0 compatibility
+- Added  billing  by care level.
+- Added dashboard to resident module.
+```
+
+**Bug fixes**
+```text
+- Hide Bed Location on Edit.
+- Move Bed Management to Apartment Details.
+- Hide Project filter in Apartment List.
+- Service permission renamed.
+- Fixed Apartment List access for Apartment Admin.
 ```
 ## Dependency:
 
-  This plugin is compatible with ERPmine v5.0
+  This plugin is compatible with ERPmine v5.1
 
 ## Customization:
 

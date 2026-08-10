@@ -18,7 +18,6 @@
 class RmperformserviceController < WktimeController
 
 	menu_item	:apartment
-
 	def index
 		redirect_to action: :edit, user_id: User.current.id, sheet_view: getSheetView()
 	end
@@ -36,6 +35,14 @@ class RmperformserviceController < WktimeController
 		@renderer.issue_join_cond = " and i.tracker_id = #{trackerId}" if trackerId.present?
 		@renderer.spent_for_join = " left join rm_residents rm on ( ap.parent_type = rm.resident_type and ap.parent_id = rm.resident_id ) " + get_comp_condition('rm') + " inner join rm_resident_services rs on (i.id = rs.issue_id and rs.rm_resident_id = rm.id) " + get_comp_condition('rs')
 		@renderer.spent_for_cond = " and (rs.end_date is null or rs.end_date >= '#{start_date}')"
+		# Restrict to residents within the user's permitted location subtree.
+		loc_ids = WkLocation.accessible_location_ids
+		if loc_ids
+			list = (loc_ids.presence || [-1]).join(',')
+			@renderer.spent_for_join += " left join wk_crm_contacts rmc on (rm.resident_type = 'WkCrmContact' and rmc.id = rm.resident_id)" \
+										" left join wk_accounts rma on (rm.resident_type = 'WkAccount' and rma.id = rm.resident_id)"
+			@renderer.spent_for_cond += " and (rmc.location_id in (#{list}) or rma.location_id in (#{list}))"
+		end
 		# cond = " and i.tracker_id = #{trackerId}"
 		super
 	end

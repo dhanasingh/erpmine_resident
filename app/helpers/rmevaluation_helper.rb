@@ -22,10 +22,25 @@ module RmevaluationHelper
 		resident = Array.new
 		entries = RmResident.left_join_contacts.where("rm_residents.move_out_date IS NULL").order(id: :desc)
 														.select("rm_residents.id, wk_accounts.name as account_name, first_name, last_name, resident_type")
+		# Restrict the "Select Resident" dropdown to the user's permitted location
+		# subtree, matching the evaluation list. nil ids => unrestricted => no-op.
+		entries = WkLocation.filter_by_contact_account_location(entries, WkLocation.accessible_location_ids)
 		(entries || []).each do  |r|
 			residentName = r.resident_type == "WkAccount" ? r.account_name : ((r&.first_name || '') + ' ' + (r&.last_name || ''))
 			resident <<  [residentName, r.id  ]
 		end
 		resident.unshift(["",0])
+	end
+	
+	def getEvaluationList
+		evaluations = []
+
+		surveyList = WkSurvey.where(survey_for_type: 'RmResident').order(id: :desc)
+
+		surveyList.each do |s|
+			evaluations << [s.name, s.id]
+		end
+
+		evaluations
 	end
 end

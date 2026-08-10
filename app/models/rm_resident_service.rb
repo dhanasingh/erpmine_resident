@@ -38,11 +38,17 @@ class RmResidentService < ApplicationRecord
 
 			currentRes = self.resident
 			if currentRes.move_out_date.present?
-				errors.add(:invalid, "Could not add Service and Amenities for Former residents")
-			else
-				if !end_date.blank? && !currentRes.move_out_date.blank? && currentRes.move_out_date.to_date < end_date
-					errors.add(:end_date, "cannot be after the move out date")
+				if new_record?
+					# Block creating brand-new services after the resident has moved out
+					errors.add(:invalid, "Could not add Service and Amenities for Former residents")
+				else
+					# Existing services are being updated (e.g. capping end_date on move-out) — allow,
+					# but still reject if someone tries to push end_date past move_out_date
+					if !end_date.blank? && end_date > currentRes.move_out_date.to_date
+						errors.add(:end_date, "cannot be after the move out date")
+					end
 				end
+			else
 				if currentRes.move_in_date.to_date > start_date
 					errors.add(:start_date, "cannot be before the move in date")
 				end

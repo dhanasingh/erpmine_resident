@@ -20,6 +20,7 @@ class RmevaluationController < WksurveyController
 	menu_item	:apartment
 	accept_api_auth :index
   include WksurveyHelper
+  before_action :check_resident_status, only: [:survey]
 
 	def ItemLabel
 		l(:label_evaluation)
@@ -32,8 +33,41 @@ class RmevaluationController < WksurveyController
 	def editItemLabel
 		l(:label_edit_evaluation)
 	end
-	
+
+	def surveyResponseLabel
+		l(:label_evaluation_response)
+	end
+
+	def surveyForLabel
+		l(:label_evaluation_for)
+	end
+
+	# Hide resident-targeted evaluations whose target resident is outside the
+	# user's permitted location subtree. Generic (survey_for_id IS NULL) surveys
+	# stay visible. nil accessible ids => ADM_ERP/unrestricted => no filtering.
+	def surveyList(params)
+		surveys = super
+		loc_ids = WkLocation.accessible_location_ids
+		return surveys unless loc_ids
+		in_scope = WkLocation.filter_by_contact_account_location(
+			RmResident.left_join_contacts, loc_ids).pluck(:id)
+		surveys.where(
+			"#{WkSurvey.table_name}.survey_for_id IS NULL OR #{WkSurvey.table_name}.survey_for_id IN (?)",
+			in_scope.presence || [-1])
+	end
+
   private
+
+  def check_resident_status
+    if params[:surveyForType] == "RmResident" && params[:surveyForID].present?
+      res = RmResident.find_by(id: params[:surveyForID].to_i)
+      if res && res.move_out_date.present?
+        flash[:error] = l(:error_former_resident_eval)
+        redirect_to controller: 'rmresident', action: 'edit', rm_resident_id: res.id, tab: 'rmevaluation'
+        return false
+      end
+    end
+  end
 	
   def check_view_perm
     validateERPPermission("B_EVL_PRVLG")
@@ -49,7 +83,6 @@ class RmevaluationController < WksurveyController
 
 	def getSurveyFor
     survey_types = {
-        "" => '',
         l(:label_resident) => "RmResident"
     }
     survey_types
