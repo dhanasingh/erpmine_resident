@@ -1,4 +1,5 @@
 require_relative './lib/resident_hook'
+require_relative './lib/resident_mcp_hook'
 
 Redmine::Plugin.register :erpmine_resident do
   name 'ERPmine Resident Management plugin'

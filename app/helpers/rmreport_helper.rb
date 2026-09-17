@@ -1,5 +1,5 @@
 # ERPmine - ERP for service industry
-# Copyright (C) 2011-2020  Adhi software pvt ltd
+# Copyright (C) 2011-  Adhi software pvt ltd
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,8 +19,9 @@ module RmreportHelper
   include WktimeHelper
 
   def hasViewPermission(reportName)
-    resident_reports = ['report_move_in_move_out_by_date', 'report_occupancy_report', 'report_occupancy_report_web']
-    if resident_reports.include?(reportName.to_s)
+    reportName = reportName.to_s.remove("_web")
+    resident_reports = ['report_move_in_move_out_by_date', 'report_occupancy_report']
+    if resident_reports.include?(reportName)
       (validateERPPermission("B_CRM_PRVLG") || validateERPPermission("A_CRM_PRVLG")) && isChecked('wktime_enable_crm_module')
     else
       true
