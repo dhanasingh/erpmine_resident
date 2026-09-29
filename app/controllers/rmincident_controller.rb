@@ -120,7 +120,7 @@ class RmincidentController < WkbaseController
 	end
 
 	def update
-		approve_requested = ActiveModel::Type::Boolean.new.cast(params[:approve_incident])
+		approve_requested = incident_approval_requested?(params)
 		@incident = params[:incident][:id].present? ? RmIncident.find(params[:incident][:id]) : RmIncident.new
 		if approve_requested && (!approvePermission(@incident) || @incident.new_record?)
 			render_403
@@ -354,6 +354,17 @@ class RmincidentController < WkbaseController
 	def incident_approved?(incident)
 		return false if incident.new_record?
 		incident.wkstatus.where(status: RmIncident::STATUS_APPROVED).exists?
+	end
+
+	# API clients sometimes place the action flag inside the incident object
+	# because all other incident values live there. Keep the HTML/API canonical
+	# top-level form, but accept the nested form as well so chat approval is not
+	# mistaken for an attempt to edit an already-submitted incident.
+	def incident_approval_requested?(request_params)
+		nested_flag = request_params[:incident].try(:[], :approve_incident)
+		flag = request_params[:approve_incident]
+		flag = nested_flag if flag.nil?
+		ActiveModel::Type::Boolean.new.cast(flag)
 	end
 
 	def apply_incident_status_filter(entries, status_code)

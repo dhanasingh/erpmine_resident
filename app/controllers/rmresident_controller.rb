@@ -224,6 +224,7 @@ class RmresidentController < WkcrmController
 
 	def updateresidentservice
 		errorMsg = ""
+		normalize_api_resident_service_params if api_request?
 		if params[:residentService][:id].blank?
 			@residentService = RmResidentService.new
 		else
@@ -625,6 +626,22 @@ class RmresidentController < WkcrmController
 	end
 
 	private
+
+	# Keep API/chat input consistent with RmapartmentController: the web form
+	# submits compact values from getRatePerHash, while chat may send the label.
+	def normalize_api_resident_service_params
+		service_params = params[:residentService]
+		return if service_params.blank?
+
+		frequency = service_params[:frequency].to_s.strip
+		return if frequency.blank?
+
+		frequency_codes = getRatePerHash(false).each_with_object({}) do |(code, label), values|
+			values[code.to_s.downcase] = code
+			values[label.to_s.downcase] = code
+		end
+		service_params[:frequency] = frequency_codes.fetch(frequency.downcase, frequency.downcase)
+	end
 	
 	def check_basic_perm
 		unless validateERPPermission("B_RES_PRVLG") || validateERPPermission("A_RES_PRVLG")
