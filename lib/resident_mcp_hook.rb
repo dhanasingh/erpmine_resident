@@ -106,7 +106,7 @@ class ResidentMcpHook < Redmine::Hook::Listener
 
     # --- Evaluations (rmevaluation) -------------------------------------
     ['list_resident_evaluations', :get, '/rmevaluation/index.json',
-     'List resident evaluations (surveys targeted at residents) with their status and recurrence. query: survey_name, status (N new, O open, C closed, A archived), rm_resident_id to narrow to one resident\'s evaluations plus the generic ones, offset, limit. Evaluations are created, answered and scored through the ERPmine survey tools — this endpoint is read-only.'],
+     'List resident evaluations (surveys targeted at residents) with their status and recurrence. ALWAYS send surveyForType=RmResident in query; omitting it searches generic surveys and returns the wrong result. Other query fields: survey_name, status (N new, O open, C closed, A archived), rm_resident_id to narrow to one resident\'s evaluations plus the generic ones, offset, limit. Evaluations are created, answered and scored through the ERPmine survey tools — this endpoint is read-only.'],
 
     # --- Dashboard (rmdashboard) ----------------------------------------
     ['list_resident_dashboard_graphs', :get, '/rmdashboard/get_graphs.json',
