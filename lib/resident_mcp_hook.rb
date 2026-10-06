@@ -90,9 +90,9 @@ class ResidentMcpHook < Redmine::Hook::Listener
     ['get_service_sheet', :get, '/rmperformservice/edit.json',
      'Get one week of performed-service entries for a user, with their editable rows. query: user_id, startday (YYYY-MM-DD, the first day of the week). Only the resident-service tracker\'s issues appear; the project and activity are fixed by the resident plugin settings.'],
     ['create_service_entries', :post, '/rmperformservice/update.json',
-     'Record services performed for residents. body {"user_id", "startday", "sheet_view": "I", "wktime_save": 1, "time_entries": [{"project": {"id"}, "issue": {"id"}, "activity": {"id"}, "spent_on", "hours", "comments"}]}. Always send sheet_view as "I" because performed services use the daily service sheet. Take issue ids from search_service_issues and the activity id from list_service_activities. Omit each entry\'s "id" to create it.'],
+     'Record services performed for residents. body {"user_id", "startday", "sheet_view": "I", "wktime_save": 1, "time_entries": [{"project": {"id"}, "issue": {"id"}, "activity": {"id"}, "spent_on", "hours", "comments", "spent_for_attributes": {"spent_for_key": "<resident_type>_<resident_type_id>"}}]}. Before writing, call get_resident for the named resident, verify the issue is in that resident\'s services, then build spent_for_key from its resident_type and resident_type_id (for example WkCrmContact_22). Never omit spent_for_attributes or infer the resident from the issue. Always send sheet_view as "I". Take the activity id from list_service_activities. Omit each entry\'s "id" to create it.'],
     ['update_service_entries', :post, '/rmperformservice/update.json',
-     'Update performed-service entries. Same body as create_service_entries, including "sheet_view": "I", but each entry carries the "id" returned by get_service_sheet. Entries omitted from the array are removed, so send the full set of rows for the week.'],
+     'Update performed-service entries. Same body as create_service_entries, including each row\'s spent_for_attributes and "sheet_view": "I", but each entry carries the "id" returned by get_service_sheet. Entries omitted from the array are removed, so send the full set of rows for the week.'],
 
     # --- Incidents (rmincident) -----------------------------------------
     ['list_incidents', :get, '/rmincident/index.json',
