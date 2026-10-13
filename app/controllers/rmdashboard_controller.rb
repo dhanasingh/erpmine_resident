@@ -1,5 +1,5 @@
 # ERPmine - ERP for service industry
-# Copyright (C) 2011-2020  Adhi software pvt ltd
+# Copyright (C) 2011-  Adhi software pvt ltd
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,7 +19,8 @@ class RmdashboardController < WkbaseController
 
   menu_item	:apartment
   accept_api_auth :get_graphs, :get_detail_report
-  
+  include RmdashboardHelper
+
   def index
     set_filter_session
     retrieve_date_range

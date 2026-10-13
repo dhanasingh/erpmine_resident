@@ -1,4 +1,4 @@
-<% if hasViewPermission(@reportType) %>
+<% if Object.new.extend(RmreportHelper).hasViewPermission(@reportType) %>
 	<%= render :partial => "rmreport/#{@reportType}" %>
 <% else %>
 	<label><b><%= l(:label_no_data) %></b></label>

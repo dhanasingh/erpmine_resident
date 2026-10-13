@@ -1,5 +1,5 @@
 # ERPmine - ERP for service industry
-# Copyright (C) 2011-2020  Adhi software pvt ltd
+# Copyright (C) 2011-  Adhi software pvt ltd
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -23,6 +23,7 @@ class RmResidentService < ApplicationRecord
   belongs_to :created_user, :class_name => 'User', :foreign_key => 'created_by_user_id'
   belongs_to :updated_user, :class_name => 'User', :foreign_key => 'updated_by_user_id'
   validates_presence_of :start_date, :issue_id,  :rm_resident_id
+  validates_length_of :frequency, maximum: 2
   safe_attributes 	'rm_resident_id','issue_id', 'start_date', 'end_date', 'frequency', 'no_of_occurrence', 'created_by_user_id', 'updated_by_user_id'
 
   validate :end_date_is_after_start_date

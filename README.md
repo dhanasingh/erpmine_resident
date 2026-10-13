@@ -41,6 +41,7 @@ This Plugin has the following module:
 
 | **Resident** | **ERPmine** |
 |-------------|-------------|
+| 2.1.1 | 5.1.1, 5.1.2 |
 | 2.1 | 5.1 |
 | 2.0 | 5.0 |
 | 1.4.1 | 4.9.4 |
@@ -50,25 +51,12 @@ This Plugin has the following module:
 | 1.1 | 4.8.4, 4.8.5 |
 | 1.0 | 4.8.3 |
 
-## Release Notes for v2.1
+## Release Notes for v2.1.1
 
 **Features**
 ```text
-- Added  billing  by care level.
-- Added dashboard to resident module.
+- Added MCP tool support.
 ```
-
-**Bug fixes**
-```text
-- Hide Bed Location on Edit.
-- Move Bed Management to Apartment Details.
-- Hide Project filter in Apartment List.
-- Service permission renamed.
-- Fixed Apartment List access for Apartment Admin.
-```
-## Dependency:
-
-  This plugin is compatible with ERPmine v5.1
 
 ## Customization:
 
@@ -77,13 +65,13 @@ This Plugin has the following module:
   Adhi Software Pvt Ltd
   12/B-35, 6th Cross Road
   SIPCOT IT Park, Siruseri
-  Kancheepuram Dist
+  Chengalpattu Dist
   Tamilnadu - 603103
   India
 
   Website: http://www.adhisoftware.co.in
   Email: info@adhisoftware.co.in
-  Phone: +91 44 27470401
+  Phone: +91 44 46612534
 
 ## Resources:
 

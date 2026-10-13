@@ -449,7 +449,6 @@ class ResidentHook < Redmine::Hook::ViewListener
 
 	def add_report_type(context={})
 		reports = context[:reports]
-		apiRequest = context[:apiRequest]
 		reportLoc = Rails.root.join('plugins', 'erpmine_resident', 'app', 'views', 'rmreport')
 		Dir["#{reportLoc}/_report*"].each do |path|
 			fileName = File.basename(path, '.html.erb')
@@ -460,7 +459,7 @@ class ResidentHook < Redmine::Hook::ViewListener
 			# "report_evaluation_filter" entry that has no translation and no report module.
 			next if fileName.end_with?('_filter')
 			label = fileName.remove('_web')
-			reports << [l(:"#{label}"), fileName] if Object.new.extend(RmreportHelper).hasViewPermission(label) && (!apiRequest || !(fileName.end_with?('_web')))
+			reports << [l(:"#{label}"), fileName] if Object.new.extend(RmreportHelper).hasViewPermission(label)
 		end
 		reports.uniq!
 	end
